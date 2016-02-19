@@ -12,9 +12,14 @@ my $root_path = abs_path($module_file_path);
 $root_path =~ s/lib\/BopWeb\.pm//;
 my $metadata_path = $root_path . "metadata";
 
-my @reports = ('situation', 'hotspots');
-my %report_names = ('situation' => 'situation',
-                    'hotspots' => 'hotspots');
+my @reports = ('situation', 'hotspots', 'alliances', 'influences', 'supports', 'rebel-supports', 'war-history' );
+my %report_names = ('situation' => 'Situation',
+                    'hotspots' => 'Hotspots',
+                    'alliances' => 'Alliances',
+                    'influences' => 'Influences',
+                    'supports' => 'Military Supports',
+                    'rebel-supports' => 'Rebel Supports',
+                    'war-history' => 'War History');
 
 get '/' => sub {
     template 'home';
