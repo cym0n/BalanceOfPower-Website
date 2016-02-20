@@ -55,7 +55,8 @@ get '/play/:game/n' => sub {
             areas => ['North America', 'South America', 'Europe', 'Africa', 'Middle East', 'Far East', 'Pacific'],
             nations => $meta->{nations},
             game => params->{game},
-            year => $meta->{'current_year'}
+            year => $meta->{'current_year'},
+            active_top => 'nations'
         }
     }
     else
@@ -77,7 +78,8 @@ get '/play/:game/:year/:turn/r/:report' => sub {
        'active' => params->{report},
        'game' => params->{game},
        'year' => params->{year},
-       'turn' => params->{turn}
+       'turn' => params->{turn},
+       active_top => 'year'
     }; 
 };
 get '/play/:game/:year/:turn/n/:nation' => sub {
@@ -101,7 +103,8 @@ get '/play/:game/:year/:turn/n/:nation/:report' => sub {
        'game' => params->{game},
        'year' => params->{year},
        'nation' => params->{nation},
-       'turn' => params->{turn}
+       'turn' => params->{turn},
+       active_top => 'nations'
     }; 
 
 };
