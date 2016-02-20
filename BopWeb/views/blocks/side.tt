@@ -1,0 +1,15 @@
+        <div class="col-xs-6 col-sm-3 sidebar-offcanvas" id="sidebar">
+          <div class="list-group">
+            [% FOREACH r IN reports %]
+            [% IF nation %]
+            <a href="/play/[% game %]/[% year %]/[% turn %]/n/[% nation %]/[% r %]" class="list-group-item 
+            [% ELSE %]    
+            <a href="/play/[% game %]/[% year %]/[% turn %]/r/[% r %]" class="list-group-item 
+            [% END %]
+            [% IF r == active %]active">
+            [% ELSE %]">
+            [% END %][% report_names.$r %]</a>
+            [% END %]
+          </div>
+        </div><!--/.sidebar-offcanvas-->
+

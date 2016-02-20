@@ -1,0 +1,28 @@
+[% INCLUDE blocks/head.tt %]
+<div class="col-xs-12 col-sm-9">
+[% counter = 0 %]
+<div id="accordion" class="panel-group">
+[% FOREACH a IN areas %]
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapse[% counter %]">[% a %]</a>
+            </h4>
+        </div>
+        <div id="collapse[% counter %]" class="panel-collapse collapse">
+            <div class="panel-body">
+                [% FOREACH n IN nations.keys %]
+                [% IF nations.$n.area == a %]
+                <a href="/play/[% game %]/[% year %]/n/[% nations.$n.code %]">[% n %]</a><br />
+                [% END %]
+                [% END %]
+            </div>
+        </div>
+    </div>
+    [% counter = counter + 1 %]
+[% END %]
+</div>
+</div>
+[% INCLUDE blocks/foot.tt %]
+
+
