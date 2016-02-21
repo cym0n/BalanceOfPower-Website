@@ -64,13 +64,22 @@ get '/play/:game/n' => sub {
         pass;
     }
 };
-
+get '/play/:game/n/:nation' => sub {
+    my $meta = get_meta(params->{game});
+    my $redirection = "/play/" . params->{game} . "/" . $meta->{'current_year'} . "/n/" . params->{nation};
+        redirect $redirection, 301;
+};
 get '/play/:game/:year/:turn/r/:report' => sub {
     my $report_to_show = 'generated/' . 
                          params->{game} . '/' .
                          params->{year} . '/' .
                          params->{turn} . '/' .
                          params->{report} . '.tt'; 
+    my $custom_js = undef;
+    if(params->{report} eq 'situation')
+    {
+        $custom_js = "blocks/alldata.tt";
+    }
     template 'report', {
        'report' => $report_to_show,
        'reports' => \@reports,
@@ -79,7 +88,8 @@ get '/play/:game/:year/:turn/r/:report' => sub {
        'game' => params->{game},
        'year' => params->{year},
        'turn' => params->{turn},
-       active_top => 'year'
+       'active_top' => 'year',
+       'custom_js' => $custom_js
     }; 
 };
 get '/play/:game/:year/:turn/n/:nation' => sub {
@@ -95,6 +105,7 @@ get '/play/:game/:year/:turn/n/:nation/:report' => sub {
                          params->{turn} . '/' .
                          params->{nation} . '/'.
                          params->{report} . '.tt'; 
+    my $custom_js = undef;
     template 'nation_report', {
        'report' => $report_to_show,
        'reports' => \@nation_reports,
@@ -104,7 +115,8 @@ get '/play/:game/:year/:turn/n/:nation/:report' => sub {
        'year' => params->{year},
        'nation' => params->{nation},
        'turn' => params->{turn},
-       active_top => 'nations'
+       'active_top' => 'nations',
+       'custom_js' => $custom_js
     }; 
 
 };
