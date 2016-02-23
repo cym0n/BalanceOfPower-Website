@@ -1,0 +1,33 @@
+attributes:
+    class: well
+elements:
+    - name : user
+      label: user
+      attributes:
+        class: form-control
+      constraints:
+        type: Required
+        message: 'Insert a username'
+    - name : password
+      type : Password
+      label: password
+      attributes:
+        class: form-control
+      constraints:
+        type: Required
+        message: 'Insert a password'
+    - name : repassword
+      type : Password
+      label: retype password
+      attributes:
+        class: form-control
+      constraints:
+        type: Required
+        message: 'Retype password'
+    - type: Block
+      tag: button
+      content: Register
+      attributes:
+        type: submit
+        class: btn btn-primary
+
