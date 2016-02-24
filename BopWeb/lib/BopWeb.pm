@@ -235,15 +235,58 @@ get '/users/logged' => sub {
     {
         my $user_db = schema->resultset("BopUser")->find({ user => $user });
         my @user_games = schema->resultset("UserGame")->search({ user => $user_db->id });
-        my $game = schema->resultset("BopGame")->find($user_games[0]->game);
-        redirect '/play/' . $game->file;
-        return;
+        if(@user_games)
+        {
+            my $game = schema->resultset("BopGame")->find($user_games[0]->game);
+            redirect '/play/' . $game->file;
+            return;
+        }
+        else
+        {
+            redirect '/users/choose-game';
+            return;
+        }
     }
     else
     {
          redirect '/users/login', 302;
          return;
     }
+};
+
+get '/users/choose-game' => sub {
+    my $user = session->read('user');
+    my @games = schema->resultset("BopGame")->search({ active => 1});
+    template 'choose_game', {
+        games => \@games
+    }
+};
+
+get '/users/select-game' => sub {
+    my $user = session->read('user');
+    my $user_db = schema->resultset("BopUser")->find({ user => $user });
+    if($user)
+    {
+        my $game = params->{game};
+        my @user_games = schema->resultset("UserGame")->search({ user => $user_db->id });
+        if(@user_games)
+        {
+            redirect '/users/logged', 302;
+            return;
+        }
+        else
+        {
+            schema->resultset("UserGame")->create({ user => $user_db->id, game => $game});
+            redirect '/users/logged', 302;
+            return;
+        }
+    }
+    else
+    {
+        redirect '/users/login', 302;
+    }
+    
+
 };
 
 

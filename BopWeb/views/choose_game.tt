@@ -1,0 +1,10 @@
+[% INCLUDE blocks/head.tt %]
+<div class="col-xs-12 col-sm-9">
+<p>Choose a game to join:</p>
+[% FOR g IN games %]
+<div class="well">
+    <h4><a href="/users/select-game?game=[% g.id %]">[% g.name %]</a></h4>
+</div>
+[% END %]
+</div>
+[% INCLUDE blocks/foot.tt %]
