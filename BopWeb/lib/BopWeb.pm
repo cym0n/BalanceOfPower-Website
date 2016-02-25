@@ -6,6 +6,7 @@ use Dancer2::Plugin::DBIC;
 use Cwd 'abs_path';
 use HTML::FormFu;
 use Data::Dumper;
+use Dancer2::Serializer::JSON;
 use Authen::Passphrase::BlowfishCrypt;
 
 use BalanceOfPower::Utils qw (prev_turn);
@@ -234,10 +235,9 @@ get '/users/logged' => sub {
     if($user)
     {
         my $user_db = schema->resultset("BopUser")->find({ user => $user });
-        my @user_games = schema->resultset("UserGame")->search({ user => $user_db->id });
-        if(@user_games)
+        my $game = $user_db->usergames->first->game;
+        if($game)
         {
-            my $game = schema->resultset("BopGame")->find($user_games[0]->game);
             redirect '/play/' . $game->file;
             return;
         }
@@ -285,8 +285,21 @@ get '/users/select-game' => sub {
     {
         redirect '/users/login', 302;
     }
-    
+};
 
+### API
+
+get '/api/:game/users' => sub {
+    my $game = params->{game};
+    my $game_db = schema->resultset("BopGame")->find({ file => $game });
+    my @usergames = $game_db->usergames;
+    my @out = ();
+    for(@usergames)
+    {
+        push @out, $_->user->user;
+    }
+    content_type('application/json');
+    return serialize(\@out, undef);
 };
 
 
@@ -316,6 +329,19 @@ sub valid_login
         }
     }
     return undef;
+}
+
+sub serialize
+{
+    my $content = shift;
+    my $callback = shift;;
+    my $serializer = Dancer2::Serializer::JSON->new();
+    my $serialized = $serializer->serialize($content);
+    if($callback)
+    {
+        $serialized = $callback . '( '. $serialized . ')';
+    }
+    return $serialized;
 }
 
 

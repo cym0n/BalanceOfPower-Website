@@ -60,4 +60,29 @@ __PACKAGE__->add_columns(
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+__PACKAGE__->belongs_to(
+  "user",
+  "BopWeb::BopWebDB::Result::BopUser",
+  { id => "user" },
+  {
+    is_deferrable => 1,
+    join_type     => "LEFT",
+    on_delete     => "RESTRICT",
+    on_update     => "RESTRICT",
+  },
+);
+
+__PACKAGE__->belongs_to(
+  "game",
+  "BopWeb::BopWebDB::Result::BopGame",
+  { id => "game" },
+  {
+    is_deferrable => 1,
+    join_type     => "LEFT",
+    on_delete     => "RESTRICT",
+    on_update     => "RESTRICT",
+  },
+);
+
 1;
