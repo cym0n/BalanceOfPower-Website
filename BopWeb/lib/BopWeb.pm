@@ -20,29 +20,121 @@ my $root_path = abs_path($module_file_path);
 $root_path =~ s/lib\/BopWeb\.pm//;
 
 my $metadata_path = $root_path . "metadata";
+my @reports_menu = ('r/situation', 'r/hotspots', 'r/alliances', 'r/influences', 'r/supports', 'r/rebel-supports', 'r/war-history', 'r/events' );
+my @nation_reports_menu = ('n/actual', 'n/borders', 'n/near', 'n/diplomacy', 'n/events' );
+my @player_reports_menu = ('r/market', 'p/stocks', 'p/events' );
 
-my @reports = ('situation', 'hotspots', 'alliances', 'influences', 'supports', 'rebel-supports', 'war-history', 'events' );
-my %report_names = ('situation' => 'Situation',
-                    'hotspots' => 'Hotspots',
-                    'alliances' => 'Alliances',
-                    'influences' => 'Influences',
-                    'supports' => 'Military Supports',
-                    'rebel-supports' => 'Rebel Supports',
-                    'war-history' => 'War History',
-                    'events' => 'Events'
-                );
-my @nation_reports = ('actual', 'borders', 'near', 'diplomacy', 'events' );
-my %nation_report_names = ('actual' => 'Status',
-                           'borders' => 'Borders',
-                           'near' => 'Military Range',
-                           'diplomacy' => 'Diplomacy',
-                           'events' => 'Events' 
-                    );
+my %report_configuration = (
+           'r/situation' => {
+               menu_name => 'Situation',
+               custom_js => 'blocks/alldata.tt'
+            },
+            'r/hotspots' => {
+               menu_name => 'Hotspots',
+            },
+            'r/alliances' => {
+               menu_name => 'Alliances',
+            },
+            'r/influences' => {
+               menu_name => 'Influences',
+            },
+            'r/supports' => {
+               menu_name => 'Military Supports',
+            },
+            'r/rebel-supports' => {
+               menu_name => 'Rebel Supports',
+            },
+            'r/war-history' => {
+               menu_name => 'War History',
+            },
+            'r/events' => {
+               menu_name => 'Events',
+            },
+            'n/actual' => {
+               menu_name => 'Status'
+            },
+            'n/borders' => {
+                menu_name => 'Borders'
+            },
+            'n/near' => {
+                menu_name => 'Military Range'
+            },
+            'n/diplomacy' => {
+                menu_name => 'Diplomacy',
+            },
+            'n/events' => {
+                menu_name => 'Events'
+            },
+            'r/market' => {
+                menu_name => 'Market',
+                menu => \@player_reports_menu,
+                active_top => 'market'
+            },
+            'p/stocks' => {
+                menu_name => 'My Stocks'
+            },
+            'p/events' => {
+                menu_name => 'Market Events'
+            }
+    );
 
 
 get '/' => sub {
     template 'home';
 };
+
+get '/play/:game/:year/:turn/:context/:object/:report' => sub {
+    my $report_id = params->{context} . '/' . params->{report};
+    my $meta = get_meta(params->{game});
+    my $user = session->read('user');
+    
+    my $standards = get_report_standard_from_context(params->{context});
+    my $report_conf = $report_configuration{$report_id};
+    for(keys $standards)
+    {
+        if(! exists $report_conf->{$_})
+        {
+            $report_conf->{$_} = $standards->{$_}
+        }
+    }
+    my $obj_dir = params->{object} eq 'year' ? '' : '/' . params->{object} . '/';
+    my $report_to_show = 'generated/' . 
+                         params->{game} . '/' .
+                         params->{year} . '/' .
+                         params->{turn} . '/' . $report_conf->{'subdir'} .
+                         $obj_dir .
+                         params->{report} . '.tt'; 
+    my $page_title;
+    if($report_conf->{'title'} eq 'year')
+    {
+        $page_title = params->{year} . '/' . params->{turn};
+    }
+    elsif($report_conf->{'title'} eq 'nation')
+    {
+        $page_title = params->{object} . " - " .params->{year} . '/' . params->{turn};
+    }
+    elsif($report_conf->{'title'} eq 'player')
+    {
+        $page_title = $user;
+    }
+    my ($menu, $ordered) = make_menu($report_conf->{menu}, params->{object}, $user);
+    template $report_conf->{template}, {
+       'object' => params->{object},
+       'report' => $report_to_show,
+       'menu' => $menu,
+       'menu_urls' => $ordered,
+       'active' => make_complete_url($report_id, params->{object}, $user),
+       'game' => params->{game},
+       'year' => params->{year},
+       'turn' => params->{turn},
+       'active_top' => $report_conf->{active_top},
+       'custom_js' => $report_conf->{custom_js},
+       'player' => $user,
+       'page_title' => $page_title,
+    }; 
+};
+
+
 
 get '/play/:game' => sub {
     my $meta = get_meta(params->{game});
@@ -78,29 +170,6 @@ get '/play/:game/n/:nation' => sub {
     my $redirection = "/play/" . params->{game} . "/" . $meta->{'current_year'} . "/n/" . params->{nation};
         redirect $redirection, 302;
 };
-get '/play/:game/:year/:turn/r/:report' => sub {
-    my $report_to_show = 'generated/' . 
-                         params->{game} . '/' .
-                         params->{year} . '/' .
-                         params->{turn} . '/' .
-                         params->{report} . '.tt'; 
-    my $custom_js = undef;
-    if(params->{report} eq 'situation')
-    {
-        $custom_js = "blocks/alldata.tt";
-    }
-    template 'report', {
-       'report' => $report_to_show,
-       'reports' => \@reports,
-       'report_names' => \%report_names,
-       'active' => params->{report},
-       'game' => params->{game},
-       'year' => params->{year},
-       'turn' => params->{turn},
-       'active_top' => 'year',
-       'custom_js' => $custom_js
-    }; 
-};
 get '/play/:game/:year/:turn/n/:nation' => sub {
         my $redirection = "/play/" . params->{game} . "/" . params->{year} . "/" . params->{turn} . "/n/" . params->{nation} . "/actual";
         redirect $redirection, 302;
@@ -109,6 +178,7 @@ get '/play/:game/:year/:turn/n/:nation' => sub {
 
 get '/play/:game/:year/:turn/n/:nation/:report' => sub {
     my $meta = get_meta(params->{game});
+    my $user = session->read('user');
     my $nation_name;
     for(keys %{$meta->{nations}})
     {    
@@ -120,15 +190,16 @@ get '/play/:game/:year/:turn/n/:nation/:report' => sub {
     my $report_to_show = 'generated/' . 
                          params->{game} . '/' .
                          params->{year} . '/' .
-                         params->{turn} . '/' .
+                         params->{turn} . '/n/' .
                          params->{nation} . '/'.
                          params->{report} . '.tt'; 
     my $custom_js = undef;
-    template 'nation_report', {
+    my $template = 'nation_report';
+    template $template, {
        'report' => $report_to_show,
-       'reports' => \@nation_reports,
-       'report_names' => \%nation_report_names,
-       'active' => params->{report},
+       #      'reports' => \@nation_reports,
+       #'report_names' => \%nation_report_names,
+       'active' => 'n/' . params->{report},
        'game' => params->{game},
        'year' => params->{year},
        'nation' => params->{nation},
@@ -136,10 +207,43 @@ get '/play/:game/:year/:turn/n/:nation/:report' => sub {
        'active_top' => 'nations',
        'custom_js' => $custom_js,
        'nation_name' => $nation_name,
+       'player' => $user
     }; 
 
 };
 
+get '/play/:game/:year/:turn/p/:player/:report' => sub {
+    my $user = session->read('user');
+    if(! $user || $user ne params->{player})
+    {
+        redirect '/play/' . params->{game}, 302;
+        return;
+    }
+    my $report_to_show = 'generated/' . 
+                         params->{game} . '/' .
+                         params->{year} . '/' .
+                         params->{turn} . '/p/' .
+                         params->{player} . '/'.
+                         params->{report} . '.tt'; 
+    my $custom_js = undef;                        
+    my $template = 'player_report';
+    #   $template = $switched_template{params->{report}} if exists $switched_template{params->{report}};
+    template $template, {
+       'report' => $report_to_show,
+       #  'reports' => \@player_reports,
+       #'report_names' => \%player_report_names,
+       'active' => 'p/' . params->{report},
+       'game' => params->{game},
+       'year' => params->{year},
+       'turn' => params->{turn},
+       'active_top' => 'market',
+       'custom_js' => $custom_js,
+       'player_name' => $user,
+       'player' => $user,
+    }; 
+
+
+};
 
 sub get_meta
 {
@@ -161,6 +265,79 @@ sub get_meta
     {
         return undef;
     }
+}
+
+sub get_report_standard_from_context
+{
+    my $context = shift;
+    my $menu;
+    my $title;
+    my $active_top;
+    my $subdir;
+    if($context eq 'r')
+    {
+        $menu = \@reports_menu;
+        $title = 'year';
+        $active_top = 'year';
+        $subdir = '';
+
+    }
+    elsif($context eq 'n')
+    {
+        $menu = \@nation_reports_menu,
+        $title = 'nation';
+        $active_top = 'nations';
+        $subdir = 'n/';
+    }
+    elsif($context eq 'p')
+    {
+        $menu = \@player_reports_menu,
+        $title = 'player';
+        $active_top = 'market';
+        $subdir = 'p/';
+    }
+    return { title => $title, 
+             menu => $menu,
+             subdir => $subdir,
+             template => 'report',
+             custom_js => undef,
+             active_top => $active_top,
+           };
+}
+sub make_complete_url
+{
+    my $menu = shift;
+    my $obj = shift;
+    my $user = shift;
+    if($menu =~ /^r/)
+    {
+        $menu =~ s/\//\/year\//;
+    }
+    elsif($menu =~ /^n/)
+    {
+        $menu =~ s/\//\/$obj\//;
+    }
+    elsif($menu =~ /^p/)
+    {
+        $menu =~ s/\//\/$user\//;
+    }
+    return $menu;
+}
+sub make_menu
+{
+    my $entries = shift;
+    my $obj = shift;
+    my $user = shift;
+    my %out = ();
+    my @order = ();
+    for(@{$entries})
+    {
+        my $original_menu = $_;
+        my $menu = make_complete_url($original_menu, $obj, $user);
+        $out{$menu} = $report_configuration{$original_menu}->{menu_name};
+        push @order, $menu;
+    }
+    return (\%out, \@order);
 }
 
 ### USER MANAGEMENT

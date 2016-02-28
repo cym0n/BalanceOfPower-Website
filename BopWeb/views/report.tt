@@ -1,6 +1,6 @@
 [% INCLUDE blocks/head.tt %]
 <div class="col-xs-12 col-sm-9">
-<h2>[% year %]/[% turn %]</h2>
+<h2>[% page_title %]</h2>
 [% INCLUDE $report %]
 </div><!--/.col-xs-12.col-sm-9-->
 [% INCLUDE blocks/side.tt %]

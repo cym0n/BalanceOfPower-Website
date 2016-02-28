@@ -1,7 +1,0 @@
-[% INCLUDE blocks/head.tt %]
-<div class="col-xs-12 col-sm-9">
-<h2>[% nation_name %] - [% year %]/[% turn %]</h2>
-[% INCLUDE $report %]
-</div><!--/.col-xs-12.col-sm-9-->
-[% INCLUDE blocks/side.tt %]
-[% INCLUDE blocks/foot.tt %]
