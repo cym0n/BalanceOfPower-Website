@@ -85,7 +85,7 @@ get '/' => sub {
 
 get '/play/:game/:year/:turn/:context/:object/:report' => sub {
     my $report_id = params->{context} . '/' . params->{report};
-    my $meta = get_meta(params->{game});
+    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
     my $user = session->read('user');
     
     my $standards = get_report_standard_from_context(params->{context});
@@ -97,7 +97,7 @@ get '/play/:game/:year/:turn/:context/:object/:report' => sub {
             $report_conf->{$_} = $standards->{$_}
         }
     }
-    my $obj_dir = params->{object} eq 'year' ? '' : '/' . params->{object} . '/';
+    my $obj_dir = params->{object} eq 'year' ? '' : params->{object} . '/';
     my $report_to_show = 'generated/' . 
                          params->{game} . '/' .
                          params->{year} . '/' .
@@ -118,6 +118,11 @@ get '/play/:game/:year/:turn/:context/:object/:report' => sub {
         $page_title = $user;
     }
     my ($menu, $ordered) = make_menu($report_conf->{menu}, params->{object}, $user);
+    my $wallet = undef;
+    if(params->{context} eq 'n' && $user)
+    {
+        $wallet =     my $meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
+    }
     template $report_conf->{template}, {
        'object' => params->{object},
        'report' => $report_to_show,
@@ -131,16 +136,18 @@ get '/play/:game/:year/:turn/:context/:object/:report' => sub {
        'custom_js' => $report_conf->{custom_js},
        'player' => $user,
        'page_title' => $page_title,
+       'wallet' => $wallet,
+       'context' => params->{context}
     }; 
 };
 
 
 
 get '/play/:game' => sub {
-    my $meta = get_meta(params->{game});
+    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
     if($meta)
     {
-        my $redirection = "/play/" . params->{game} . "/" . $meta->{'current_year'} . "/r/situation";
+        my $redirection = "/play/" . params->{game} . "/" . $meta->{'current_year'} . "/r/year/situation";
         redirect $redirection, 302;
     }
     else
@@ -149,7 +156,7 @@ get '/play/:game' => sub {
     }
 };
 get '/play/:game/n' => sub {
-    my $meta = get_meta(params->{game});
+    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
     if($meta)
     {
         template 'nations', {
@@ -166,7 +173,7 @@ get '/play/:game/n' => sub {
     }
 };
 get '/play/:game/n/:nation' => sub {
-    my $meta = get_meta(params->{game});
+    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
     my $redirection = "/play/" . params->{game} . "/" . $meta->{'current_year'} . "/n/" . params->{nation};
         redirect $redirection, 302;
 };
@@ -175,80 +182,9 @@ get '/play/:game/:year/:turn/n/:nation' => sub {
         redirect $redirection, 302;
 };
 
-
-get '/play/:game/:year/:turn/n/:nation/:report' => sub {
-    my $meta = get_meta(params->{game});
-    my $user = session->read('user');
-    my $nation_name;
-    for(keys %{$meta->{nations}})
-    {    
-        if($meta->{nations}->{$_}->{'code'} eq params->{nation})
-        {
-            $nation_name = $_;
-        }
-    }
-    my $report_to_show = 'generated/' . 
-                         params->{game} . '/' .
-                         params->{year} . '/' .
-                         params->{turn} . '/n/' .
-                         params->{nation} . '/'.
-                         params->{report} . '.tt'; 
-    my $custom_js = undef;
-    my $template = 'nation_report';
-    template $template, {
-       'report' => $report_to_show,
-       #      'reports' => \@nation_reports,
-       #'report_names' => \%nation_report_names,
-       'active' => 'n/' . params->{report},
-       'game' => params->{game},
-       'year' => params->{year},
-       'nation' => params->{nation},
-       'turn' => params->{turn},
-       'active_top' => 'nations',
-       'custom_js' => $custom_js,
-       'nation_name' => $nation_name,
-       'player' => $user
-    }; 
-
-};
-
-get '/play/:game/:year/:turn/p/:player/:report' => sub {
-    my $user = session->read('user');
-    if(! $user || $user ne params->{player})
-    {
-        redirect '/play/' . params->{game}, 302;
-        return;
-    }
-    my $report_to_show = 'generated/' . 
-                         params->{game} . '/' .
-                         params->{year} . '/' .
-                         params->{turn} . '/p/' .
-                         params->{player} . '/'.
-                         params->{report} . '.tt'; 
-    my $custom_js = undef;                        
-    my $template = 'player_report';
-    #   $template = $switched_template{params->{report}} if exists $switched_template{params->{report}};
-    template $template, {
-       'report' => $report_to_show,
-       #  'reports' => \@player_reports,
-       #'report_names' => \%player_report_names,
-       'active' => 'p/' . params->{report},
-       'game' => params->{game},
-       'year' => params->{year},
-       'turn' => params->{turn},
-       'active_top' => 'market',
-       'custom_js' => $custom_js,
-       'player_name' => $user,
-       'player' => $user,
-    }; 
-
-
-};
-
-sub get_meta
+sub get_metafile
 {
-    my $game = shift;
-    my $meta = $metadata_path . '/' . $game . '.meta';
+    my $meta = shift;
     if(-e $meta)
     {
         open my $metafile, '<', $meta || die $!;

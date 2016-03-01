@@ -7,5 +7,42 @@
             [% END %][% menu.$r %]</a>
             [% END %]
           </div>
+          <div class="well">
+            <h3>Stock Actions</h3>
+            [% IF context == 'n' %]
+            [% IF wallet.$object %]
+            <p>
+                Stocks: [% wallet.$object.stocks %]<br />
+                Influence: [% wallet.$object.influence %]<br />
+                War bonds: [% wallet.$object.war_bonds %]<br />
+            </p>
+            [% ELSE %]
+            <p>
+                Stocks: 0<br />
+                Influence: 0<br />
+                War bonds: 0<br />
+            </p>
+            [% END %]
+            [% END %]
+            <form>
+                <div class="form-group">
+                    <label for="command">Buy/Sell</label>
+                    <select id="command" class="form-control">
+                        <option>Buy</option>
+                        <option>Sell</option>
+                    </select>
+                 </div>
+                 <div class="form-group">
+                    <label for="quantity">Quantity</label>
+                    <select id="quantity" class="form-control">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                    </select>   
+                </div>
+                <button type="submit" class="btn btn-default">Order</button>
+            </form>
+        </div>
         </div><!--/.sidebar-offcanvas-->
 
