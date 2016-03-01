@@ -7,9 +7,9 @@
             [% END %][% menu.$r %]</a>
             [% END %]
           </div>
+          [% IF context == 'n' %]
           <div class="well">
             <h3>Stock Actions</h3>
-            [% IF context == 'n' %]
             [% IF wallet.$object %]
             <p>
                 Stocks: [% wallet.$object.stocks %]<br />
@@ -22,7 +22,6 @@
                 Influence: 0<br />
                 War bonds: 0<br />
             </p>
-            [% END %]
             [% END %]
             <form>
                 <div class="form-group">
@@ -44,5 +43,6 @@
                 <button type="submit" class="btn btn-default">Order</button>
             </form>
         </div>
+        [% END %]
         </div><!--/.sidebar-offcanvas-->
 

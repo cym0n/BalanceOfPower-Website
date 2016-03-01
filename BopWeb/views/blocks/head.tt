@@ -17,6 +17,9 @@
             <li [% IF active_top == 'nations' %]class="active"[% END %]>
                 <a href="/play/[% game %]/n">Nations</a>
             </li>
+            <li [% IF active_top == 'market' %]class="active"[% END %]>
+                <a href="/play/[% game %]/[% year %]/[% turn %]/r/year/market">Market</a>
+            </li>
           </ul>
         </div><!-- /.nav-collapse -->
       </div><!-- /.container -->

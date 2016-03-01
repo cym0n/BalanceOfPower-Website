@@ -68,13 +68,16 @@ my %report_configuration = (
             'r/market' => {
                 menu_name => 'Market',
                 menu => \@player_reports_menu,
-                active_top => 'market'
+                active_top => 'market',
+                logged => 1
             },
             'p/stocks' => {
-                menu_name => 'My Stocks'
+                menu_name => 'My Stocks',
+                logged => 1
             },
             'p/events' => {
-                menu_name => 'Market Events'
+                menu_name => 'Market Events',
+                logged => 1
             }
     );
 
@@ -87,7 +90,6 @@ get '/play/:game/:year/:turn/:context/:object/:report' => sub {
     my $report_id = params->{context} . '/' . params->{report};
     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
     my $user = session->read('user');
-    
     my $standards = get_report_standard_from_context(params->{context});
     my $report_conf = $report_configuration{$report_id};
     for(keys $standards)
@@ -95,6 +97,19 @@ get '/play/:game/:year/:turn/:context/:object/:report' => sub {
         if(! exists $report_conf->{$_})
         {
             $report_conf->{$_} = $standards->{$_}
+        }
+    }
+    if($report_conf->{logged} == 1)
+    {
+        if(! $user)
+        {
+            send_error("Access denied", 403);
+            return;
+        }
+        if(params->{context} eq 'p' && $user != params->{object})
+        {
+            send_error("Access denied", 403);
+            return;
         }
     }
     my $obj_dir = params->{object} eq 'year' ? '' : params->{object} . '/';
@@ -238,6 +253,7 @@ sub get_report_standard_from_context
              template => 'report',
              custom_js => undef,
              active_top => $active_top,
+             logged => 0,
            };
 }
 sub make_complete_url
