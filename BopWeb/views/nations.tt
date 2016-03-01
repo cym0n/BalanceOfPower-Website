@@ -13,7 +13,7 @@
             <div class="panel-body">
                 [% FOREACH n IN nations.keys %]
                 [% IF nations.$n.area == a %]
-                <a href="/play/[% game %]/[% year %]/n/[% nations.$n.code %]">[% n %]</a><br />
+                <a href="/play/[% game %]/n?nation=[% nations.$n.code %]">[% n %]</a><br />
                 [% END %]
                 [% END %]
             </div>

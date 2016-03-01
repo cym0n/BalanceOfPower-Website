@@ -1,0 +1,2 @@
+<a href="/play/[% game %]/[% r %][% IF r.match('^n') %]?nation=[% nation %][% END %]" class="list-group-item [% IF r == active %]active">[% ELSE %]">[% END %][% menu.$r %]</a>
+            

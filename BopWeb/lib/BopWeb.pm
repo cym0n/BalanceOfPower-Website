@@ -86,12 +86,28 @@ get '/' => sub {
     template 'home';
 };
 
-get '/play/:game/:year/:turn/:context/:object/:report' => sub {
+get '/play/:game/:context/:report' => sub {
     my $report_id = params->{context} . '/' . params->{report};
     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my ($year, $turn) = split '/', $meta->{'current_year'};
+    my $context = params->{context};
     my $user = session->read('user');
+    my $nation = params->{nation};
+    my $nation_name;
+    if($nation)
+    {
+        for(keys %{$meta->{nations}})
+        {
+            if($meta->{nations}->{$_}->{code} eq $nation)
+            {
+                $nation_name = $_;
+            }
+        }
+    }
+
     my $standards = get_report_standard_from_context(params->{context});
     my $report_conf = $report_configuration{$report_id};
+    
     for(keys $standards)
     {
         if(! exists $report_conf->{$_})
@@ -106,47 +122,50 @@ get '/play/:game/:year/:turn/:context/:object/:report' => sub {
             send_error("Access denied", 403);
             return;
         }
-        if(params->{context} eq 'p' && $user != params->{object})
-        {
-            send_error("Access denied", 403);
-            return;
-        }
     }
-    my $obj_dir = params->{object} eq 'year' ? '' : params->{object} . '/';
+    my $obj_dir = "";
+    if($context eq 'n')
+    {
+        $obj_dir = "n/$nation/";
+    }
+    elsif($context eq 'p')
+    {
+        $obj_dir = "p/$user/";
+    }
     my $report_to_show = 'generated/' . 
                          params->{game} . '/' .
-                         params->{year} . '/' .
-                         params->{turn} . '/' . $report_conf->{'subdir'} .
+                         $year . '/' .
+                         $turn . '/' . 
                          $obj_dir .
                          params->{report} . '.tt'; 
     my $page_title;
     if($report_conf->{'title'} eq 'year')
     {
-        $page_title = params->{year} . '/' . params->{turn};
+        $page_title = $year . '/' . $turn;
     }
     elsif($report_conf->{'title'} eq 'nation')
     {
-        $page_title = params->{object} . " - " .params->{year} . '/' . params->{turn};
+        $page_title = "$nation_name - $year/$turn";
     }
     elsif($report_conf->{'title'} eq 'player')
     {
         $page_title = $user;
     }
-    my ($menu, $ordered) = make_menu($report_conf->{menu}, params->{object}, $user);
+    my ($menu, $ordered) = make_menu($report_conf->{menu}, $nation);
     my $wallet = undef;
     if(params->{context} eq 'n' && $user)
     {
-        $wallet =     my $meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
+        $wallet = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
     }
     template $report_conf->{template}, {
-       'object' => params->{object},
+       'nation' => $nation,
        'report' => $report_to_show,
        'menu' => $menu,
        'menu_urls' => $ordered,
-       'active' => make_complete_url($report_id, params->{object}, $user),
+       'active' => $report_id,
        'game' => params->{game},
-       'year' => params->{year},
-       'turn' => params->{turn},
+       'year' => $year,
+       'turn' => $turn,
        'active_top' => $report_conf->{active_top},
        'custom_js' => $report_conf->{custom_js},
        'player' => $user,
@@ -162,7 +181,7 @@ get '/play/:game' => sub {
     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
     if($meta)
     {
-        my $redirection = "/play/" . params->{game} . "/" . $meta->{'current_year'} . "/r/year/situation";
+        my $redirection = "/play/" . params->{game} . "/r/situation";
         redirect $redirection, 302;
     }
     else
@@ -171,30 +190,30 @@ get '/play/:game' => sub {
     }
 };
 get '/play/:game/n' => sub {
+    my $nation = params->{nation};
     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
     if($meta)
     {
-        template 'nations', {
-            areas => ['North America', 'South America', 'Europe', 'Africa', 'Middle East', 'Far East', 'Pacific'],
-            nations => $meta->{nations},
-            game => params->{game},
-            year => $meta->{'current_year'},
-            active_top => 'nations'
+        if($nation)
+        {
+            my $redirection = "/play/" . params->{game} . "/n/actual?nation=" . $nation;
+            redirect $redirection, 302;
+        }
+        else
+        {
+            template 'nations', {
+                areas => ['North America', 'South America', 'Europe', 'Africa', 'Middle East', 'Far East', 'Pacific'],
+                nations => $meta->{nations},
+                game => params->{game},
+                year => $meta->{'current_year'},
+                active_top => 'nations'
+            }
         }
     }
     else
     {
         pass;
     }
-};
-get '/play/:game/n/:nation' => sub {
-    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
-    my $redirection = "/play/" . params->{game} . "/" . $meta->{'current_year'} . "/n/" . params->{nation};
-        redirect $redirection, 302;
-};
-get '/play/:game/:year/:turn/n/:nation' => sub {
-        my $redirection = "/play/" . params->{game} . "/" . params->{year} . "/" . params->{turn} . "/n/" . params->{nation} . "/actual";
-        redirect $redirection, 302;
 };
 
 sub get_metafile
@@ -230,26 +249,21 @@ sub get_report_standard_from_context
         $menu = \@reports_menu;
         $title = 'year';
         $active_top = 'year';
-        $subdir = '';
-
     }
     elsif($context eq 'n')
     {
         $menu = \@nation_reports_menu,
         $title = 'nation';
         $active_top = 'nations';
-        $subdir = 'n/';
     }
     elsif($context eq 'p')
     {
         $menu = \@player_reports_menu,
         $title = 'player';
         $active_top = 'market';
-        $subdir = 'p/';
     }
     return { title => $title, 
              menu => $menu,
-             subdir => $subdir,
              template => 'report',
              custom_js => undef,
              active_top => $active_top,
@@ -284,10 +298,8 @@ sub make_menu
     my @order = ();
     for(@{$entries})
     {
-        my $original_menu = $_;
-        my $menu = make_complete_url($original_menu, $obj, $user);
-        $out{$menu} = $report_configuration{$original_menu}->{menu_name};
-        push @order, $menu;
+        $out{$_} = $report_configuration{$_}->{menu_name};
+        push @order, $_;
     }
     return (\%out, \@order);
 }
