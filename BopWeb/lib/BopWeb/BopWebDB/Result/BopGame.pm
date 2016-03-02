@@ -59,6 +59,12 @@ __PACKAGE__->table("BOP_GAMES");
   is_nullable: 1
   size: 1
 
+=head2 admin_password
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 50
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -70,6 +76,8 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 1, size => 50 },
   "active",
   { data_type => "tinyint", is_nullable => 1, size => 1 },
+  "admin_password",
+  { data_type => "varchar", is_nullable => 1, size => 50 },
 );
 
 =head1 PRIMARY KEY
@@ -85,8 +93,8 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-02-23 23:16:09
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lRE8rt4UaVXIGdGAF1iqUA
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-03-02 21:27:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:GglDPyEAshtXpIcQvk7H2w
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

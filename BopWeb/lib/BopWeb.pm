@@ -45,6 +45,19 @@ sub get_metafile
     }
 }
 
+sub nation_from_code
+{
+    my $code = shift;
+    my $nations = shift;
+    for(keys %{$nations})
+    {
+        if($nations->{$_}->{code} eq $code)
+        {
+            return $_;
+        }
+    }
+}
+
 get '/' => sub {
     template 'home';
 };
@@ -118,6 +131,7 @@ get '/play/:game/:context/:report' => sub {
     my $nation_name;
     if($nation)
     {
+        $nation_name = nation_from_code($nation, $meta->{nations});
         for(keys %{$meta->{nations}})
         {
             if($meta->{nations}->{$_}->{code} eq $nation)
@@ -456,6 +470,37 @@ get '/api/:game/users' => sub {
     return serialize(\@out, undef);
 };
 
+get '/api/:game/stock-orders' => sub {
+     my $game = params->{game};
+     my $user = params->{player};
+     my $password = params->{password};
+     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+     my $game_db = schema->resultset("BopGame")->find({ file => $game });
+     if($game_db->admin_password ne $password)
+     {
+          send_error("Access denied", 403);
+          return;
+     }
+     my @usergames_db = $game_db->usergames->all();
+     my @orders = ();
+     for(@usergames_db)
+     {
+         @orders = (@orders,
+                    schema->resultset('StockOrder')->search({
+                    game => $game_db->name,
+                    user => $_->user->user,
+                    turn => $meta->{current_year} })
+        );
+     }
+     my @out = ();
+     for(@orders)
+     {
+         push @out, $_->as_string()
+     }
+     content_type('application/json');
+     return serialize(\@out, undef);
+};
+
 
 sub serialize
 {
@@ -494,7 +539,7 @@ post '/interact/:game/stock-command' => sub {
         game => $game,
         user => $user,
         command => $command,
-        nation => $nation,
+        nation => nation_from_code($nation, $meta->{nations}),
         quantity => $quantity,
         turn => "$year/$turn",
         exec_order => 1
