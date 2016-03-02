@@ -24,6 +24,33 @@ my @reports_menu = ('r/situation', 'r/hotspots', 'r/alliances', 'r/influences', 
 my @nation_reports_menu = ('n/actual', 'n/borders', 'n/near', 'n/diplomacy', 'n/events' );
 my @player_reports_menu = ('r/market', 'p/stocks', 'p/events' );
 
+sub get_metafile
+{
+    my $meta = shift;
+    if(-e $meta)
+    {
+        open my $metafile, '<', $meta || die $!;
+        my $data;
+        {
+            local $/;    # slurp mode
+            my $metafile_data = <$metafile>;
+            my $VAR1;
+            eval $metafile_data;
+            return $VAR1;
+        }
+    }
+    else
+    {
+        return undef;
+    }
+}
+
+get '/' => sub {
+    template 'home';
+};
+
+### REPORTS
+
 my %report_configuration = (
            'r/situation' => {
                menu_name => 'Situation',
@@ -80,11 +107,6 @@ my %report_configuration = (
                 logged => 1
             }
     );
-
-
-get '/' => sub {
-    template 'home';
-};
 
 get '/play/:game/:context/:report' => sub {
     my $report_id = params->{context} . '/' . params->{report};
@@ -171,11 +193,10 @@ get '/play/:game/:context/:report' => sub {
        'player' => $user,
        'page_title' => $page_title,
        'wallet' => $wallet,
-       'context' => params->{context}
+       'context' => params->{context},
+       'posted' => params->{posted}
     }; 
 };
-
-
 
 get '/play/:game' => sub {
     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
@@ -189,6 +210,7 @@ get '/play/:game' => sub {
         pass;
     }
 };
+
 get '/play/:game/n' => sub {
     my $nation = params->{nation};
     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
@@ -215,27 +237,6 @@ get '/play/:game/n' => sub {
         pass;
     }
 };
-
-sub get_metafile
-{
-    my $meta = shift;
-    if(-e $meta)
-    {
-        open my $metafile, '<', $meta || die $!;
-        my $data;
-        {
-            local $/;    # slurp mode
-            my $metafile_data = <$metafile>;
-            my $VAR1;
-            eval $metafile_data;
-            return $VAR1;
-        }
-    }
-    else
-    {
-        return undef;
-    }
-}
 
 sub get_report_standard_from_context
 {
@@ -270,25 +271,7 @@ sub get_report_standard_from_context
              logged => 0,
            };
 }
-sub make_complete_url
-{
-    my $menu = shift;
-    my $obj = shift;
-    my $user = shift;
-    if($menu =~ /^r/)
-    {
-        $menu =~ s/\//\/year\//;
-    }
-    elsif($menu =~ /^n/)
-    {
-        $menu =~ s/\//\/$obj\//;
-    }
-    elsif($menu =~ /^p/)
-    {
-        $menu =~ s/\//\/$user\//;
-    }
-    return $menu;
-}
+
 sub make_menu
 {
     my $entries = shift;
@@ -428,20 +411,6 @@ get '/users/select-game' => sub {
     }
 };
 
-### API
-
-get '/api/:game/users' => sub {
-    my $game = params->{game};
-    my $game_db = schema->resultset("BopGame")->find({ file => $game });
-    my @usergames = $game_db->usergames;
-    my @out = ();
-    for(@usergames)
-    {
-        push @out, $_->user->user;
-    }
-    content_type('application/json');
-    return serialize(\@out, undef);
-};
 
 
 
@@ -472,6 +441,22 @@ sub valid_login
     return undef;
 }
 
+### API
+
+get '/api/:game/users' => sub {
+    my $game = params->{game};
+    my $game_db = schema->resultset("BopGame")->find({ file => $game });
+    my @usergames = $game_db->usergames;
+    my @out = ();
+    for(@usergames)
+    {
+        push @out, $_->user->user;
+    }
+    content_type('application/json');
+    return serialize(\@out, undef);
+};
+
+
 sub serialize
 {
     my $content = shift;
@@ -484,6 +469,51 @@ sub serialize
     }
     return $serialized;
 }
+
+### ACTIONS
+
+post '/interact/:game/stock-command' => sub {
+    my $user = session->read('user');
+    if(! $user)
+    {
+        send_error("Access denied", 403);
+        return;
+    }
+    my $game = params->{game};
+    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my ($year, $turn) = split '/', $meta->{'current_year'};
+    my $command = params->{command};
+    my $nation = params->{nation};
+    my $quantity = params->{quantity};
+    if(! $command || ! $quantity || ! $nation)
+    { 
+        send_error("Bad data", 500);
+        return;
+    }
+    my $data = {
+        game => $game,
+        user => $user,
+        command => $command,
+        nation => $nation,
+        quantity => $quantity,
+        turn => "$year/$turn",
+        exec_order => 1
+    };
+    my $command_already = schema->resultset('StockOrder')->find(
+        { game => $game,
+          user => $user,
+          turn => $turn });
+    if( $command_already )
+    {
+        $command_already->update($data);
+    }
+    else
+    {
+        schema->resultset('StockOrder')->create($data);
+    }
+    my $redirection = "/play/" . params->{game} . "/n/actual?nation=" . params->{nation} . "&posted=ok";
+    redirect $redirection, 302;
+};
 
 
 true;

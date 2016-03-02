@@ -4,7 +4,7 @@
             [% INCLUDE blocks/menulink.tt %]
             [% END %]
           </div>
-          [% IF context == 'n' %]
+          [% IF context == 'n' && player %]
           <div class="well">
             <h3>Stock Actions</h3>
             [% IF wallet.$object %]
@@ -20,23 +20,24 @@
                 War bonds: 0<br />
             </p>
             [% END %]
-            <form>
+            <form action="/interact/[% game %]/stock-command" method="post">
                 <div class="form-group">
                     <label for="command">Buy/Sell</label>
-                    <select id="command" class="form-control">
+                    <select name="command" id="command" class="form-control">
                         <option>Buy</option>
                         <option>Sell</option>
                     </select>
                  </div>
                  <div class="form-group">
                     <label for="quantity">Quantity</label>
-                    <select id="quantity" class="form-control">
+                    <select name="quantity" id="quantity" class="form-control">
                         <option>1</option>
                         <option>2</option>
                         <option>3</option>
                         <option>4</option>
                     </select>   
                 </div>
+                <input name="nation" id="nation" type="hidden" value="[% nation %]"></input>
                 <button type="submit" class="btn btn-default">Order</button>
             </form>
         </div>
