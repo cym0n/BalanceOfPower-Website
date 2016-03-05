@@ -189,10 +189,26 @@ get '/play/:game/:context/:report' => sub {
     my ($menu, $ordered) = make_menu($report_conf->{menu}, $nation);
     my $wallet = undef;
     my $nation_meta = undef;
+    my $selected_stock_action = undef;
+    my $selected_influence_action = undef;
     if(params->{context} eq 'n' && $user)
     {
         $wallet = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
         $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$nation.data");
+        $selected_stock_action = schema->resultset('StockOrder')->find({
+                game => params->{game},
+                user => $user,
+                turn => "$year/$turn",
+                nation => nation_from_code($nation, $meta->{nations})
+            });
+        $selected_stock_action = $selected_stock_action->as_string() if($selected_stock_action);
+        $selected_influence_action = schema->resultset('InfluenceOrder')->find({
+                game => params->{game},
+                user => $user,
+                turn => "$year/$turn",
+                nation => nation_from_code($nation, $meta->{nations})
+            });
+        $selected_influence_action = $selected_influence_action->as_string() if($selected_influence_action);
     }
     template $report_conf->{template}, {
        'nation' => $nation,
@@ -212,6 +228,8 @@ get '/play/:game/:context/:report' => sub {
        'stockposted' => params->{'stock-posted'},
        'influenceposted' => params->{'influence-posted'},
        'nation_meta' => $nation_meta,
+       'selected_stock_action' => $selected_stock_action,
+       'selected_influence_action' => $selected_influence_action,
     }; 
 };
 

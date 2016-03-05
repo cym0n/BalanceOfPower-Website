@@ -11,7 +11,7 @@
             <h3>Stock Actions blocked!</h3>
           </div>
           [% ELSE %]
-          <div class="well">
+          <div class="well well-sm">
             <h3>Stock Actions</h3>
             [% IF wallet.$nation %]
             <p>
@@ -46,6 +46,13 @@
                 <input name="nation" id="nation" type="hidden" value="[% nation %]"></input>
                 <button type="submit" class="btn btn-default">Order</button>
             </form>
+            [% IF selected_stock_action %]
+            <hr />
+            <p>
+                <strong>Scheduled:</strong><br />
+                [% selected_stock_action %]
+            </p>
+            [% END %]
           </div>
           [% END %]
           [% END %]
