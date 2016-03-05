@@ -121,4 +121,19 @@ __PACKAGE__->set_primary_key("id");
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+
+sub as_string
+{
+    my $self = shift;
+    if($self->target)
+    {
+        return $self->command . " " . $self->target;
+    }
+    else
+    {
+        return $self->command;
+    }
+
+}
 1;

@@ -485,17 +485,10 @@ get '/api/:game/stock-orders' => sub {
           send_error("Access denied", 403);
           return;
      }
-     my @usergames_db = $game_db->usergames->all();
-     my @orders = ();
-     for(@usergames_db)
-     {
-         @orders = (@orders,
-                    schema->resultset('StockOrder')->search({
-                    game => $game_db->name,
-                    user => $_->user->user,
-                    turn => $meta->{current_year} })
-        );
-     }
+     my @orders = schema->resultset('StockOrder')->search({
+                        game => $game,
+                        user => $user,
+                        turn => $meta->{current_year} });
      my @out = ();
      for(@orders)
      {
@@ -504,6 +497,32 @@ get '/api/:game/stock-orders' => sub {
      content_type('application/json');
      return serialize(\@out, undef);
 };
+
+get '/api/:game/influence-orders' => sub {
+     my $game = params->{game};
+     my $user = params->{player};
+     my $password = params->{password};
+     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+     my $game_db = schema->resultset("BopGame")->find({ file => $game });
+     if($game_db->admin_password ne $password)
+     {
+          send_error("Access denied", 403);
+          return;
+     }
+     my @orders = schema->resultset('InfluenceOrder')->search({
+                        game => $game,
+                        user => $user,
+                        turn => $meta->{current_year} });
+     my @out = ();
+     for(@orders)
+     {
+         push @out, { nation => $_->nation,
+                      command =>  $_->as_string() };
+     }
+     content_type('application/json');
+     return serialize(\@out, undef);
+};
+
 
 
 sub serialize
