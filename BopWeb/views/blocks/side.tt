@@ -4,14 +4,20 @@
             [% INCLUDE blocks/menulink.tt %]
             [% END %]
           </div>
-          [% IF context == 'n' && player %]
+          [% IF active == 'n/actual' && player %]
+          [% IF nation_meta.civil_war %]
+          <div class="well">
+            <h3>Civil war!</h3>
+            <h3>Stock Actions blocked!</h3>
+          </div>
+          [% ELSE %]
           <div class="well">
             <h3>Stock Actions</h3>
-            [% IF wallet.$object %]
+            [% IF wallet.$nation %]
             <p>
-                Stocks: [% wallet.$object.stocks %]<br />
-                Influence: [% wallet.$object.influence %]<br />
-                War bonds: [% wallet.$object.war_bonds %]<br />
+                Stocks: [% wallet.$nation.stocks %]<br />
+                Influence: [% wallet.$nation.influence %]<br />
+                War bonds: [% wallet.$nation.war_bonds %]<br />
             </p>
             [% ELSE %]
             <p>
@@ -40,7 +46,8 @@
                 <input name="nation" id="nation" type="hidden" value="[% nation %]"></input>
                 <button type="submit" class="btn btn-default">Order</button>
             </form>
-        </div>
-        [% END %]
+          </div>
+          [% END %]
+          [% END %]
         </div><!--/.sidebar-offcanvas-->
 

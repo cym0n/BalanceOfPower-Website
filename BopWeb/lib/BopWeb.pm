@@ -2,6 +2,7 @@ package BopWeb;
 use lib "/home/cymon/works/nations/repo/src/lib";
 use Dancer2;
 use Dancer2::Plugin::DBIC;
+use Dancer2::Plugin::Ajax;
 
 use Cwd 'abs_path';
 use HTML::FormFu;
@@ -91,7 +92,8 @@ my %report_configuration = (
                menu_name => 'Events',
             },
             'n/actual' => {
-               menu_name => 'Status'
+               menu_name => 'Status',
+               custom_js => 'blocks/commands.tt'
             },
             'n/borders' => {
                 menu_name => 'Borders'
@@ -129,16 +131,13 @@ get '/play/:game/:context/:report' => sub {
     my $user = session->read('user');
     my $nation = params->{nation};
     my $nation_name;
+    if($context ne 'r' && $context ne 'p' && $context ne 'n')
+    {
+        pass;
+    }
     if($nation)
     {
         $nation_name = nation_from_code($nation, $meta->{nations});
-        for(keys %{$meta->{nations}})
-        {
-            if($meta->{nations}->{$_}->{code} eq $nation)
-            {
-                $nation_name = $_;
-            }
-        }
     }
 
     my $standards = get_report_standard_from_context(params->{context});
@@ -189,9 +188,11 @@ get '/play/:game/:context/:report' => sub {
     }
     my ($menu, $ordered) = make_menu($report_conf->{menu}, $nation);
     my $wallet = undef;
+    my $nation_meta = undef;
     if(params->{context} eq 'n' && $user)
     {
         $wallet = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
+        $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$nation.data");
     }
     template $report_conf->{template}, {
        'nation' => $nation,
@@ -208,9 +209,12 @@ get '/play/:game/:context/:report' => sub {
        'page_title' => $page_title,
        'wallet' => $wallet,
        'context' => params->{context},
-       'posted' => params->{posted}
+       'stockposted' => params->{'stock-posted'},
+       'influenceposted' => params->{'influence-posted'},
+       'nation_meta' => $nation_meta,
     }; 
 };
+
 
 get '/play/:game' => sub {
     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
@@ -532,8 +536,9 @@ post '/interact/:game/stock-command' => sub {
     my $quantity = params->{quantity};
     if(! $command || ! $quantity || ! $nation)
     { 
-        send_error("Bad data", 500);
-        return;
+        my $redirection = "/play/" . params->{game} . "/n/actual?nation=" . params->{nation} . "&stock-posted=ko";
+        redirect $redirection, 302;
+        return;  
     }
     my $data = {
         game => $game,
@@ -547,7 +552,8 @@ post '/interact/:game/stock-command' => sub {
     my $command_already = schema->resultset('StockOrder')->find(
         { game => $game,
           user => $user,
-          turn => $turn });
+          turn => "$year/$turn" });
+    debug("$game - $user - $turn ");
     if( $command_already )
     {
         $command_already->update($data);
@@ -556,7 +562,63 @@ post '/interact/:game/stock-command' => sub {
     {
         schema->resultset('StockOrder')->create($data);
     }
-    my $redirection = "/play/" . params->{game} . "/n/actual?nation=" . params->{nation} . "&posted=ok";
+    my $redirection = "/play/" . params->{game} . "/n/actual?nation=" . params->{nation} . "&stock-posted=ok";
+    redirect $redirection, 302;
+};
+
+post '/interact/:game/influence-command' => sub {
+    my $user = session->read('user');
+    if(! $user)
+    {
+        send_error("Access denied", 403);
+        return;
+    }
+    my $game = params->{game};
+    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my ($year, $turn) = split '/', $meta->{'current_year'};
+    my $command = params->{orders};
+    my $nation = params->{nation};
+    my $target = params->{target};
+    my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$nation.data");
+    if(! $command || ! $nation)
+    { 
+        my $redirection = "/play/" . params->{game} . "/n/actual?nation=" . params->{nation} . "&influence-posted=ko";
+        redirect $redirection, 302;
+        return;  
+    }
+    if($nation_meta->{commands}->{$command}->{argument})
+    {
+        if(! $target)
+        {
+            my $redirection = "/play/" . params->{game} . "/n/actual?nation=" . params->{nation} . "&influence-posted=ko";
+            redirect $redirection, 302;
+            return;  
+        }
+    }
+    my $data = {
+        game => $game,
+        user => $user,
+        command => $command,
+        nation => nation_from_code($nation, $meta->{nations}),
+        target => $target,
+        turn => "$year/$turn",
+        exec_order => 1
+    };
+    my $command_already = schema->resultset('InfluenceOrder')->find(
+        { game => $game,
+          user => $user,
+          turn => "$year/$turn",
+          nation => nation_from_code($nation, $meta->{nations}) });
+    if( $command_already )
+    {
+        debug("Updating existing influence order");
+        $command_already->update($data);
+    }
+    else
+    {
+        schema->resultset('InfluenceOrder')->create($data);
+    }
+    my $redirection = "/play/" . params->{game} . "/n/actual?nation=" . params->{nation} . "&influence-posted=ok";
     redirect $redirection, 302;
 };
 

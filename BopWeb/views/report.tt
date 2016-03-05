@@ -1,13 +1,71 @@
 [% INCLUDE blocks/head.tt %]
 <div class="col-xs-12 col-sm-9">
-[% IF posted == 'ok' %]
+[% IF stockposted && stockposted == 'ok' %]
 <div class="alert alert-success alert-dismissible" role="alert">
   <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
   Stock orders posted
 </div>
 [% END %]
+[% IF stockposted && stockposted == 'ko' %]
+<div class="alert alert-danger alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  Stock orders scheduling failed
+</div>
+[% END %]
+[% IF influenceposted && influenceposted == 'ko' %]
+<div class="alert alert-danger alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  Influence command scheduling failed
+</div>
+[% END %]
+[% IF influenceposted && influenceposted == 'ok' %]
+<div class="alert alert-success alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  Influence command posted
+</div>
+[% END %]
+
 <h2>[% page_title %]</h2>
 [% INCLUDE $report %]
+[% IF active == 'n/actual' && player %]
+[% IF nation_meta.civil_war %]
+<div class="well">
+<h3>Civil war!</h3>
+<h3>Influence command not available</h3>
+</div>
+[% ELSE %]
+[% IF wallet.$nation.influence %]
+<div class="well">
+<h3>Influence command</h3>
+<form class="form-inline" action="/interact/[% game %]/influence-command" method="post">
+  <div class="form-group">
+    <label class="sr-only" for="orders">Orders</label>
+    <select name="orders" id="orders" class="form-control OrdersCombo">
+        <option value="">-- select --</option>
+        [% FOR command IN nation_meta.commands.keys %]
+        <option value="[% command %]">[% command %]</option>
+        [% END %]
+    </select>   
+  </div>
+  <div class="form-group">
+    <label class="sr-only" for="target">Target</label>
+    <select disabled="disabled" class="form-control TargetCombo" name="target" id="target">
+    </select>
+  </div>
+  <input name="nation" id="nation" type="hidden" value="[% nation %]"></input>
+  <div class="form-group">
+    <button type="submit" class="btn btn-default">Command</button>
+  </div>
+</form>
+</div>
+[% ELSE %]
+<div class="well">
+<h3>No influence for commands</h3>
+</div>
+[% END %]
+[% END %]
+[% END %]
 </div><!--/.col-xs-12.col-sm-9-->
+
 [% INCLUDE blocks/side.tt %]
 [% INCLUDE blocks/foot.tt %]

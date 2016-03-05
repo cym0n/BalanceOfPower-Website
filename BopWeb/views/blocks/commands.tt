@@ -1,0 +1,41 @@
+<script>
+(function($, window) {
+  $.fn.replaceOptions = function(options) {
+    var self, $option;
+
+    this.empty();
+    self = this;
+
+    $.each(options, function(index, option) {
+      $option = $("<option></option>")
+        .attr("value", option.value)
+        .text(option.text);
+      self.append($option);
+    });
+  };
+})(jQuery, window);
+function target_selection( event )
+{
+    [% FOR command IN nation_meta.commands.keys %]
+    if( $(".OrdersCombo").val() == '[% command %]')
+    {
+        [% IF nation_meta.commands.$command.argument %]
+        var options = [
+        [% FOR target IN nation_meta.commands.$command.targets %]
+            {text: "[% target %]", value: "[% target %]"},
+        [% END %]
+        ];
+        $(".TargetCombo").replaceOptions(options);
+        $(".TargetCombo").prop('disabled', false);
+        [% ELSE %]
+        $(".TargetCombo").replaceOptions([]);
+        $(".TargetCombo").prop('disabled', true);
+        [% END %]
+    }  
+    [% END %]
+}
+$(document).ready(function() {
+    $(".OrdersCombo").on("change", target_selection);
+});
+</script>
+
