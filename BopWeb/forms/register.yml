@@ -6,8 +6,11 @@ elements:
       attributes:
         class: form-control
       constraints:
-        type: Required
-        message: 'Insert a username'
+        - type: Required
+          message: 'Insert a username'
+        - type: Regex
+          regex: '^[0-9a-zA-Z.-]*$'
+          message: 'Allowed alphanumeric, . and - only'
     - name : password
       type : Password
       label: password

@@ -395,9 +395,10 @@ get '/users/logged' => sub {
     if($user)
     {
         my $user_db = schema->resultset("BopUser")->find({ user => $user });
-        my $game = $user_db->usergames->first->game;
-        if($game)
+        my $usergame = $user_db->usergames->first;
+        if($usergame)
         {
+            my $game = $usergame->first;
             redirect '/play/' . $game->file;
             return;
         }
