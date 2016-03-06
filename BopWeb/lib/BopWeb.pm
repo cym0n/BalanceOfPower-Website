@@ -23,7 +23,7 @@ $root_path =~ s/lib\/BopWeb\.pm//;
 my $metadata_path = $root_path . "metadata";
 my @reports_menu = ('r/situation', 'r/hotspots', 'r/alliances', 'r/influences', 'r/supports', 'r/rebel-supports', 'r/war-history', 'r/events' );
 my @nation_reports_menu = ('n/actual', 'n/borders', 'n/near', 'n/diplomacy', 'n/events' );
-my @player_reports_menu = ('r/market', 'p/stocks', 'p/events', 'db/orders' );
+my @player_reports_menu = ('r/market', 'p/stocks', 'p/events', 'db/orders', 'p/ranking' );
 
 sub get_metafile
 {
@@ -120,6 +120,12 @@ my %report_configuration = (
             'p/events' => {
                 menu_name => 'Market Events',
                 logged => 1
+            },
+            'p/ranking' => {
+                menu_name => 'Players',
+                logged => 1,
+                title => 'year',
+                custom_js => 'blocks/players.tt',
             },
             'db/orders' => {
                 menu_name => 'My Orders',
@@ -247,6 +253,8 @@ get '/play/:game/db/orders' => sub {
     my $user = session->read('user');
     my $standards = get_report_standard_from_context(params->{context});
     my $report_conf = $report_configuration{$report_id};
+    my $nation = undef;
+    my $nation_name = undef;
     for(keys $standards)
     {
         if(! exists $report_conf->{$_})
@@ -262,7 +270,19 @@ get '/play/:game/db/orders' => sub {
             return;
         }
     }
-    my $page_title = $user;
+    my $page_title;
+    if($report_conf->{'title'} eq 'year')
+    {
+        $page_title = $year . '/' . $turn;
+    }
+    elsif($report_conf->{'title'} eq 'nation')
+    {
+        $page_title = "$nation_name - $year/$turn";
+    }
+    elsif($report_conf->{'title'} eq 'player')
+    {
+        $page_title = $user;
+    }
     my ($menu, $ordered) = make_menu($report_conf->{menu}, undef);
     my @stock_orders = schema->resultset('StockOrder')->search({
                             game => $game,
@@ -273,6 +293,7 @@ get '/play/:game/db/orders' => sub {
                             user => $user,
                             turn => $meta->{current_year} });
     template $report_conf->{template}, {
+       'player' => $user,
        'menu' => $menu,
        'menu_urls' => $ordered,
        'active' => $report_id,
@@ -289,6 +310,7 @@ get '/play/:game/db/orders' => sub {
        'nation_codes' => get_nation_codes($meta->{nations}),
        'deletestock' => params->{'delete-stock'},
        'deleteinfluence' => params->{'delete-influence'},
+       'custom_js' => $report_conf->{custom_js},
     }; 
 };
 
