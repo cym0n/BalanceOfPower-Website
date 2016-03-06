@@ -1,0 +1,50 @@
+[% INCLUDE blocks/head.tt %]
+<div class="col-xs-12 col-sm-9">
+[% IF deletestock && deletestock == 'ok' %]
+<div class="alert alert-success alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  Stock order deleted
+</div>
+[% END %]
+[% IF deletestock && deletestock == 'ko' %]
+<div class="alert alert-danger alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  Stock order deletion failed
+</div>
+[% END %]
+[% IF deleteinfluence && deleteinfluence == 'ko' %]
+<div class="alert alert-danger alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  Influence command deletion failed 
+</div>
+[% END %]
+[% IF deleteinfluence && deleteinfluence == 'ok' %]
+<div class="alert alert-success alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  Influence command deleted
+</div>
+[% END %]
+<h2>[% page_title %]</h2>
+<h3>Stock orders</h3>
+[% IF stock_orders.size != "" && stock_orders.size != 0 %]
+<p>
+[% FOREACH so IN stock_orders %]
+[% so.command %] [% so.quantity %] [% INCLUDE blocks/linked_nation.tt n = so.nation %] <a style="color:#000" href="/interact/[% game %]/delete-stock-order?id=[% so.id %]"><span class="glyphicon glyphicon-remove" aria-hidden="false"></span></a><br />
+[% END %]
+</p>
+[% ELSE %]
+<p>*** NO STOCK ORDERS SCHEDULED ***</p>
+[% END %]
+<h3>Influence orders</h3>
+[% IF influence_orders.size != "" && influence_orders.size != 0 %]
+<p>
+[% FOREACH io IN influence_orders %]  
+[% INCLUDE blocks/linked_nation.tt n = io.nation %]: [% io.command %] [% IF io.target %][% INCLUDE blocks/linked_nation.tt n = io.target %][% END %] <a style="color:#000" href="/interact/[% game %]/delete-influence-order?id=[% io.id %]"><span class="glyphicon glyphicon-remove" aria-hidden="false"></span></a><br /> 
+[% END %]
+</p>
+[% ELSE %]
+<p>*** NO INFLUENCE ORDERS SCHEDULED ***</p>
+[% END %]
+</div><!--/.col-xs-12.col-sm-9-->
+[% INCLUDE blocks/side.tt %]
+[% INCLUDE blocks/foot.tt %]

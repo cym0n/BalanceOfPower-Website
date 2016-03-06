@@ -23,7 +23,7 @@ $root_path =~ s/lib\/BopWeb\.pm//;
 my $metadata_path = $root_path . "metadata";
 my @reports_menu = ('r/situation', 'r/hotspots', 'r/alliances', 'r/influences', 'r/supports', 'r/rebel-supports', 'r/war-history', 'r/events' );
 my @nation_reports_menu = ('n/actual', 'n/borders', 'n/near', 'n/diplomacy', 'n/events' );
-my @player_reports_menu = ('r/market', 'p/stocks', 'p/events' );
+my @player_reports_menu = ('r/market', 'p/stocks', 'p/events', 'db/orders' );
 
 sub get_metafile
 {
@@ -120,6 +120,11 @@ my %report_configuration = (
             'p/events' => {
                 menu_name => 'Market Events',
                 logged => 1
+            },
+            'db/orders' => {
+                menu_name => 'My Orders',
+                logged => 1,
+                template => 'orders_report.tt',
             }
     );
 
@@ -233,6 +238,60 @@ get '/play/:game/:context/:report' => sub {
     }; 
 };
 
+get '/play/:game/db/orders' => sub {
+    my $report_id = 'db/orders';
+    my $game = params->{game};
+    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my ($year, $turn) = split '/', $meta->{'current_year'};
+    my $context = 'db';
+    my $user = session->read('user');
+    my $standards = get_report_standard_from_context(params->{context});
+    my $report_conf = $report_configuration{$report_id};
+    for(keys $standards)
+    {
+        if(! exists $report_conf->{$_})
+        {
+            $report_conf->{$_} = $standards->{$_}
+        }
+    }
+    if($report_conf->{logged} == 1)
+    {
+        if(! $user)
+        {
+            send_error("Access denied", 403);
+            return;
+        }
+    }
+    my $page_title = $user;
+    my ($menu, $ordered) = make_menu($report_conf->{menu}, undef);
+    my @stock_orders = schema->resultset('StockOrder')->search({
+                            game => $game,
+                            user => $user,
+                            turn => $meta->{current_year} });
+    my @influence_orders = schema->resultset('InfluenceOrder')->search({
+                            game => $game,
+                            user => $user,
+                            turn => $meta->{current_year} });
+    template $report_conf->{template}, {
+       'menu' => $menu,
+       'menu_urls' => $ordered,
+       'active' => $report_id,
+       'game' => params->{game},
+       'year' => $year,
+       'turn' => $turn,
+       'active_top' => $report_conf->{active_top},
+       'custom_js' => $report_conf->{custom_js},
+       'player' => $user,
+       'page_title' => $page_title,
+       'stock_orders' => \@stock_orders,
+       'influence_orders' => \@influence_orders,
+       'context' => params->{context},
+       'nation_codes' => get_nation_codes($meta->{nations}),
+       'deletestock' => params->{'delete-stock'},
+       'deleteinfluence' => params->{'delete-influence'},
+    }; 
+};
+
 
 get '/play/:game' => sub {
     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
@@ -299,6 +358,12 @@ sub get_report_standard_from_context
         $title = 'player';
         $active_top = 'market';
     }
+    elsif($context eq 'db')
+    {
+        $menu = \@player_reports_menu,
+        $title = 'player';
+        $active_top = 'market';
+    }
     return { title => $title, 
              menu => $menu,
              template => 'report',
@@ -321,6 +386,17 @@ sub make_menu
         push @order, $_;
     }
     return (\%out, \@order);
+}
+
+sub get_nation_codes
+{
+    my $nations = shift;
+    my %out = ();
+    foreach my $n (keys %{$nations})
+    {
+        $out{$n} = $nations->{$n}->{'code'};
+    }
+    return \%out;
 }
 
 ### USER MANAGEMENT
@@ -395,10 +471,10 @@ get '/users/logged' => sub {
     if($user)
     {
         my $user_db = schema->resultset("BopUser")->find({ user => $user });
-        my $usergame = $user_db->usergames->first;
+        my $usergame = $user_db->usergames;
         if($usergame)
         {
-            my $game = $usergame->first;
+            my $game = $usergame->first->game;
             redirect '/play/' . $game->file;
             return;
         }
@@ -659,6 +735,61 @@ post '/interact/:game/influence-command' => sub {
     my $redirection = "/play/" . params->{game} . "/n/actual?nation=" . params->{nation} . "&influence-posted=ok";
     redirect $redirection, 302;
 };
+
+get '/interact/:game/delete-stock-order' => sub {
+    my $user = session->read('user');
+    if(! $user)
+    {
+        send_error("Access denied", 403);
+        return;
+    }
+    my $game = params->{game};
+    my $command = schema->resultset('StockOrder')->find({ 
+                        user => $user,
+                        id => params->{id}
+                  });
+    if($command)
+    {
+        $command->delete;
+        my $redirection = "/play/" . params->{game} . "/db/orders?delete-stock=ok";
+            redirect $redirection, 302;
+            return;
+    }
+    else
+    {
+        my $redirection = "/play/" . params->{game} . "/db/orders?delete-stock=ko";
+            redirect $redirection, 302;
+            return;
+    }
+
+}; 
+get '/interact/:game/delete-influence-order' => sub {
+    my $user = session->read('user');
+    if(! $user)
+    {
+        send_error("Access denied", 403);
+        return;
+    }
+    my $game = params->{game};
+    my $command = schema->resultset('InfluenceOrder')->find({ 
+                        user => $user,
+                        id => params->{id}
+                  });
+    if($command)
+    {
+        $command->delete;
+        my $redirection = "/play/" . params->{game} . "/db/orders?delete-influence=ok";
+            redirect $redirection, 302;
+            return;
+    }
+    else
+    {
+        my $redirection = "/play/" . params->{game} . "/db/orders?delete-influence=ko";
+            redirect $redirection, 302;
+            return;
+    }
+
+}; 
 
 
 true;
