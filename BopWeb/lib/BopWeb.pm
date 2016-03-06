@@ -14,6 +14,12 @@ use BalanceOfPower::Utils qw (prev_turn);
 
 our $VERSION = '0.1';
 
+get '/keepalive' => sub {
+    return 'OK';
+};
+
+
+
 ### GAME
 
 my $module_file_path = __FILE__;
