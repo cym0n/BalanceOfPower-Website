@@ -1,0 +1,17 @@
+[% INCLUDE blocks/empty_head.tt %]
+<div class="row">
+<div class="col-xs-12 col-sm-9">
+<h2>Balance of Power - Login</h2>
+[% IF message %]
+<div class="alert alert-warning" role="alert">[% message %]</div>
+[% END %]
+<p><strong><br />Welcome back plutocrat.<br /><br />
+Take your sins back</strong></br>
+<br />
+</p>
+
+[% form %]
+</div>
+</div>
+[% INCLUDE blocks/foot.tt %]
+

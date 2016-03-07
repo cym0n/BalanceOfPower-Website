@@ -463,7 +463,7 @@ any '/users/register' => sub {
         
         }
     }
-    template 'user', {
+    template 'register', {
         form => $form->render(),
         message => $message
     }
@@ -488,7 +488,7 @@ any '/users/login' => sub {
             $message = "Wrong username or password";
         }
     }
-    template 'user', {
+    template 'login', {
         form => $form->render(),
         message => $message
     }
