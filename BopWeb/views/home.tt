@@ -10,7 +10,7 @@
         <img src="/images/bop-map.png" />
     </div>
     <div class="col-xs-12 col-sm-3">
-    <p><strong>The world is waiting for you.<br ><br />
+    <p><strong>The world is waiting for you.<br >
     Leave your conscience at the entrance<br /><br /></strong></p>
     [% IF player %]
     <a class="btn btn-default" href="/users/logged" role="button">Game</a><br /><br />

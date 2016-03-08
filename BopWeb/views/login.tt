@@ -5,7 +5,7 @@
 [% IF message %]
 <div class="alert alert-warning" role="alert">[% message %]</div>
 [% END %]
-<p><strong><br />Welcome back plutocrat.<br /><br />
+<p><strong><br />Welcome back plutocrat.<br />
 Take your sins back</strong></br>
 <br />
 </p>

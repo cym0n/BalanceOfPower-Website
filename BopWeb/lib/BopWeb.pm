@@ -506,7 +506,7 @@ get '/users/logged' => sub {
     {
         my $user_db = schema->resultset("BopUser")->find({ user => $user });
         my $usergame = $user_db->usergames;
-        if($usergame)
+        if($usergame && $usergame->first)
         {
             my $game = $usergame->first->game;
             redirect '/play/' . $game->file;
@@ -533,7 +533,8 @@ get '/users/logout' => sub {
 
 get '/users/choose-game' => sub {
     my $user = session->read('user');
-    my @games = schema->resultset("BopGame")->search({ active => 1});
+    my @games = schema->resultset("BopGame")->search({ active => 1,
+                                                       open => 1});
     template 'choose_game', {
         games => \@games
     }
