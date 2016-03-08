@@ -1,3 +1,16 @@
+        [% IF game %]
+        <div class="col-xs-6 col-sm-3 sidebar-offcanvas" id="sidebar">
+            <div class="well well-sm">
+                <p style="font-size:18px">
+                <strong>Game</strong>: [% game %]<br />
+                [% IF player %]
+                <strong>Player</strong>: [% player %]<br />
+                <a class="btn btn-default btn-xs" href="/users/logout" role="button">Logout</a>
+                [% END %]
+                </p>
+            </div>
+        </div>
+        [% END %]
         <div class="col-xs-6 col-sm-3 sidebar-offcanvas" id="sidebar">
           <div class="list-group">
             [% FOREACH r IN menu_urls %]

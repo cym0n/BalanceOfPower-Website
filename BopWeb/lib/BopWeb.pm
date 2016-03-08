@@ -66,8 +66,14 @@ sub nation_from_code
 }
 
 get '/' => sub {
-    template 'home';
+    my $user = session->read('user');
+    template 'home', { player => $user };
 };
+
+get '/about' => sub {
+    template 'about';
+};
+
 
 ### REPORTS
 
@@ -517,6 +523,12 @@ get '/users/logged' => sub {
          redirect '/users/login', 302;
          return;
     }
+};
+
+get '/users/logout' => sub {
+     session 'user' => undef;
+     redirect '/', 302;
+     return;
 };
 
 get '/users/choose-game' => sub {

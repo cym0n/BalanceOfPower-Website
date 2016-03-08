@@ -1,0 +1,8 @@
+[% INCLUDE blocks/empty_head.tt %]
+<div class="row">
+    <div class="col-xs-12 col-sm-12">
+        <center><h1> UNDER CONSTRUCTION</h1></center>
+        <center><p><strong>We are working for us</strong></p></center>
+    </div>
+[% INCLUDE blocks/foot.tt %]
+
