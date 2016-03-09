@@ -1,6 +1,12 @@
 [% INCLUDE blocks/empty_head.tt %]
 <div class="row">
 <div class="col-xs-12 col-sm-8">
+[% IF not_invited && not_invited == '1' %]
+<div class="alert alert-danger alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  Bad invite password. Invite password is needed.
+</div>
+[% END %]
 <h2>Balance of Power - Choose a game</h2>
 <p><strong><br />There are many paths<br/>
 to achieve damnation</strong><br /><br /><br /></p>
@@ -16,7 +22,7 @@ to achieve damnation</strong><br /><br /><br /></p>
   [% IF g.invite_password %]
   <div class="form-group">
     <label for="password">Password</label>
-    <input name="password" id="password"></input>
+    <input type="password" name="password" id="password"></input>
   </div>
   [% END %]
   <div class="form-group pull-right">

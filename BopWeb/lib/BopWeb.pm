@@ -536,7 +536,8 @@ get '/users/choose-game' => sub {
     my @games = schema->resultset("BopGame")->search({ active => 1,
                                                        open => 1});
     template 'choose_game', {
-        games => \@games
+        games => \@games,
+        not_invited => params->{'not-invited'}
     }
 };
 
@@ -545,7 +546,6 @@ get '/users/select-game' => sub {
     my $user_db = schema->resultset("BopUser")->find({ user => $user });
     if($user)
     {
-        my $game = params->{game};
         my @user_games = schema->resultset("UserGame")->search({ user => $user_db->id });
         if(@user_games)
         {
@@ -554,6 +554,18 @@ get '/users/select-game' => sub {
         }
         else
         {
+            my $game = params->{game};
+            my $game_db = schema->resultset("BopGame")->find($game);
+            if(! $game_db->active || ! $game_db->open)
+            {
+                send_error("Access denied", 403);
+                return;
+            }
+            if($game_db->invite_password && $game_db->invite_password ne params->{password})
+            {
+                redirect '/users/choose-game?not-invited=1';
+                return;
+            }
             schema->resultset("UserGame")->create({ user => $user_db->id, game => $game});
             redirect '/users/logged', 302;
             return;
