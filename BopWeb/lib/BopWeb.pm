@@ -719,6 +719,7 @@ post '/interact/:game/stock-command' => sub {
     my $command_already = schema->resultset('StockOrder')->find(
         { game => $game,
           user => $user,
+          nation => $data->{nation},
           turn => "$year/$turn" });
     debug("$game - $user - $turn ");
     if( $command_already )
