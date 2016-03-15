@@ -28,7 +28,7 @@
             <h3>Stock Actions</h3>
             [% IF wallet.$nation %]
             <p>
-                Available stocks: [% nation_meta.available_stocks %]<br /><br />
+                Available stocks: [% nation_meta.stocks %]<br /><br />
                 Stocks: [% wallet.$nation.stocks %]<br />
                 Influence: [% wallet.$nation.influence %]<br />
                 War bonds: [% wallet.$nation.war_bonds %]<br />

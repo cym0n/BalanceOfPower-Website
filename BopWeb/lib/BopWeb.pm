@@ -342,6 +342,7 @@ get '/play/:game' => sub {
 
 get '/play/:game/n' => sub {
     my $nation = params->{nation};
+    my $user = session->read('user');
     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
     if($meta)
     {
@@ -357,7 +358,8 @@ get '/play/:game/n' => sub {
                 nations => $meta->{nations},
                 game => params->{game},
                 year => $meta->{'current_year'},
-                active_top => 'nations'
+                active_top => 'nations',
+                player => $user
             }
         }
     }
