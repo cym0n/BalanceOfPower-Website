@@ -26,6 +26,7 @@
 [% END %]
 
 <h2>[% page_title %]</h2>
+<p style="font-size:5px">&nbsp;</p>
 [% INCLUDE $report %]
 [% IF active == 'n/actual' && player %]
 [% IF nation_meta.civil_war %]
@@ -34,7 +35,7 @@
 <h3>Influence command not available</h3>
 </div>
 [% ELSE %]
-[% IF wallet.$nation.influence %]
+[% IF wallet.$nation.influence >= 1 %]
 <div class="well">
 <p>
 <span class="label label-primary">INTERNAL: [% nation_meta.internal_production %]</span>
