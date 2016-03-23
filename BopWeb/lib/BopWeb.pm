@@ -27,7 +27,7 @@ my $root_path = abs_path($module_file_path);
 $root_path =~ s/lib\/BopWeb\.pm//;
 
 my $metadata_path = $root_path . "metadata";
-my @reports_menu = ('r/situation', 'r/hotspots', 'r/alliances', 'r/influences', 'r/supports', 'r/rebel-supports', 'r/war-history', 'r/events' );
+my @reports_menu = ('r/situation', 'r/hotspots', 'r/alliances', 'r/influences', 'r/supports', 'r/rebel-supports', 'r/war-history', 'r/events', 'r/newspaper' );
 my @nation_reports_menu = ('n/actual', 'n/borders', 'n/near', 'n/diplomacy', 'n/events' );
 my @player_reports_menu = ('r/market', 'p/stocks', 'p/events', 'db/orders', 'p/ranking' );
 
@@ -103,6 +103,9 @@ my %report_configuration = (
             'r/events' => {
                menu_name => 'Events',
             },
+            'r/newspaper' => {
+               menu_name => 'Newspaper',
+            },
             'n/actual' => {
                menu_name => 'Status',
                custom_js => 'blocks/commands.tt'
@@ -166,7 +169,7 @@ get '/play/:game/:context/:report' => sub {
     my $standards = get_report_standard_from_context(params->{context});
     my $report_conf = $report_configuration{$report_id};
     
-    for(keys $standards)
+    for(keys %{$standards})
     {
         if(! exists $report_conf->{$_})
         {
@@ -267,7 +270,7 @@ get '/play/:game/db/orders' => sub {
     my $report_conf = $report_configuration{$report_id};
     my $nation = undef;
     my $nation_name = undef;
-    for(keys $standards)
+    for(keys %{$standards})
     {
         if(! exists $report_conf->{$_})
         {
