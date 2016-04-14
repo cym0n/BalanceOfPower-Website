@@ -27,7 +27,7 @@ my $root_path = abs_path($module_file_path);
 $root_path =~ s/lib\/BopWeb\.pm//;
 
 my $metadata_path = $root_path . "metadata";
-my @reports_menu = ('r/situation', 'r/newspaper', 'r/hotspots', 'r/alliances', 'r/influences', 'r/supports', 'r/rebel-supports', 'r/war-history', 'r/civil-war-history' );
+my @reports_menu = ('r/situation', 'r/newspaper', 'r/hotspots', 'r/alliances', 'r/influences', 'r/supports', 'r/rebel-supports', 'r/combo-history' );
 my @nation_reports_menu = ('n/actual', 'n/borders', 'n/near', 'n/diplomacy', 'n/events', 'n/graphs' );
 my @player_reports_menu = ('r/market', 'p/stocks', 'p/events', 'db/orders', 'p/ranking', 'p/graphs' );
 
@@ -102,6 +102,10 @@ my %report_configuration = (
             },
             'r/civil-war-history' => {
                menu_name => 'Civil War History',
+            },
+            'r/combo-history' => {
+                menu_name => 'War History',
+                template => 'combo_history.tt'
             },
             'r/events' => {
                menu_name => 'Events',

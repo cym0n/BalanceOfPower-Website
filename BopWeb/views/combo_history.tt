@@ -1,0 +1,21 @@
+[% INCLUDE blocks/head.tt %]
+<div class="col-xs-12 col-sm-9">
+<h2>[% page_title %]</h2>
+<p style="font-size:5px">&nbsp;</p>
+<ul class="nav nav-tabs">
+  <li class="active"><a data-toggle="tab" href="#war">Wars</a></li>
+  <li><a data-toggle="tab" href="#civwar">Civil Wars</a></li>
+</ul>
+<div class="tab-content">
+  <div id="war" class="tab-pane fade in active">
+    <h3>Wars</h3>
+    [% INCLUDE "generated/$game/$year/$turn/war-history.tt" %]
+  </div>
+  <div id="civwar" class="tab-pane fade">
+    <h3>Civil Wars</h3>
+    [% INCLUDE "generated/$game/$year/$turn/civil-war-history.tt" %]
+  </div>
+</div>
+</div><!--/.col-xs-12.col-sm-9-->
+[% INCLUDE blocks/side.tt %]
+[% INCLUDE blocks/foot.tt %]
