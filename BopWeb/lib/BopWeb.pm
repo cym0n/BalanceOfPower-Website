@@ -141,7 +141,8 @@ my %report_configuration = (
             },
             'p/stocks' => {
                 menu_name => 'My Stocks',
-                logged => 1
+                logged => 1,
+               custom_js => 'blocks/stockdata.tt'
             },
             'p/events' => {
                 menu_name => 'Market Events',
