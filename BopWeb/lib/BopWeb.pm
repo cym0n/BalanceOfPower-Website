@@ -29,7 +29,7 @@ $root_path =~ s/lib\/BopWeb\.pm//;
 my $metadata_path = $root_path . "metadata";
 my @reports_menu = ('r/situation', 'r/newspaper', 'r/hotspots', 'r/alliances', 'r/influences', 'r/supports', 'r/rebel-supports', 'r/combo-history' );
 my @nation_reports_menu = ('n/actual', 'n/borders', 'n/near', 'n/diplomacy', 'n/events', 'n/graphs' );
-my @player_reports_menu = ('r/market', 'p/stocks', 'p/events', 'db/orders', 'p/ranking', 'p/graphs' );
+my @player_reports_menu = ('r/market', 'p/stocks', 'p/targets', 'p/events', 'db/orders', 'p/ranking', 'p/graphs' );
 
 sub get_metafile
 {
@@ -144,8 +144,11 @@ my %report_configuration = (
                 logged => 1,
                custom_js => 'blocks/stockdata.tt'
             },
+            'p/targets' => {
+                menu_name => 'Targets',
+            },
             'p/events' => {
-                menu_name => 'Market Events',
+                menu_name => 'Events',
                 logged => 1
             },
             'p/ranking' => {
