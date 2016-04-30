@@ -3,7 +3,7 @@
 [% IF stockposted && stockposted == 'ok' %]
 <div class="alert alert-success alert-dismissible" role="alert">
   <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-  Stock orders posted
+  Stock orders posted (<a href="/play/[% game %]/p/stocks">My stocks</a>)
 </div>
 [% END %]
 [% IF stockposted && stockposted == 'ko' %]
@@ -21,7 +21,7 @@
 [% IF influenceposted && influenceposted == 'ok' %]
 <div class="alert alert-success alert-dismissible" role="alert">
   <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-  Influence command posted
+  Influence command posted (<a href="/play/[% game %]/p/stocks">My stocks</a>)
 </div>
 [% END %]
 
