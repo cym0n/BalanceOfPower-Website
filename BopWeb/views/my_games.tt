@@ -1,0 +1,23 @@
+[% INCLUDE blocks/empty_head.tt %]
+<div class="row">
+<div class="col-xs-12 col-sm-8">
+<h2>Balance of Power - My games</h2>
+<p><strong><br />All the lands<br/>
+that are scared by you</strong><br /><br /><br /></p>
+[% FOR g IN games %]
+<div class="well">
+<form class="form-inline" action="/users/play-game" method="get">
+  <div class="col-sm-4">
+    <span style="font-size:20px;" ><strong>[% g.name %]</strong></span>
+  </div>
+  <div class="form-group">
+    <input name="game" id="game" type="hidden" value="[% g.id %]"></input>
+  </div>
+  <div class="form-group pull-right">
+    <button type="submit" class="btn btn-default ">Play</button>
+  </div>
+</form>
+</div>
+[% END %]
+</div>
+[% INCLUDE blocks/foot.tt %]

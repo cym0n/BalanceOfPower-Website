@@ -530,17 +530,27 @@ get '/users/logged' => sub {
     if($user)
     {
         my $user_db = schema->resultset("BopUser")->find({ user => $user });
-        my $usergame = $user_db->usergames;
-        if($usergame && $usergame->first)
+        my @usergames = $user_db->usergames;
+        if(@usergames == 1)
         {
-            my $game = $usergame->first->game;
-            redirect '/play/' . $game->file;
+            my $ugame = $usergames[0];
+            redirect '/play/' . $ugame->game->file;
+            return;
+        }
+        elsif(@usergames == 0)
+        {
+            redirect '/users/choose-game';
             return;
         }
         else
         {
-            redirect '/users/choose-game';
-            return;
+            my @games = ();
+            debug("More than one game!");
+            for(@usergames)
+            {
+                push @games, $_->game;
+            }
+            return template 'my_games', { games => \@games };
         }
     }
     else
@@ -566,11 +576,26 @@ get '/users/choose-game' => sub {
     }
 };
 
-get '/users/select-game' => sub {
+get '/users/play-game' => sub {
     my $user = session->read('user');
-    my $user_db = schema->resultset("BopUser")->find({ user => $user });
     if($user)
     {
+        my $user_db = schema->resultset("BopUser")->find({ user => $user });
+        my $game = params->{game};
+        my $game_db = schema->resultset("BopGame")->find($game);
+        redirect '/play/' . $game_db->file;
+    }
+    else
+    {
+        redirect '/users/login', 302;
+    }
+};
+
+get '/users/select-game' => sub {
+    my $user = session->read('user');
+    if($user)
+    {
+        my $user_db = schema->resultset("BopUser")->find({ user => $user });
         my @user_games = schema->resultset("UserGame")->search({ user => $user_db->id });
         if(@user_games)
         {
