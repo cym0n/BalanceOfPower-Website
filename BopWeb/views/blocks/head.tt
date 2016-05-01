@@ -17,7 +17,7 @@
             <li [% IF active_top == 'nations' %]class="active"[% END %]>
                 <a href="/play/[% game %]/n">Nations</a>
             </li>
-            [% IF player %]
+            [% IF interactive %]
             <li [% IF active_top == 'market' %]class="active"[% END %]>
                 <a href="/play/[% game %]/r/market">Market</a>
             </li>

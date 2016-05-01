@@ -13,7 +13,8 @@
     <p><strong>The world is waiting for you.<br >
     Leave your conscience at the entrance<br /><br /></strong></p>
     [% IF player %]
-    <a class="btn btn-default" href="/users/logged" role="button">Game</a><br /><br />
+    <a class="btn btn-default" href="/users/logged" role="button">Games</a><br /><br />
+    <a class="btn btn-default" href="/users/choose-game" role="button">Join</a><br /><br />
     <a class="btn btn-default" href="/users/logout" role="button">Logout</a><br /><br />
     [% ELSE %]
     <a class="btn btn-default" href="/users/login" role="button">Login</a><br /><br />

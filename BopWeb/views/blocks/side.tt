@@ -3,7 +3,7 @@
             <div class="well well-sm">
                 <p style="font-size:18px">
                 <strong>Game</strong>: [% game %]<br />
-                [% IF player %]
+                [% IF interactive %]
                 <strong>Player</strong>: [% player %]<br />
                 <a class="btn btn-default btn-xs" href="/users/logout" role="button">Logout</a>
                 [% END %]
@@ -17,7 +17,7 @@
             [% INCLUDE blocks/menulink.tt %]
             [% END %]
           </div>
-          [% IF active == 'n/actual' && player %]
+          [% IF active == 'n/actual' && interactive %]
           [% IF nation_meta.civil_war %]
           <div class="well">
             <h3>Civil war!</h3>

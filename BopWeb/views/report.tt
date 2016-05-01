@@ -28,7 +28,7 @@
 <h2>[% page_title %]</h2>
 <p style="font-size:5px">&nbsp;</p>
 [% INCLUDE $report %]
-[% IF active == 'n/actual' && player %]
+[% IF active == 'n/actual' && interactive %]
 [% IF nation_meta.civil_war %]
 <div class="well">
 <h3>Civil war!</h3>

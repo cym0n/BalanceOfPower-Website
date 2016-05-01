@@ -196,7 +196,7 @@ get '/play/:game/:context/:report' => sub {
     }
     if($report_conf->{logged} == 1)
     {
-        if(! $user)
+        if(! player_of_game(params->{game}, $user))
         {
             send_error("Access denied", 403);
             return;
@@ -266,6 +266,7 @@ get '/play/:game/:context/:report' => sub {
        'active_top' => $report_conf->{active_top},
        'custom_js' => $report_conf->{custom_js},
        'player' => $user,
+       'interactive' => player_of_game(params->{game}, $user),
        'page_title' => $page_title,
        'wallet' => $wallet,
        'context' => params->{context},
@@ -297,11 +298,11 @@ get '/play/:game/db/orders' => sub {
     }
     if($report_conf->{logged} == 1)
     {
-        if(! $user)
+        if(! player_of_game(params->{game}, $user))
         {
             send_error("Access denied", 403);
             return;
-        }
+        }    
     }
     my $page_title;
     if($report_conf->{'title'} eq 'year')
@@ -511,7 +512,7 @@ any '/users/login' => sub {
         if(valid_login(params->{user}, params->{password}))
         {
             session 'user' => params->{user};
-            redirect '/users/logged', 302;
+            redirect '/', 302;
             return;
         }    
         else
@@ -570,8 +571,9 @@ get '/users/choose-game' => sub {
     my $user = session->read('user');
     my @games = schema->resultset("BopGame")->search({ active => 1,
                                                        open => 1});
+    my @available_games = grep { ! player_of_game($_->file, $user) } @games;
     template 'choose_game', {
-        games => \@games,
+        games => \@available_games,
         not_invited => params->{'not-invited'}
     }
 };
@@ -740,7 +742,7 @@ sub serialize
 
 post '/interact/:game/stock-command' => sub {
     my $user = session->read('user');
-    if(! $user)
+    if(! player_of_game(params->{game}, $user))
     {
         send_error("Access denied", 403);
         return;
@@ -786,7 +788,7 @@ post '/interact/:game/stock-command' => sub {
 
 post '/interact/:game/influence-command' => sub {
     my $user = session->read('user');
-    if(! $user)
+    if(! player_of_game(params->{game}, $user))
     {
         send_error("Access denied", 403);
         return;
@@ -842,7 +844,7 @@ post '/interact/:game/influence-command' => sub {
 
 get '/interact/:game/delete-stock-order' => sub {
     my $user = session->read('user');
-    if(! $user)
+    if(! player_of_game(params->{game}, $user))
     {
         send_error("Access denied", 403);
         return;
@@ -869,7 +871,7 @@ get '/interact/:game/delete-stock-order' => sub {
 }; 
 get '/interact/:game/delete-influence-order' => sub {
     my $user = session->read('user');
-    if(! $user)
+    if(! player_of_game(params->{game}, $user))
     {
         send_error("Access denied", 403);
         return;
@@ -894,6 +896,24 @@ get '/interact/:game/delete-influence-order' => sub {
     }
 
 }; 
+
+sub player_of_game
+{
+    my $game = shift;
+    my $user = shift;
+    return 0 if ! defined $user;
+    my $game_db = schema->resultset("BopGame")->find({ file => $game });
+    my $user_db = schema->resultset("BopUser")->find({ user => $user });
+    my $usergame = schema->resultset("UserGame")->find({ user => $user_db->id, game => $game_db->id });
+    if($usergame)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;    
+    }
+}
 
 
 true;
