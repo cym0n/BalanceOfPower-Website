@@ -1,8 +1,29 @@
 [% INCLUDE blocks/empty_head.tt %]
 <div class="row">
     <div class="col-xs-12 col-sm-12">
-        <center><h1> UNDER CONSTRUCTION</h1></center>
-        <center><p><strong>We are working for us</strong></p></center>
+    <h1>SCENARIO</h1>
+    <p>Balance Of Power throws you in an alternative universe. The year is the 1970 and the nations are the same from Balance of Power videogame, but superpowers don't exist so global politics is very different.</p>
+<p>As in our universe, every nation just wants to prevail on the others, be rich, help his friends and kill his enemies. Every turn, all of them do many action to reach these objectives, making the world a dynamic and dangerous place.</p>
+<p>The role of the player IS NOT to be involved by nations to aid them with politics, because in XXI century we all now that the real power lays in the shadows and uses money to manipulate the world. BoP player is a plutocrat, he buys and sells stocks coming from the nations and gain from the fluctations of their wealth. To obtain better results he can influence poltical decisions.</p>
+
+<h1>OBJECTIVE OF THE GAME</h1>
+
+<p>Your objective is to gain from the stock market as much money as you can. If richness is not attractive for you, you can try to accomplish as much missions as you can and be considered the best puppetmaster of the dark world.</p>
+
+<h1>THE STOCK MARKET</h1>
+<p>Every nation has an amount of stocks available to be bought. The value of the stock is determined by the w/d parameter that is the sum of the events that happen during each turn. Buying stocks where their value is low and selling them when they go high give you a gain (as on any free market).</p>
+<p>You can by and sell stocks from the menu on the right of the situation screen of every nation.</p>
+<h1>WAR AND BONDS</h1>
+<p>
+When a nation starts a war you can still play with its stock, but pay attention that every turn a war bond will be generated subtracting 50 units from your money. At the end of the war, if the nation that issued them win, you'll have back your money with an extra, if it lose, you'll lost al you had invested this way.</p>
+<h1>CIVIL WAR</h1>
+<p>
+During civil war you can't buy or sell stocks. If you own stocks from a nation they're blocked and no operation can be done on them. If the civil war is won by the government, your stocks will return available for the market, but if rebels win it all of them will be lost.</p>
+<h1>INFLUENCE</h1>
+Any time you buy stocks you gain influence point. You gain .5 influence for every stock bought. In any moment you can spend an influence point to force a nation to do want you want, changing the course of history.</p>
+<p>You can select influence commands from the menu on the bottom of every nation situation screen.</p>
+<h1>TARGETS</h1>
+<p>Randomly, a target will be assigned to you: to make a government fall. You have 16 turns (four years) to make that happen, but usually it's not an easy task, because the victim it's chosen between stable nations. Reaching your target will give you a mission point, used for ranking.</p>
     </div>
 [% INCLUDE blocks/foot.tt %]
 
