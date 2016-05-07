@@ -598,7 +598,8 @@ get '/users/select-game' => sub {
     if($user)
     {
         my $user_db = schema->resultset("BopUser")->find({ user => $user });
-        my @user_games = schema->resultset("UserGame")->search({ user => $user_db->id });
+        my $game_db = schema->resultset("BopGame")->find(params->{game});
+        my @user_games = schema->resultset("UserGame")->search({ user => $user_db->id, game => $game_db->id });
         if(@user_games)
         {
             redirect '/users/logged', 302;
@@ -606,8 +607,6 @@ get '/users/select-game' => sub {
         }
         else
         {
-            my $game = params->{game};
-            my $game_db = schema->resultset("BopGame")->find($game);
             if(! $game_db->active || ! $game_db->open)
             {
                 send_error("Access denied", 403);
@@ -618,7 +617,7 @@ get '/users/select-game' => sub {
                 redirect '/users/choose-game?not-invited=1';
                 return;
             }
-            schema->resultset("UserGame")->create({ user => $user_db->id, game => $game});
+            schema->resultset("UserGame")->create({ user => $user_db->id, game => $game_db->id});
             redirect '/users/logged', 302;
             return;
         }
