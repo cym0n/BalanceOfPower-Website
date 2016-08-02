@@ -21,6 +21,9 @@
             <li [% IF active_top == 'market' %]class="active"[% END %]>
                 <a href="/play/[% game %]/r/market">Market</a>
             </li>
+            <li [% IF active_top == 'travel' %]class="active"[% END %]>
+                <a href="/play/[% game %]/i/travel">Travel</a>
+            </li>
             [% END %]
           </ul>
         </div><!-- /.nav-collapse -->

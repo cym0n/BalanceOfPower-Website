@@ -11,6 +11,7 @@ use Dancer2::Serializer::JSON;
 use Authen::Passphrase::BlowfishCrypt;
 
 use BalanceOfPower::Utils qw (prev_turn);
+use BalanceOfPower::Constants ':all';;
 
 our $VERSION = '0.1';
 
@@ -28,8 +29,11 @@ $root_path =~ s/lib\/BopWeb\.pm//;
 
 my $metadata_path = $root_path . "metadata";
 my @reports_menu = ('r/situation', 'r/newspaper', 'r/hotspots', 'r/alliances', 'r/influences', 'r/supports', 'r/rebel-supports', 'r/combo-history' );
-my @nation_reports_menu = ('n/actual', 'n/borders', 'n/near', 'n/diplomacy', 'n/events', 'n/graphs' );
+my @nation_reports_menu = ('n/actual', 'n/borders', 'n/near', 'n/diplomacy', 'n/events', 'n/graphs', 'n/prices' );
 my @player_reports_menu = ('r/market', 'p/stocks', 'p/targets', 'p/events', 'db/orders', 'p/ranking', 'p/graphs' );
+
+my @products = ( 'goods', 'luxury', 'arms', 'tech', 'culture' );
+
 
 sub get_metafile
 {
@@ -132,6 +136,9 @@ my %report_configuration = (
             },
             'n/graphs' => {
                 menu_name => 'Graphs'
+            },
+            'n/prices' => {
+                menu_name => 'Shop Prices'
             },
             'r/market' => {
                 menu_name => 'Market',
@@ -336,7 +343,6 @@ get '/play/:game/db/orders' => sub {
        'turn' => $turn,
        'active_top' => $report_conf->{active_top},
        'custom_js' => $report_conf->{custom_js},
-       'player' => $user,
        'page_title' => $page_title,
        'stock_orders' => \@stock_orders,
        'influence_orders' => \@influence_orders,
@@ -344,7 +350,44 @@ get '/play/:game/db/orders' => sub {
        'nation_codes' => get_nation_codes($meta->{nations}),
        'deletestock' => params->{'delete-stock'},
        'deleteinfluence' => params->{'delete-influence'},
-       'custom_js' => $report_conf->{custom_js},
+    }; 
+};
+
+get '/play/:game/i/travel' => sub {
+    my $user = session->read('user');
+    my $usergame = player_of_game(params->{game}, $user);
+    if(! $usergame)
+    {
+        send_error("Access denied", 403);
+        return;
+    }    
+    my $shop_posted = params->{'shop-posted'};
+    my $err = params->{'err'};
+    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my ($year, $turn) = split '/', $meta->{'current_year'};
+    my $codes = get_nation_codes($meta->{nations});
+    my $player = schema->resultset('BopPlayer')->find($usergame->player);
+    my $present_position = $codes->{$player->position};
+    my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
+    my %hold = get_hold($player->id);
+    template 'travel', {
+       'player' => $user,
+       'position' => $player->position,
+       'position_code' => $present_position,
+       'game' => params->{game},
+       'year' => $year,
+       'turn' => $turn,
+       'active_top' => 'travel',
+       'custom_js' => undef,
+       'player' => $user,
+       'context' => 'i',
+       'travels' => $nation_meta->{'travels'},
+       'prices' => $nation_meta->{'prices'},
+       'hold'   => \%hold,
+       'money' => $player->money,
+       'products' => \@products,
+       'shop_posted' => $shop_posted,
+       'err' => $err
     }; 
 };
 
@@ -457,6 +500,31 @@ sub get_nation_codes
         $out{$n} = $nations->{$n}->{'code'};
     }
     return \%out;
+}
+
+sub get_hold
+{
+    my $player = shift;
+    my $tot_q = 0;
+    my %hold = ();
+    foreach my $p (@products)
+    {
+        my $hold_element =  schema->resultset('Hold')->find({
+                                player => $player, type => $p
+                            });
+        if($hold_element)
+        {
+            $hold{$p} = $hold_element->quantity;
+            $tot_q += $hold_element->quantity;
+        }
+        else
+        {
+            $hold{$p} = 0;
+        }
+    }
+    $hold{'free'} = CARGO_TOTAL_SPACE - $tot_q; 
+    return %hold;
+     
 }
 
 ### USER MANAGEMENT
@@ -739,6 +807,111 @@ sub serialize
 
 ### ACTIONS
 
+post '/interact/:game/shop-command' => sub {
+    my $user = session->read('user');
+    my $usergame = player_of_game(params->{game}, $user);
+    if(! $usergame)
+    {
+        send_error("Access denied", 403);
+        return;
+    }
+    my $game = params->{game};
+    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my ($year, $turn) = split '/', $meta->{'current_year'};
+    my $command = lc(params->{command});
+    my $type = params->{type};
+    my $quantity = params->{quantity};
+    if(! $command || ! $type || ! $quantity)
+    { 
+        my $redirection = "/play/" . params->{game} . "/i/travel?shop-posted=ko&err=no-input";
+        redirect $redirection, 302;
+        return;  
+    }
+    my $codes = get_nation_codes($meta->{nations});
+    my $player = schema->resultset('BopPlayer')->find($usergame->player);
+    my $present_position = $codes->{$player->position};
+    my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
+    my %hold = get_hold($player->id);
+    my $money = $player->money;
+    my $price_label = $type . "_price";
+    my $price = $nation_meta->{prices}->{$price_label};
+    my $cost = $price * $quantity; 
+    if($command eq 'buy')
+    {
+        if($cost > $money)
+        {
+            my $redirection = "/play/" . params->{game} . "/i/travel?shop-posted=ko&err=no-money";
+            redirect $redirection, 302;
+            return;  
+        }
+        if($quantity > $hold{'free'})
+        {
+            my $redirection = "/play/" . params->{game} . "/i/travel?shop-posted=ko&err=no-space";
+            redirect $redirection, 302;
+            return;  
+        }
+        add_money(schema, $player->id, -1 * $cost);
+        add_cargo(schema, $player->id, $type, $quantity);
+        my $redirection = "/play/" . params->{game} . "/i/travel?shop-posted=ok";
+        redirect $redirection, 302;
+        return;  
+    }
+    elsif($command eq 'sell')
+    {
+        if($quantity > $hold{$type})
+        {
+            my $redirection = "/play/" . params->{game} . "/i/travel?shop-posted=ko&err=not-owned";
+            redirect $redirection, 302;
+            return;  
+        }
+        add_money(schema, $player->id, $cost);
+        add_cargo(schema, $player->id, $type, -1 * $quantity);
+        my $redirection = "/play/" . params->{game} . "/i/travel?shop-posted=ok";
+        redirect $redirection, 302;
+        return;  
+    }
+    else
+    {
+        my $redirection = "/play/" . params->{game} . "/i/travel?shop-posted=ko&err=no-input";
+        redirect $redirection, 302;
+        return;  
+    }
+};
+
+sub add_money
+{
+    my $schema = shift;
+    my $player = shift;
+    my $money = shift;
+    my $player_obj = $schema->resultset('BopPlayer')->find($player);
+    my $new_money = $player_obj->money + $money;
+    $player_obj->money($new_money);
+    $player_obj->update();
+}
+sub add_cargo
+{
+    my $schema = shift;
+    my $player = shift;
+    my $type = shift;
+    my $q = shift;
+    my $cargo_obj = $schema->resultset('Hold')->find({ player => $player,
+                                                       type => $type });
+    if(! $cargo_obj)
+    {
+        $schema->resultset('Hold')->create({ player => $player,
+                                           type => $type,
+                                           quantity => $q });
+    }
+    else
+    {
+        my $new_q = $cargo_obj->quantity + $q;
+        $cargo_obj->quantity($new_q);
+        $cargo_obj->update;
+    }
+}
+
+
+
 post '/interact/:game/stock-command' => sub {
     my $user = session->read('user');
     if(! player_of_game(params->{game}, $user))
@@ -906,13 +1079,14 @@ sub player_of_game
     my $usergame = schema->resultset("UserGame")->find({ user => $user_db->id, game => $game_db->id });
     if($usergame)
     {
-        return 1;
+        return $usergame;
     }
     else
     {
-        return 0;    
+        return undef;    
     }
 }
+
 
 
 true;
