@@ -384,6 +384,7 @@ get '/play/:game/i/travel' => sub {
         my $print_arrival = $arrival->dmy . " " . $arrival->hms;
         template 'ongoing_travel', {
             'player' => $user,
+            'nation_codes' => get_nation_codes($meta->{nations}),
             'position' => $player->position,
             'position_code' => $present_position,
             'game' => params->{game},
@@ -404,6 +405,7 @@ get '/play/:game/i/travel' => sub {
     {
         template 'travel', {
             'player' => $user,
+            'nation_codes' => get_nation_codes($meta->{nations}),
             'position' => $player->position,
             'position_code' => $present_position,
             'game' => params->{game},
@@ -946,7 +948,7 @@ post '/interact/:game/go' => sub {
         return;  
     }
     my $time = DateTime->now();
-    $time->add( hours => 2);
+    $time->add( hours => $data->{cost});
     $player->destination($destination);
     $player->arrival_time($time);
     $player->update;

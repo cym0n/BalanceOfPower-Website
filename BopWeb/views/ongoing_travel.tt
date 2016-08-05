@@ -15,7 +15,7 @@
         <h4>TRAVEL</h4>
         [% IF arrived == 0 %]
         <div class="alert alert-info">
-            You are moving to [% destination %]<br />
+            You are moving to [% INCLUDE blocks/linked_nation.tt n = destination %]<br />
             Estimated arrival time: [% arrival_time %]
         </div>
         [% ELSE %]
