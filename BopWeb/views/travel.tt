@@ -1,4 +1,12 @@
 [% INCLUDE blocks/head.tt %]
+[% BLOCK travelbutton %]
+[% IF travel_status == 'KO' %]
+    [% cost = 'X' %]
+[% END %]
+<div class="col-sm-1">
+    <form class="form-inline" action="/interact/[% game %]/go" method="post"><input type="hidden" name="destination" value="[% t %]"><button type="submit" class="btn-xs [% IF travel_status == "KO" %]disabled" disabled="disabled"[% ELSE %]btn-primary"[% END %]>[% t %]<br /><span class="glyphicon glyphicon-send"></span><br />[% cost %] TU</button></form>
+</div>
+[% END %]
 <h3>[% player %] - [% game %] - [% year %]/[% turn %]</h3>
 <div class="row">
   <div class="col-sm-12">
@@ -11,37 +19,25 @@
         <img style="height:50px" src="/images/flags/[% position_code %].png">
         </div>
     </div>
+    <div class="col-md-10">
     <h4>TRAVEL</h4>
-    <div class="col-md-3">
-        <div>
-        <h5><strong>Ground</strong></h5>
-            <p>
+        <div class="row">
+            <h5><strong>Ground</strong></h5>
             [% FOREACH t IN travels.ground.keys %]
-            [% IF travels.ground.$t.status == 'OK' %]
-            [% t %]: [% travels.ground.$t.cost %] TU<br />
-            [% ELSE %]
-            <span class="text-danger">[% t %]</span><br />
+                [% PROCESS travelbutton travel_status=travels.ground.$t.status cost=travels.ground.$t.cost %]
             [% END %]
-            [% END %]
-            </p>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div>
-        <h5><strong>Air</strong></h5>
-            <p>
+        <div class="row">
+            <h5><strong>Air</strong></h5>
             [% FOREACH t IN travels.air.keys %]
-            [% IF travels.air.$t.status == 'OK' %]
-            [% t %]: [% travels.air.$t.cost %] TU<br />
-            [% ElSE %]
-            <span class="text-danger">[% t %]</span><br />
+                [% PROCESS travelbutton travel_status=travels.air.$t.status cost=travels.air.$t.cost %]
             [% END %]
-            [% END %]
-            </p>
         </div>
     </div>
   </div>
 </div>
+<br />
+[% INCLUDE blocks/travel_error_manager.tt %]
 <div class="row">
     <div class="col-sm-6">
     <div class="well">
@@ -68,34 +64,7 @@
     </div>
     </div>
 </div>
-[% IF shop_posted %]
-<div class="row">
-    <div class="col-sm-12">
-    [% IF shop_posted == 'ok' %]
-        <div class="alert alert-success">
-        Transaction succesfully completed!
-        </div>
-    [% ELSE %]
-        <div class="alert alert-danger">
-        [% IF err == 'no-input' %]
-            Transaction KO! Something went wrong with the input
-        [% END %]
-        [% IF err == 'no-money' %]
-            Transaction KO! Not enough money
-        [% END %]
-        [% IF err == 'no-space' %]
-            Transaction KO! No space in the hold
-        [% END %]
-        [% IF err == 'not-owned' %]
-            Transaction KO! You don't own that quantity
-        [% END %]
-        </div>
-    [% END %]
-    </div>
-</div>
-[% END %]
-                
-
+[% INCLUDE blocks/shop_error_manager.tt %]
 <div class="row">
     <div class="col-sm-2">
     <div class="alert alert-warning">

@@ -1,0 +1,33 @@
+[% INCLUDE blocks/head.tt %]
+<h3>[% player %] - [% game %] - [% year %]/[% turn %]</h3>
+<div class="row">
+  <div class="col-sm-12">
+    <div class="col-md-2">
+        <div class="center-block">
+        <img style="height:100px" src="/images/airplane.png">
+        </div>
+        <strong>You are in [% position %]<br /><br /></strong>
+        <div class="center-block">
+        <img style="height:50px" src="/images/flags/[% position_code %].png">
+        </div>
+    </div>
+    <div class="col-md-10">
+        <h4>TRAVEL</h4>
+        [% IF arrived == 0 %]
+        <div class="alert alert-info">
+            You are moving to [% destination %]<br />
+            Estimated arrival time: [% arrival_time %]
+        </div>
+        [% ELSE %]
+        <div class="alert alert-info">
+            You are arrived in [% destination %]!<br />
+            <br />
+            <strong>&gt; <a href="/interact/[% game %]/arrive">Disembark</a></strong>
+        </div>
+        [% END %]
+        [% INCLUDE blocks/travel_error_manager.tt %]
+    </div>
+  </div>
+</div>
+[% INCLUDE blocks/shop_error_manager.tt %]
+[% INCLUDE blocks/foot.tt %]

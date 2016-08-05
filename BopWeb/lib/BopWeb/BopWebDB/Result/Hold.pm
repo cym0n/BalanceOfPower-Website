@@ -38,33 +38,33 @@ __PACKAGE__->table("HOLD");
 =head2 player
 
   data_type: 'number'
-  is_nullable: 1
+  is_nullable: 0
 
 =head2 type
 
   data_type: 'varchar'
-  is_nullable: 1
+  is_nullable: 0
   size: 50
 
 =head2 quantity
 
   data_type: 'number'
-  is_nullable: 1
+  is_nullable: 0
 
 =cut
 
 __PACKAGE__->add_columns(
   "player",
-  { data_type => "number", is_nullable => 1 },
+  { data_type => "number", is_nullable => 0 },
   "type",
-  { data_type => "varchar", is_nullable => 1, size => 50 },
+  { data_type => "varchar", is_nullable => 0, size => 50 },
   "quantity",
-  { data_type => "number", is_nullable => 1 },
+  { data_type => "number", is_nullable => 0 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-08-02 17:31:20
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:QKuBru5iEg31vDU7FhClYQ
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-08-04 15:39:54
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:NLKv0/wfe/olydwYFmn60A
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

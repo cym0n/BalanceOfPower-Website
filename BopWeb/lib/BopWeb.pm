@@ -9,6 +9,7 @@ use HTML::FormFu;
 use Data::Dumper;
 use Dancer2::Serializer::JSON;
 use Authen::Passphrase::BlowfishCrypt;
+use DateTime;
 
 use BalanceOfPower::Utils qw (prev_turn);
 use BalanceOfPower::Constants ':all';;
@@ -362,6 +363,7 @@ get '/play/:game/i/travel' => sub {
         return;
     }    
     my $shop_posted = params->{'shop-posted'};
+    my $travel_posted = params->{'travel-posted'};
     my $err = params->{'err'};
     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
     my ($year, $turn) = split '/', $meta->{'current_year'};
@@ -370,25 +372,56 @@ get '/play/:game/i/travel' => sub {
     my $present_position = $codes->{$player->position};
     my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
     my %hold = get_hold($player->id);
-    template 'travel', {
-       'player' => $user,
-       'position' => $player->position,
-       'position_code' => $present_position,
-       'game' => params->{game},
-       'year' => $year,
-       'turn' => $turn,
-       'active_top' => 'travel',
-       'custom_js' => undef,
-       'player' => $user,
-       'context' => 'i',
-       'travels' => $nation_meta->{'travels'},
-       'prices' => $nation_meta->{'prices'},
-       'hold'   => \%hold,
-       'money' => $player->money,
-       'products' => \@products,
-       'shop_posted' => $shop_posted,
-       'err' => $err
-    }; 
+    if($player->destination)
+    {
+        my $arrival = $player->arrival_time;
+        my $arrived = 0;
+        if(DateTime->compare(DateTime->now, $arrival) == 1)
+        {
+            $arrived = 1;
+        }
+        $arrival->set_time_zone('Europe/Rome');
+        my $print_arrival = $arrival->dmy . " " . $arrival->hms;
+        template 'ongoing_travel', {
+            'player' => $user,
+            'position' => $player->position,
+            'position_code' => $present_position,
+            'game' => params->{game},
+            'year' => $year,
+            'turn' => $turn,
+            'active_top' => 'travel',
+            'custom_js' => undef,
+            'context' => 'i',
+            'destination' => $player->destination,
+            'arrival_time' => $print_arrival,
+            'arrived' => $arrived,
+            'shop_posted' => $shop_posted,
+            'travel_posted' => $travel_posted,
+            'err' => $err
+        }
+    }
+    else
+    {
+        template 'travel', {
+            'player' => $user,
+            'position' => $player->position,
+            'position_code' => $present_position,
+            'game' => params->{game},
+            'year' => $year,
+            'turn' => $turn,
+            'active_top' => 'travel',
+            'custom_js' => undef,
+            'context' => 'i',
+            'travels' => $nation_meta->{'travels'},
+            'prices' => $nation_meta->{'prices'},
+            'hold'   => \%hold,
+            'money' => $player->money,
+            'products' => \@products,
+            'shop_posted' => $shop_posted,
+            'travel_posted' => $travel_posted,
+            'err' => $err
+        }; 
+    }
 };
 
 
@@ -873,6 +906,79 @@ post '/interact/:game/shop-command' => sub {
     else
     {
         my $redirection = "/play/" . params->{game} . "/i/travel?shop-posted=ko&err=no-input";
+        redirect $redirection, 302;
+        return;  
+    }
+};
+
+post '/interact/:game/go' => sub {
+    my $user = session->read('user');
+    my $usergame = player_of_game(params->{game}, $user);
+    if(! $usergame)
+    {
+        send_error("Access denied", 403);
+        return;
+    }
+    my $game = params->{game};
+    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my ($year, $turn) = split '/', $meta->{'current_year'};
+    my $destination = params->{destination};
+    if(! $destination)
+    {
+        my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ko&err=no-destination";
+        redirect $redirection, 302;
+        return;  
+    }
+    my $codes = get_nation_codes($meta->{nations});
+    my $player = schema->resultset('BopPlayer')->find($usergame->player);
+    my $present_position = $codes->{$player->position};
+    my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
+    my $data;
+    $data = exists $nation_meta->{'travels'}->{'air'}->{$destination} &&  $nation_meta->{'travels'}->{'air'}->{$destination}->{'status'} eq 'OK' ? 
+                $nation_meta->{'travels'}->{'air'}->{$destination} :
+                    exists $nation_meta->{'travels'}->{'ground'}->{$destination} &&  $nation_meta->{'travels'}->{'ground'}->{$destination}->{'status'} eq 'OK' ?
+                        $nation_meta->{'travels'}->{'ground'}->{$destination} :
+                            undef;
+    if(! $data)
+    {
+        my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ko&err=bad-destination";
+        redirect $redirection, 302;
+        return;  
+    }
+    my $time = DateTime->now();
+    $time->add( hours => 2);
+    $player->destination($destination);
+    $player->arrival_time($time);
+    $player->update;
+    my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ok&err=posted";
+    redirect $redirection, 302;
+    return;  
+};
+
+get '/interact/:game/arrive' => sub {
+    my $user = session->read('user');
+    my $usergame = player_of_game(params->{game}, $user);
+    if(! $usergame)
+    {
+        send_error("Access denied", 403);
+        return;
+    }
+    my $game = params->{game};
+    my $player = schema->resultset('BopPlayer')->find($usergame->player);
+    my $arrival = $player->arrival_time;
+    if(DateTime->compare(DateTime->now, $arrival) == 1)
+    {
+        $player->position($player->destination);
+        $player->destination(undef);
+        $player->arrival_time(undef);
+        $player->update();
+        my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ok&err=arrived";
+        redirect $redirection, 302;
+        return;  
+    }
+    else
+    {
+        my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ko&err=not-arrived";
         redirect $redirection, 302;
         return;  
     }
