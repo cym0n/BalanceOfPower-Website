@@ -3,6 +3,9 @@
 [% IF travel_status == 'KO' %]
     [% cost = 'X' %]
 [% END %]
+[% IF travel_enabled == 0 %]
+    [% travel_status = 'KO' %]
+[% END %]
 <div class="col-lg-2">
     <form class="form-inline" action="/interact/[% game %]/go" method="post"><input type="hidden" name="destination" value="[% t %]"><button type="submit" class="btn-xs [% IF travel_status == "KO" %]disabled" disabled="disabled"[% ELSE %]btn-primary"[% END %]>[% t %]<br /><span class="glyphicon glyphicon-send"></span><br />[% cost %] TU</button></form>
 </div>
@@ -21,6 +24,12 @@
     </div>
     <div class="col-sm-10">
     <h4>TRAVEL</h4>
+        [% IF travel_enabled == 0 %]
+        <div class="alert alert-info">
+            Travel not available.<br />
+            Travel will be available at [% travel_enabled_time %]
+        </div>
+        [% END %]       
         <div class="row">
             <h5><strong>Ground</strong></h5>
             [% FOREACH t IN travels.ground.keys %]

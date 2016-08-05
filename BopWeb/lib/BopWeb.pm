@@ -375,7 +375,44 @@ get '/play/:game/i/travel' => sub {
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
     my $present_position = $codes->{$player->position};
     my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
-    my %hold = get_hold($player->id);
+
+    my $travel_enabled;
+    my $travel_enabled_time;
+    my $print_travel_enabled;
+    if(enable_to_travel($player->disembark_time))
+    {
+        $travel_enabled = 1;
+    }
+    else
+    {
+        $travel_enabled = 0;
+        $travel_enabled_time = $player->disembark_time;    
+        $travel_enabled_time->add( hours => 2 );
+        $travel_enabled_time->set_time_zone('Europe/Rome');
+        $print_travel_enabled = $travel_enabled_time->dmy . " " . $travel_enabled_time->hms;
+    }
+
+    my $template_data = {
+        'player' => $user,
+        'money' => $player->money,
+        'nation_codes' => get_nation_codes($meta->{nations}),
+        'position' => $player->position,
+        'position_code' => $present_position,
+        'game' => params->{game},
+        'year' => $year,
+        'turn' => $turn,
+        'active_top' => 'travel',
+        'custom_js' => undef,
+        'context' => 'i',
+        'products' => \@products,
+        'travels' => $nation_meta->{'travels'},
+        'prices' => $nation_meta->{'prices'},
+        'travel_enabled' => $travel_enabled,
+        'travel_enabled_time' => $print_travel_enabled,
+        'shop_posted' => $shop_posted,
+        'travel_posted' => $travel_posted,
+        'err' => $err
+    };
     if($player->destination)
     {
         my $arrival = $player->arrival_time;
@@ -386,47 +423,17 @@ get '/play/:game/i/travel' => sub {
         }
         $arrival->set_time_zone('Europe/Rome');
         my $print_arrival = $arrival->dmy . " " . $arrival->hms;
-        template 'ongoing_travel', {
-            'player' => $user,
-            'nation_codes' => get_nation_codes($meta->{nations}),
-            'position' => $player->position,
-            'position_code' => $present_position,
-            'game' => params->{game},
-            'year' => $year,
-            'turn' => $turn,
-            'active_top' => 'travel',
-            'custom_js' => undef,
-            'context' => 'i',
-            'destination' => $player->destination,
-            'arrival_time' => $print_arrival,
-            'arrived' => $arrived,
-            'shop_posted' => $shop_posted,
-            'travel_posted' => $travel_posted,
-            'err' => $err
-        }
+        $template_data->{'destination'} = $player->destination;
+        $template_data->{'arrival_time'} = $print_arrival;
+        $template_data->{'arrived'} = $arrived;
+
+        template 'ongoing_travel', $template_data;
     }
     else
     {
-        template 'travel', {
-            'player' => $user,
-            'nation_codes' => get_nation_codes($meta->{nations}),
-            'position' => $player->position,
-            'position_code' => $present_position,
-            'game' => params->{game},
-            'year' => $year,
-            'turn' => $turn,
-            'active_top' => 'travel',
-            'custom_js' => undef,
-            'context' => 'i',
-            'travels' => $nation_meta->{'travels'},
-            'prices' => $nation_meta->{'prices'},
-            'hold'   => \%hold,
-            'money' => $player->money,
-            'products' => \@products,
-            'shop_posted' => $shop_posted,
-            'travel_posted' => $travel_posted,
-            'err' => $err
-        }; 
+        my %hold = get_hold($player->id);
+        $template_data->{'hold'} = \%hold;
+        template 'travel', $template_data;
     }
 };
 
@@ -891,7 +898,7 @@ post '/interact/:game/shop-command' => sub {
         }
         add_money(schema, $player->id, -1 * $cost);
         add_cargo(schema, $player->id, $type, $quantity);
-        my $redirection = "/play/" . params->{game} . "/i/travel?shop-posted=ok";
+        my $redirection = "/play/" . params->{game} . "/i/ravel?shop-posted=ok";
         redirect $redirection, 302;
         return;  
     }
@@ -935,8 +942,15 @@ post '/interact/:game/go' => sub {
         redirect $redirection, 302;
         return;  
     }
+
     my $codes = get_nation_codes($meta->{nations});
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
+    if(! enable_to_travel($player->disembark_time))
+    {
+        my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ko&err=not-ready-to-travel";
+        redirect $redirection, 302;
+        return;  
+    }
     my $present_position = $codes->{$player->position};
     my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
     my $data;
@@ -977,6 +991,7 @@ get '/interact/:game/arrive' => sub {
         $player->position($player->destination);
         $player->destination(undef);
         $player->arrival_time(undef);
+        $player->disembark_time(DateTime->now);
         $player->update();
         my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ok&err=arrived";
         redirect $redirection, 302;
@@ -1020,6 +1035,16 @@ sub add_cargo
         $cargo_obj->quantity($new_q);
         $cargo_obj->update;
     }
+}
+
+sub enable_to_travel
+{
+    my $disembark_time = shift;
+    return 1 if ! $disembark_time;
+    
+    my $enable_to_travel = $disembark_time->clone;
+    $enable_to_travel->add( hours => 2);
+    return DateTime->compare(DateTime->now, $enable_to_travel) == 1
 }
 
 
