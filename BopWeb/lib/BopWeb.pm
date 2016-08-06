@@ -10,6 +10,7 @@ use Data::Dumper;
 use Dancer2::Serializer::JSON;
 use Authen::Passphrase::BlowfishCrypt;
 use DateTime;
+use List::Util qw(shuffle);
 
 use BalanceOfPower::Utils qw (prev_turn);
 use BalanceOfPower::Constants ':all';;
@@ -731,7 +732,11 @@ get '/users/select-game' => sub {
                 redirect '/users/choose-game?not-invited=1';
                 return;
             }
-            schema->resultset("UserGame")->create({ user => $user_db->id, game => $game_db->id});
+            my $meta = get_metafile($metadata_path . '/' . $game_db->name . '.meta');
+            my @nations = keys %{$meta->{'nations'}};
+            @nations = shuffle @nations;
+            my $player = schema->resultset("BopPlayer")->create({ money =>  START_PLAYER_MONEY, position => $nations[0] });
+            schema->resultset("UserGame")->create({ user => $user_db->id, game => $game_db->id, player => $player->id });
             redirect '/users/logged', 302;
             return;
         }
@@ -781,7 +786,8 @@ get '/api/:game/users' => sub {
     my @out = ();
     for(@usergames)
     {
-        push @out, $_->user->user;
+        my $player = schema->resultset('BopPlayer')->find($_->player);
+        push @out, { username => $_->user->user, position => $player->position, money => $player->money };
     }
     content_type('application/json');
     return serialize(\@out, undef);
@@ -834,6 +840,23 @@ get '/api/:game/influence-orders' => sub {
      }
      content_type('application/json');
      return serialize(\@out, undef);
+};
+
+post '/api/:game/user-data' => sub {
+    my $game = params->{game};
+    my $user = params->{player};
+    my $password = params->{password};
+    my $money = params->{money};
+    my $game_db = schema->resultset("BopGame")->find({ file => $game });
+    if($game_db->admin_password ne $password)
+    {
+         send_error("Access denied", 403);
+         return;
+    }
+    my $usergame = player_of_game($game, $user);
+    my $player_db = schema->resultset("BopPlayer")->find($usergame->player);
+    $player_db->money($money);
+    $player_db->update();
 };
 
 
