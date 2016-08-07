@@ -1,3 +1,4 @@
 BopWeb/views/generated/*
 BopWeb/metadata/*
 BopWeb/games/*
+BopWeb/autotest.sqlite
