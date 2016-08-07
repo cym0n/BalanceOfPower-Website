@@ -854,6 +854,11 @@ post '/api/:game/user-data' => sub {
          return;
     }
     my $usergame = player_of_game($game, $user);
+    if(! $usergame)
+    {
+         send_error("Bad request", 400);
+         return;
+    }
     my $player_db = schema->resultset("BopPlayer")->find($usergame->player);
     $player_db->money($money);
     $player_db->update();
@@ -1234,9 +1239,10 @@ sub player_of_game
 {
     my $game = shift;
     my $user = shift;
-    return 0 if ! defined $user;
+    return undef if ! defined $user;
     my $game_db = schema->resultset("BopGame")->find({ file => $game });
     my $user_db = schema->resultset("BopUser")->find({ user => $user });
+    return undef if(! $game_db || ! $user_db);
     my $usergame = schema->resultset("UserGame")->find({ user => $user_db->id, game => $game_db->id });
     if($usergame)
     {
