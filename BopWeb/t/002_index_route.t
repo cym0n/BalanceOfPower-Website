@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 
+use lib 'lib';
+
 use BopWeb;
 use Test::More tests => 2;
 use Plack::Test;
