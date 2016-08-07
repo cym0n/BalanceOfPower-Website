@@ -857,6 +857,7 @@ post '/api/:game/user-data' => sub {
     my $player_db = schema->resultset("BopPlayer")->find($usergame->player);
     $player_db->money($money);
     $player_db->update();
+    return 'OK';
 };
 
 
