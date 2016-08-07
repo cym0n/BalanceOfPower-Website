@@ -847,6 +847,7 @@ post '/api/:game/user-data' => sub {
     my $user = params->{player};
     my $password = params->{password};
     my $money = params->{money};
+    my $position = params->{position};
     my $game_db = schema->resultset("BopGame")->find({ file => $game });
     if($game_db->admin_password ne $password)
     {
@@ -859,9 +860,19 @@ post '/api/:game/user-data' => sub {
          send_error("Bad request", 400);
          return;
     }
-    my $player_db = schema->resultset("BopPlayer")->find($usergame->player);
-    $player_db->money($money);
-    $player_db->update();
+    if($usergame->player)
+    {
+        my $player_db = schema->resultset("BopPlayer")->find($usergame->player);
+        $player_db->money($money);
+        $player_db->position($position) if $position;
+        $player_db->update();
+    }
+    else
+    {
+        my $player_db = schema->resultset("BopPlayer")->create( { money => $money, position => $position });
+        $usergame->player($player_db->id);
+        $usergame->update();
+    }
     return 'OK';
 };
 

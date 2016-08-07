@@ -92,4 +92,6 @@ __PACKAGE__->belongs_to(
   },
 );
 
+__PACKAGE__->set_primary_key('user', 'game');
+
 1;
