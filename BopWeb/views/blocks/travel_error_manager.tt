@@ -21,6 +21,9 @@
         [% IF err == 'not-arrived' %]
             Not arrived
         [% END %]
+        [% IF err == 'ongoing-travel' %]
+            Travel already started
+        [% END %]
         </div>
     [% END %]
     </div>

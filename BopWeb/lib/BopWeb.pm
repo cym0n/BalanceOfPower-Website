@@ -417,12 +417,7 @@ get '/play/:game/i/travel' => sub {
     if($player->destination)
     {
         my $arrival = $player->arrival_time;
-        my $arrived = 0;
-        if(DateTime->compare(DateTime->now, $arrival) == 1)
-        {
-            $arrived = 1;
-        }
-        $arrival->set_time_zone('Europe/Rome');
+        my $arrived = finished_travel($arrival);
         my $print_arrival = $arrival->dmy . " " . $arrival->hms;
         $template_data->{'destination'} = $player->destination;
         $template_data->{'arrival_time'} = $print_arrival;
@@ -787,7 +782,14 @@ get '/api/:game/users' => sub {
     for(@usergames)
     {
         my $player = schema->resultset('BopPlayer')->find($_->player);
-        push @out, { username => $_->user->user, position => $player->position, money => $player->money };
+        if($player)
+        {
+            push @out, { username => $_->user->user, position => $player->position, money => $player->money };
+        }
+        else
+        {
+            push @out, { username => $_->user->user, position => undef, money => undef };
+        }
     }
     content_type('application/json');
     return serialize(\@out, undef);
@@ -938,7 +940,7 @@ post '/interact/:game/shop-command' => sub {
         }
         add_money(schema, $player->id, -1 * $cost);
         add_cargo(schema, $player->id, $type, $quantity);
-        my $redirection = "/play/" . params->{game} . "/i/ravel?shop-posted=ok";
+        my $redirection = "/play/" . params->{game} . "/i/travel?shop-posted=ok";
         redirect $redirection, 302;
         return;  
     }
@@ -991,6 +993,13 @@ post '/interact/:game/go' => sub {
         redirect $redirection, 302;
         return;  
     }
+    if($player->destination)
+    {
+        my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ko&err=ongoing-travel";
+        redirect $redirection, 302;
+        return;  
+    }
+    
     my $present_position = $codes->{$player->position};
     my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
     my $data;
@@ -1007,6 +1016,7 @@ post '/interact/:game/go' => sub {
     }
     my $time = DateTime->now();
     $time->add( hours => $data->{cost});
+    $time->set_time_zone('Europe/Rome');
     $player->destination($destination);
     $player->arrival_time($time);
     $player->update;
@@ -1025,13 +1035,14 @@ get '/interact/:game/arrive' => sub {
     }
     my $game = params->{game};
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
-    my $arrival = $player->arrival_time;
-    if(DateTime->compare(DateTime->now, $arrival) == 1)
+    if(finished_travel($player->arrival_time))
     {
         $player->position($player->destination);
         $player->destination(undef);
         $player->arrival_time(undef);
-        $player->disembark_time(DateTime->now);
+        my $time = DateTime->now;
+        $time->set_time_zone('Europe/Rome');
+        $player->disembark_time($time);
         $player->update();
         my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ok&err=arrived";
         redirect $redirection, 302;
@@ -1077,14 +1088,35 @@ sub add_cargo
     }
 }
 
+sub finished_travel
+{
+    my $arrival_time = shift;
+    return 1 if ! $arrival_time;
+    $arrival_time->set_time_zone('Europe/Rome');
+    my $now = DateTime->now;
+    $now->set_time_zone('Europe/Rome');
+    if(DateTime->compare($now, $arrival_time) == 1)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+
 sub enable_to_travel
 {
     my $disembark_time = shift;
     return 1 if ! $disembark_time;
     
     my $enable_to_travel = $disembark_time->clone;
+    $enable_to_travel->set_time_zone('Europe/Rome');
     $enable_to_travel->add( hours => 2);
-    return DateTime->compare(DateTime->now, $enable_to_travel) == 1
+    my $now = DateTime->now;
+    $now->set_time_zone('Europe/Rome');
+    return DateTime->compare($now, $enable_to_travel) == 1
 }
 
 

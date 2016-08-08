@@ -67,7 +67,7 @@
         <strong>Luxury:</strong> [% hold.luxury %]<br />
         <strong>Arms:</strong> [% hold.arms %]<br />
         <strong>Tech:</strong> [% hold.tech %]<br />
-        <strong>Culture:</strong> [% hold.tech %]<br />
+        <strong>Culture:</strong> [% hold.culture %]<br />
         <br />
         <strong>Available space:</strong> [% hold.free %]
     </div>
