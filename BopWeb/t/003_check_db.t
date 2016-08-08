@@ -19,7 +19,7 @@ schema->resultset("BopGame")->create({ name => 'autotest', file => 'autotest', a
 my $game = schema->resultset("BopGame")->find({ name => 'autotest' });
 
 ok($game, "A game with name autotest exists");
-is($game->id, 1, "Autotest game has the first ID");
+is($game->id, 1001, "Autotest game has the first ID");
 
 done_testing();
 
