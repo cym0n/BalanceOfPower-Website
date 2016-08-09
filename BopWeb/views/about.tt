@@ -8,22 +8,59 @@
 
 <h1>OBJECTIVE OF THE GAME</h1>
 
-<p>Your objective is to gain from the stock market as much money as you can. If richness is not attractive for you, you can try to accomplish as much missions as you can and be considered the best puppetmaster of the dark world.</p>
+<p>
+Player has two indicators of his success:
+<ul>
+    <li><strong>Money</strong>: Money can be accumulated using operations from the Stock Market or trading in the Shop</li>
+    <li><strong>Mission Points</strong>: Mission Points are acquired when a mission assigned to you is accomplished. (your intervent could not be necessary... that's luck!)
+</ul>
+</p>
 
-<h1>THE STOCK MARKET</h1>
+<h1>THE STOCK MARKET GAME</h1>
+<p>
+Also known as Balance Of Power - Layer Two, the Stock Market Game involve the trading of stocks from the nations. Trading stocks gives you the possibility to control nations and change their behaviour.
+</p>
+<h2>THE STOCK MARKET</h2>
 <p>Every nation has an amount of stocks available to be bought. The value of the stock is determined by the w/d parameter that is the sum of the events that happen during each turn. Buying stocks where their value is low and selling them when they go high give you a gain (as on any free market).</p>
 <p>You can by and sell stocks from the menu on the right of the situation screen of every nation.</p>
-<h1>WAR AND BONDS</h1>
+<h2>WAR AND BONDS</h2>
 <p>
 When a nation starts a war you can still play with its stock, but pay attention that every turn a war bond will be generated subtracting 50 units from your money. At the end of the war, if the nation that issued them win, you'll have back your money with an extra, if it lose, you'll lost al you had invested this way.</p>
-<h1>CIVIL WAR</h1>
+<h2>CIVIL WAR</h2>
 <p>
 During civil war you can't buy or sell stocks. If you own stocks from a nation they're blocked and no operation can be done on them. If the civil war is won by the government, your stocks will return available for the market, but if rebels win it all of them will be lost.</p>
-<h1>INFLUENCE</h1>
+<h2>INFLUENCE</h2>
 Any time you buy stocks you gain influence point. You gain .5 influence for every stock bought. In any moment you can spend an influence point to force a nation to do want you want, changing the course of history.</p>
 <p>You can select influence commands from the menu on the bottom of every nation situation screen.</p>
-<h1>TARGETS</h1>
-<p>Randomly, a target will be assigned to you: to make a government fall. You have 16 turns (four years) to make that happen, but usually it's not an easy task, because the victim it's chosen between stable nations. Reaching your target will give you a mission point, used for ranking.</p>
-    </div>
+<h1>THE MISSION POINTS GAME</h1>
+<p>Balance of Power - Layer Three</p>
+<p>Missions are assigned randomly to the player. You can see what active mission you have fom the TARGETS menu. For now, missions involve only the fall of a government for civil war or losing a war with someone else. If this event happens while the target is active for you, you acquire a mission point. A target lasts 16 turns (4 years) before expire.</p>
+<p>The only way to &quot;play&quot; with your mission is using INFLUENCE COMMANDS acquired during the STOCK MARKET GAME. Usign influence commands you can push some nations to aid (or cause) the fall of the nation of your objective.</p>
+<h1>THE TRAVELER GAME</h1>
+<p>The &quot;Fourth Layer&quot; puts the player in the world. In the traveler game (TRAVEL menu) the player has a position on the map and every move depend on that.</p>
+<h2>TRAVEL</h2>
+<p>You can leave the nation where you are travelling to another country. You just have to respect the &quot;travel phases&quoy:
+<ul>
+    <li><strong>Stay phase</strong>: you have to stay <em>two hours (real time)</em> after disembark phase in a contry before leaving it.</li>
+    <li><strong>Travel phase</strong>: every destination has a TU (Time Units) value on its button. One TU correspond to 1 hour real time. If you travel to a country that's 3 TU far, you'll have to wait three hours (real time) until enter disembark phase</li>
+    <li><strong>Disembark phase</strong> when the time needed for travel phase ends the player enter in the disembark phase. In this phase you're not in the country you wanted, but just floating over it, waiting to enter. You can click the disembark link any time to enter the stay phase. (Remember: the two hourse time span of the stay phase will start only after you disembark</li>
+</ul>
+<h3>Ground travel</h3>
+<p>You can always travel to a country that has a border in common with the one you're in. The cost of the travel is always 2 TU</p>
+<h3>Air travel</h3>
+<p>Air travel cost as TU as the distance from the starting country. This means that an air travel to a country on the border is just 1 TU.</p>
+<p>Air travel is possible only between countries that have a trade route.</p>
+<p>Air travel is not possible if one of the involved country is at war.</p>
+<h2>SHOP</h2>
+<p>All the countries trade in many types of things. The price of all the things depends on a value of the country. The price is higher if the value is <em>lower</em>
+<ul>
+    <li><strong>goods</strong> depends on <strong>production</strong></li>
+    <li><strong>luxury</strong> depends on <strong>wealth</strong></li>
+    <li><strong>arms</strong> depends on <strong>army</strong></li>
+    <li><strong>tech</strong> depends on <strong>progress</strong></li>
+    <li><strong>culture</strong> depends on <strong>prestige</strong></li>
+</ul>
+</p>
+<p>You can buy and sell object as your money and your hold allow. You can try increasing your money buying where the value is low and selling where it's high</p>
 [% INCLUDE blocks/foot.tt %]
 
