@@ -7,7 +7,7 @@
     [% travel_status = 'KO' %]
 [% END %]
 <div class="col-lg-2">
-    <form class="form-inline" action="/interact/[% game %]/go" method="post"><input type="hidden" name="destination" value="[% t %]"><button type="submit" class="btn-xs [% IF travel_status == "KO" %]disabled" disabled="disabled"[% ELSE %]btn-primary"[% END %]>[% t %]<br /><span class="glyphicon glyphicon-send"></span><br />[% cost %] TU</button></form>
+    <form class="form-inline" action="/interact/[% game %]/go" method="post"><input type="hidden" name="destination" value="[% t %]"><button type="submit" class="btn-xs btn-block [% IF travel_status == "KO" %]disabled" disabled="disabled"[% ELSE %]btn-primary"[% END %]>[% t %]<br /><span class="glyphicon glyphicon-send"></span><br />[% cost %] TU</button></form>
 </div>
 [% END %]
 <h3>[% player %] - [% game %] - [% year %]/[% turn %]</h3>
