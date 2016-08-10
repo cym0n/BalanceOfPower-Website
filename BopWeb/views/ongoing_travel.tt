@@ -1,5 +1,6 @@
 [% INCLUDE blocks/head.tt %]
-<h3>[% player %] - [% game %] - [% year %]/[% turn %]</h3>
+<div class="col-xs-12 col-sm-9">
+<h3>TRAVEL</h3>
 <div class="row">
   <div class="col-sm-12">
     <div class="col-md-2">
@@ -12,11 +13,16 @@
         </div>
     </div>
     <div class="col-md-10">
-        <h4>TRAVEL</h4>
+        <div class="row">
+        <div class="alert alert-info">
+            Time is [% now %] (Europe/Rome)
+        </div>
+        </div>
+        <div class="row">
         [% IF arrived == 0 %]
         <div class="alert alert-info">
             You are moving to [% INCLUDE blocks/linked_nation.tt n = destination %]<br />
-            Estimated arrival time: [% arrival_time %]
+            Estimated arrival time: [% arrival_time %] (Europe/Rome)
         </div>
         [% ELSE %]
         <div class="alert alert-info">
@@ -25,9 +31,12 @@
             <strong>&gt; <a href="/interact/[% game %]/arrive">Disembark</a></strong>
         </div>
         [% END %]
+        </div>
         [% INCLUDE blocks/travel_error_manager.tt %]
     </div>
   </div>
 </div>
+</div>
 [% INCLUDE blocks/shop_error_manager.tt %]
+[% INCLUDE blocks/side.tt %]
 [% INCLUDE blocks/foot.tt %]

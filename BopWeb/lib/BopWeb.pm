@@ -33,6 +33,7 @@ my $metadata_path = $root_path . "metadata";
 my @reports_menu = ('r/situation', 'r/newspaper', 'r/hotspots', 'r/alliances', 'r/influences', 'r/supports', 'r/rebel-supports', 'r/combo-history', 'r/prices' );
 my @nation_reports_menu = ('n/actual', 'n/borders', 'n/near', 'n/diplomacy', 'n/events', 'n/graphs', 'n/prices' );
 my @player_reports_menu = ('r/market', 'p/stocks', 'p/targets', 'p/events', 'db/orders', 'p/ranking', 'p/graphs' );
+my @travel_menu = ('i/travel', 'i/shop');
 
 my @products = ( 'goods', 'luxury', 'arms', 'tech', 'culture' );
 
@@ -177,6 +178,12 @@ my %report_configuration = (
                 menu_name => 'My Orders',
                 logged => 1,
                 template => 'orders_report.tt',
+            },
+            'i/travel' => {
+                menu_name => 'Travel',
+            },
+            'i/shop' => {
+                menu_name => 'Shop',
             }
     );
 
@@ -376,6 +383,16 @@ get '/play/:game/i/travel' => sub {
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
     my $present_position = $codes->{$player->position};
     my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
+    my $report_conf = $report_configuration{'i/travel'};
+    my $standards = get_report_standard_from_context('i');
+    for(keys %{$standards})
+    {
+        if(! exists $report_conf->{$_})
+        {
+            $report_conf->{$_} = $standards->{$_}
+        }
+    }
+    my ($menu, $ordered) = make_menu($report_conf->{menu}, undef);
 
     my $travel_enabled;
     my $travel_enabled_time;
@@ -392,9 +409,15 @@ get '/play/:game/i/travel' => sub {
         $travel_enabled_time->set_time_zone('Europe/Rome');
         $print_travel_enabled = $travel_enabled_time->dmy . " " . $travel_enabled_time->hms;
     }
+    my $now = DateTime->now;
+    $now->set_time_zone("Europe/Rome");
+    my $print_now = $now->dmy . " " . $now->hms;
 
     my $template_data = {
         'player' => $user,
+        'interactive' => 1,
+        'menu' => $menu,
+        'menu_urls' => $ordered,
         'money' => $player->money,
         'nation_codes' => get_nation_codes($meta->{nations}),
         'position' => $player->position,
@@ -403,6 +426,7 @@ get '/play/:game/i/travel' => sub {
         'year' => $year,
         'turn' => $turn,
         'active_top' => 'travel',
+        'active' => 'i/travel',
         'custom_js' => undef,
         'context' => 'i',
         'products' => \@products,
@@ -412,7 +436,8 @@ get '/play/:game/i/travel' => sub {
         'travel_enabled_time' => $print_travel_enabled,
         'shop_posted' => $shop_posted,
         'travel_posted' => $travel_posted,
-        'err' => $err
+        'err' => $err,
+        'now' => $print_now
     };
     if($player->destination)
     {
@@ -468,7 +493,8 @@ get '/play/:game/n' => sub {
                 year => $year,
                 turn => $turn,
                 active_top => 'nations',
-                player => $user
+                player => $user,
+                interactive => 1
             }
         }
     }
@@ -509,6 +535,13 @@ sub get_report_standard_from_context
         $title = 'player';
         $active_top = 'market';
     }
+    elsif($context eq 'i')
+    {
+        $menu = \@travel_menu;
+        $title = 'travel';
+        $active_top = 'travel';
+    }
+        
     return { title => $title, 
              menu => $menu,
              template => 'report',
