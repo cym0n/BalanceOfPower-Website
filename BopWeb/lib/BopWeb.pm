@@ -77,7 +77,7 @@ get '/' => sub {
 };
 
 get '/about' => sub {
-    template 'about';
+    template 'about', { custom_css => 'about.css' };
 };
 
 

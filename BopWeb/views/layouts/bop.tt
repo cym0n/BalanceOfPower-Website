@@ -26,6 +26,9 @@
       <script src="[% request.uri_base %]/javascripts/html5shiv.min.js"></script>
       <script src="[% request.uri_base %]/javascripts/respond.min.js"></script>
     <![endif]-->
+    [% IF custom_css %]
+    <link href="[% request.uri_base %]/css/[% custom_css %]" rel="stylesheet">
+    [% END %]
   </head>
   <body>
   [% content %]
