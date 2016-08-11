@@ -103,4 +103,13 @@ __PACKAGE__->set_primary_key("id");
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+
+sub money_to_print
+{
+    my $self = shift;
+    my $money = $self->money;
+    $money = (int($money * 100)/100);
+    return $money;
+}
 1;

@@ -374,7 +374,6 @@ get '/play/:game/i/travel' => sub {
         send_error("Access denied", 403);
         return;
     }    
-    my $shop_posted = params->{'shop-posted'};
     my $travel_posted = params->{'travel-posted'};
     my $err = params->{'err'};
     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
@@ -431,10 +430,8 @@ get '/play/:game/i/travel' => sub {
         'context' => 'i',
         'products' => \@products,
         'travels' => $nation_meta->{'travels'},
-        'prices' => $nation_meta->{'prices'},
         'travel_enabled' => $travel_enabled,
         'travel_enabled_time' => $print_travel_enabled,
-        'shop_posted' => $shop_posted,
         'travel_posted' => $travel_posted,
         'err' => $err,
         'now' => $print_now
@@ -452,12 +449,67 @@ get '/play/:game/i/travel' => sub {
     }
     else
     {
-        my %hold = get_hold($player->id);
-        $template_data->{'hold'} = \%hold;
+     
         template 'travel', $template_data;
     }
 };
 
+get '/play/:game/i/shop' => sub {
+    my $shop_posted = params->{'shop-posted'};
+    my $err = params->{'err'};
+    my $user = session->read('user');
+    my $usergame = player_of_game(params->{game}, $user);
+    if(! $usergame)
+    {
+        send_error("Access denied", 403);
+        return;
+    }    
+    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my ($year, $turn) = split '/', $meta->{'current_year'};
+    my $codes = get_nation_codes($meta->{nations});
+    my $player = schema->resultset('BopPlayer')->find($usergame->player);
+    my $present_position = $codes->{$player->position};
+    my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
+    my $report_conf = $report_configuration{'i/travel'};
+    my $standards = get_report_standard_from_context('i');
+    for(keys %{$standards})
+    {
+        if(! exists $report_conf->{$_})
+        {
+            $report_conf->{$_} = $standards->{$_}
+        }
+    }
+    my ($menu, $ordered) = make_menu($report_conf->{menu}, undef);
+    my $now = DateTime->now;
+    $now->set_time_zone("Europe/Rome");
+    my $print_now = $now->dmy . " " . $now->hms;
+    my %hold = get_hold($player->id);
+
+    my $template_data = {
+        'player' => $user,
+        'interactive' => 1,
+        'menu' => $menu,
+        'menu_urls' => $ordered,
+        'money' => $player->money_to_print,
+        'nation_codes' => get_nation_codes($meta->{nations}),
+        'prices' => $nation_meta->{'prices'},
+        'position' => $player->position,
+        'position_code' => $present_position,
+        'products' => \@products,
+        'hold' => \%hold,
+        'game' => params->{game},
+        'year' => $year,
+        'turn' => $turn,
+        'active_top' => 'travel',
+        'active' => 'i/shop',
+        'custom_js' => undef,
+        'context' => 'i',
+        'shop_posted' => $shop_posted,
+        'err' => $err,
+        'now' => $print_now
+    };
+    template 'shop', $template_data;
+};
 
 get '/play/:game' => sub {
     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
@@ -944,7 +996,7 @@ post '/interact/:game/shop-command' => sub {
     my $quantity = params->{quantity};
     if(! $command || ! $type || ! $quantity)
     { 
-        my $redirection = "/play/" . params->{game} . "/i/travel?shop-posted=ko&err=no-input";
+        my $redirection = "/play/" . params->{game} . "/i/shop?shop-posted=ko&err=no-input";
         redirect $redirection, 302;
         return;  
     }
@@ -961,19 +1013,19 @@ post '/interact/:game/shop-command' => sub {
     {
         if($cost > $money)
         {
-            my $redirection = "/play/" . params->{game} . "/i/travel?shop-posted=ko&err=no-money";
+            my $redirection = "/play/" . params->{game} . "/i/shop?shop-posted=ko&err=no-money";
             redirect $redirection, 302;
             return;  
         }
         if($quantity > $hold{'free'})
         {
-            my $redirection = "/play/" . params->{game} . "/i/travel?shop-posted=ko&err=no-space";
+            my $redirection = "/play/" . params->{game} . "/i/shop?shop-posted=ko&err=no-space";
             redirect $redirection, 302;
             return;  
         }
         add_money(schema, $player->id, -1 * $cost);
         add_cargo(schema, $player->id, $type, $quantity);
-        my $redirection = "/play/" . params->{game} . "/i/travel?shop-posted=ok";
+        my $redirection = "/play/" . params->{game} . "/i/shop?shop-posted=ok";
         redirect $redirection, 302;
         return;  
     }
@@ -981,19 +1033,19 @@ post '/interact/:game/shop-command' => sub {
     {
         if($quantity > $hold{$type})
         {
-            my $redirection = "/play/" . params->{game} . "/i/travel?shop-posted=ko&err=not-owned";
+            my $redirection = "/play/" . params->{game} . "/i/shop?shop-posted=ko&err=not-owned";
             redirect $redirection, 302;
             return;  
         }
         add_money(schema, $player->id, $cost);
         add_cargo(schema, $player->id, $type, -1 * $quantity);
-        my $redirection = "/play/" . params->{game} . "/i/travel?shop-posted=ok";
+        my $redirection = "/play/" . params->{game} . "/i/shop?shop-posted=ok";
         redirect $redirection, 302;
         return;  
     }
     else
     {
-        my $redirection = "/play/" . params->{game} . "/i/travel?shop-posted=ko&err=no-input";
+        my $redirection = "/play/" . params->{game} . "/i/shop?shop-posted=ko&err=no-input";
         redirect $redirection, 302;
         return;  
     }
