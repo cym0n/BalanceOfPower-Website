@@ -35,6 +35,7 @@
                 </div>
                 [% END %]    
             </div>
+            [% INCLUDE blocks/travel_error_manager.tt %]
             <div class="row">
             <div class="col-sm-5">
                 <div class="row">

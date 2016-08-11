@@ -37,6 +37,5 @@
   </div>
 </div>
 </div>
-[% INCLUDE blocks/shop_error_manager.tt %]
 [% INCLUDE blocks/side.tt %]
 [% INCLUDE blocks/foot.tt %]
