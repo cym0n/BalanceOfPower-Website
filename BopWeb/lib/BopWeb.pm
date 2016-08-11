@@ -255,9 +255,12 @@ get '/play/:game/:context/:report' => sub {
     my $nation_meta = undef;
     my $selected_stock_action = undef;
     my $selected_influence_action = undef;
+    my $player_meta = undef;
+    my $usergame = player_of_game(params->{game}, $user);
+    $player_meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data") if $user;
     if(params->{context} eq 'n' && $user)
     {
-        $wallet = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
+        $wallet = $player_meta->{'wallet'};
         $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$nation.data");
         $selected_stock_action = schema->resultset('StockOrder')->find({
                 game => params->{game},
@@ -274,6 +277,15 @@ get '/play/:game/:context/:report' => sub {
             });
         $selected_influence_action = $selected_influence_action->as_string() if($selected_influence_action);
     }
+    my $stock_value = undef;
+    my $money = undef;
+    if($user)
+    {
+        $stock_value = $player_meta->{stock_value};
+        my $player = schema->resultset('BopPlayer')->find($usergame->player);
+        $money = $player->money_to_print;
+    }
+
     template $report_conf->{template}, {
        'nation' => $nation,
        'report' => $report_to_show,
@@ -286,7 +298,9 @@ get '/play/:game/:context/:report' => sub {
        'active_top' => $report_conf->{active_top},
        'custom_js' => $report_conf->{custom_js},
        'player' => $user,
-       'interactive' => player_of_game(params->{game}, $user),
+       'p_stock_value' => $stock_value,
+       'money' => $money, 
+       'interactive' => $usergame,
        'page_title' => $page_title,
        'wallet' => $wallet,
        'context' => params->{context},
@@ -411,13 +425,15 @@ get '/play/:game/i/travel' => sub {
     my $now = DateTime->now;
     $now->set_time_zone("Europe/Rome");
     my $print_now = $now->dmy . " " . $now->hms;
+    my $player_meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
 
     my $template_data = {
         'player' => $user,
         'interactive' => 1,
         'menu' => $menu,
         'menu_urls' => $ordered,
-        'money' => $player->money,
+        'p_stock_value' => $player_meta->{'stock_value'},
+        'money' => $player->money_to_print,
         'nation_codes' => get_nation_codes($meta->{nations}),
         'position' => $player->position,
         'position_code' => $present_position,
@@ -484,6 +500,7 @@ get '/play/:game/i/shop' => sub {
     $now->set_time_zone("Europe/Rome");
     my $print_now = $now->dmy . " " . $now->hms;
     my %hold = get_hold($player->id);
+    my $player_meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
 
     my $template_data = {
         'player' => $user,
@@ -491,6 +508,7 @@ get '/play/:game/i/shop' => sub {
         'menu' => $menu,
         'menu_urls' => $ordered,
         'money' => $player->money_to_print,
+        'p_stock_value' => $player_meta->{'stock_value'},
         'nation_codes' => get_nation_codes($meta->{nations}),
         'prices' => $nation_meta->{'prices'},
         'position' => $player->position,
@@ -546,7 +564,7 @@ get '/play/:game/n' => sub {
                 turn => $turn,
                 active_top => 'nations',
                 player => $user,
-                interactive => 1
+                interactive => 1 #Just to turn on the topbar, no sidebar here
             }
         }
     }
