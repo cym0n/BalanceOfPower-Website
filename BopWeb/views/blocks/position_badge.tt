@@ -1,0 +1,7 @@
+<div class="center-block">
+    <img style="height:100px" src="/images/[% icon %]">
+</div>
+<strong>You are in [% INCLUDE blocks/linked_nation.tt n = position %]<br /><br /></strong>
+<div class="center-block">
+    <img style="height:50px" src="/images/flags/[% position_code %].png">
+</div>
