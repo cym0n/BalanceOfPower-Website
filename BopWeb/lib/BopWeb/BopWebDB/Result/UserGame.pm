@@ -38,12 +38,12 @@ __PACKAGE__->table("USER_GAMES");
 =head2 user
 
   data_type: 'integer'
-  is_nullable: 1
+  is_nullable: 0
 
 =head2 game
 
   data_type: 'integer'
-  is_nullable: 1
+  is_nullable: 0
 
 =head2 player
 
@@ -54,16 +54,16 @@ __PACKAGE__->table("USER_GAMES");
 
 __PACKAGE__->add_columns(
   "user",
-  { data_type => "integer", is_nullable => 1 },
+  { data_type => "integer", is_nullable => 0 },
   "game",
-  { data_type => "integer", is_nullable => 1 },
+  { data_type => "integer", is_nullable => 0 },
   "player",
   { data_type => "integer", is_nullable => 1 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-08-02 11:57:10
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:fKWnM0+C2yefN2b33Ig7WA
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-08-12 18:17:04
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:qgSvHznZi6J3ncmXHCDtHQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
