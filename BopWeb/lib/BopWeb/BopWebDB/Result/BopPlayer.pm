@@ -1,8 +1,5 @@
 use utf8;
 package BopWeb::BopWebDB::Result::BopPlayer;
-use lib "/home/cymon/works/nations/repo/src/lib";
-use BalanceOfPower::Constants ':all';;
-
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
@@ -106,6 +103,10 @@ __PACKAGE__->set_primary_key("id");
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+use lib "/home/cymon/works/nations/repo/src/lib";
+use BalanceOfPower::Constants ':all';;
+
 
 __PACKAGE__->has_many(
   "friendships",
