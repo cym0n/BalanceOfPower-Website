@@ -22,7 +22,6 @@ show_errors: 1
 # print the banner
 startup_info: 1
 
-stubbed_user: user1
 
 plugins:
     DBIC:
@@ -32,3 +31,5 @@ plugins:
 
 
 
+stubbed_user: user1
+metadata_path: testenv/metadata

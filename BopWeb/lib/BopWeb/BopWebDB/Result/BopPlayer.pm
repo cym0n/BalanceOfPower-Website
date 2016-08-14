@@ -43,7 +43,7 @@ __PACKAGE__->table("BOP_PLAYERS");
 
 =head2 money
 
-  data_type: 'integer'
+  data_type: 'real'
   is_nullable: 1
 
 =head2 position
@@ -74,7 +74,7 @@ __PACKAGE__->add_columns(
   "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "money",
-  { data_type => "integer", is_nullable => 1 },
+  { data_type => "real", is_nullable => 1 },
   "position",
   { data_type => "varchar", is_nullable => 1, size => 50 },
   "destination",
@@ -98,8 +98,8 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-08-05 23:25:41
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:S6aVhDy9X1ULVFEqBfss7Q
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-08-14 16:35:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Sq0F6PxoSRPB9Oe2igPs8A
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
