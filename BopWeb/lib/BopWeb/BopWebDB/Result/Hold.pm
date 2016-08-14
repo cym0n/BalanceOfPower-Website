@@ -51,6 +51,16 @@ __PACKAGE__->table("HOLD");
   data_type: 'number'
   is_nullable: 0
 
+=head2 price
+
+  data_type: 'real'
+  is_nullable: 1
+
+=head2 stat
+
+  data_type: 'real'
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -60,11 +70,15 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 0, size => 50 },
   "quantity",
   { data_type => "number", is_nullable => 0 },
+  "price",
+  { data_type => "real", is_nullable => 1 },
+  "stat",
+  { data_type => "real", is_nullable => 1 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-08-12 18:20:02
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:TUjE2cwphjy3xmnuE4OK+Q
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-08-14 18:33:11
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:4V1cOnLhQj2Q7EZns/AMxA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
