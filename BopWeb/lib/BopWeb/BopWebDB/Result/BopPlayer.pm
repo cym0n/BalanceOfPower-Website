@@ -104,6 +104,19 @@ __PACKAGE__->set_primary_key("id");
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 
+__PACKAGE__->has_many(
+  "friendships",
+  "BopWeb::BopWebDB::Result::BopPlayerFriendship",
+  { "foreign.player" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+__PACKAGE__->has_many(
+  "holds",
+  "BopWeb::BopWebDB::Result::Hold",
+  { "foreign.player" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
 
 sub money_to_print
 {
@@ -112,4 +125,67 @@ sub money_to_print
     $money = (int($money * 100)/100);
     return $money;
 }
+
+sub get_friendship
+{
+    my $self = shift;
+    my $nation = shift;
+    my $f = $self->friendships->find({ nation => $nation });
+    if($f)
+    {
+        return 50 + $f->value;
+    }
+    else
+    {
+        return 50;
+    }
+}
+sub add_friendship
+{
+    my $self = shift;
+    my $nation = shift;
+    my $value = shift;
+    my $f = $self->friendships->find({ nation => $nation });
+    if(! $f)
+    {
+        $self->friendships->create({ nation => $nation, value => $value });
+    }
+    else
+    {
+        my $new_value = $f->value + $value;
+        $new_value = 50 if $new_value > 50;
+        $new_value = -50 if $new_value < -50;
+        $f->value($new_value);
+        $f->update;
+    }
+}
+
+sub add_cargo
+{
+    my $self = shift;
+    my $type = shift;
+    my $q = shift;
+    my $cargo_obj = $self->holds->find({ type => $type });
+    if(! $cargo_obj)
+    {
+        $self->holds->create({ type => $type,
+                               quantity => $q });
+    }
+    else
+    {
+        my $new_q = $cargo_obj->quantity + $q;
+        $cargo_obj->quantity($new_q);
+        $cargo_obj->update;
+    }
+}
+sub add_money
+{
+    my $self = shift;
+    my $money = shift;
+    my $new_money = $self->money + $money;
+    $new_money = 0 if($new_money < 0);
+    $self->money($new_money);
+    $self->update();
+}
+
 1;

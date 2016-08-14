@@ -37,9 +37,13 @@ __PACKAGE__->table("BOP_PLAYER_FRIENDSHIP");
 
 =head2 player
 
-  data_type: 'integer
-  nation varchar'
-  is_nullable: 1
+  data_type: 'integer'
+  is_nullable: 0
+
+=head2 nation
+
+  data_type: 'varchar'
+  is_nullable: 0
   size: 50
 
 =head2 value
@@ -51,15 +55,19 @@ __PACKAGE__->table("BOP_PLAYER_FRIENDSHIP");
 
 __PACKAGE__->add_columns(
   "player",
-  { data_type => "integer\n  nation varchar", is_nullable => 1, size => 50 },
+  { data_type => "integer", is_nullable => 0 },
+  "nation",
+  { data_type => "varchar", is_nullable => 0, size => 50 },
   "value",
   { data_type => "integer", is_nullable => 1 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-08-12 17:46:22
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ig6sYOrkRoElGHTV6TyT9w
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-08-14 15:20:23
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:m52jqvC2vQ1110/cozmpDA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+__PACKAGE__->set_primary_key('player', 'nation');
 1;

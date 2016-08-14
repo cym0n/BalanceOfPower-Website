@@ -22,7 +22,13 @@ show_errors: 1
 # print the banner
 startup_info: 1
 
-stubbed_user: cymon
+stubbed_user: user1
+
+plugins:
+    DBIC:
+      default:
+        dsn: dbi:SQLite:dbname=autotest.sqlite
+        schema_class: BopWeb::BopWebDB
 
 
 

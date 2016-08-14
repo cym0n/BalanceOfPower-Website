@@ -73,7 +73,7 @@ sub nation_from_code
 }
 
 get '/' => sub {
-    my $user = session->read('user');
+    my $user = logged_user();
     template 'home', { player => $user };
 };
 
@@ -192,7 +192,7 @@ get '/play/:game/:context/:report' => sub {
     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
     my ($year, $turn) = split '/', $meta->{'current_year'};
     my $context = params->{context};
-    my $user = session->read('user');
+    my $user = logged_user();
     my $nation = params->{nation};
     my $nation_name;
     if($context ne 'r' && $context ne 'p' && $context ne 'n')
@@ -318,7 +318,7 @@ get '/play/:game/db/orders' => sub {
     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
     my ($year, $turn) = split '/', $meta->{'current_year'};
     my $context = 'db';
-    my $user = session->read('user');
+    my $user = logged_user();
     my $standards = get_report_standard_from_context(params->{context});
     my $report_conf = $report_configuration{$report_id};
     my $nation = undef;
@@ -381,7 +381,7 @@ get '/play/:game/db/orders' => sub {
 };
 
 get '/play/:game/i/travel' => sub {
-    my $user = session->read('user');
+    my $user = logged_user();
     my $usergame = player_of_game(params->{game}, $user);
     if(! $usergame)
     {
@@ -426,7 +426,7 @@ get '/play/:game/i/travel' => sub {
     $now->set_time_zone("Europe/Rome");
     my $print_now = $now->dmy . " " . $now->hms;
     my $player_meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
-
+    my $friendship = $player->get_friendship($player->position);
     my $template_data = {
         'player' => $user,
         'interactive' => 1,
@@ -437,6 +437,8 @@ get '/play/:game/i/travel' => sub {
         'nation_codes' => get_nation_codes($meta->{nations}),
         'position' => $player->position,
         'position_code' => $present_position,
+        'nation_friendship' => $friendship,
+        'nation_friendship_good' => $friendship < FRIENDSHIP_LIMIT_TO_SHOP ? 0 : 1,
         'game' => params->{game},
         'year' => $year,
         'turn' => $turn,
@@ -473,7 +475,7 @@ get '/play/:game/i/travel' => sub {
 get '/play/:game/i/shop' => sub {
     my $shop_posted = params->{'shop-posted'};
     my $err = params->{'err'};
-    my $user = session->read('user');
+    my $user = logged_user();
     my $usergame = player_of_game(params->{game}, $user);
     if(! $usergame)
     {
@@ -501,7 +503,7 @@ get '/play/:game/i/shop' => sub {
     my $print_now = $now->dmy . " " . $now->hms;
     my %hold = get_hold($player->id);
     my $player_meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
-
+    my $friendship = $player->get_friendship($player->position);
     my $template_data = {
         'player' => $user,
         'interactive' => 1,
@@ -513,6 +515,8 @@ get '/play/:game/i/shop' => sub {
         'prices' => $nation_meta->{'prices'},
         'position' => $player->position,
         'position_code' => $present_position,
+        'nation_friendship' => $friendship,
+        'nation_friendship_good' => $friendship < FRIENDSHIP_LIMIT_TO_SHOP ? 0 : 1,
         'products' => \@products,
         'hold' => \%hold,
         'game' => params->{game},
@@ -544,7 +548,7 @@ get '/play/:game' => sub {
 
 get '/play/:game/n' => sub {
     my $nation = params->{nation};
-    my $user = session->read('user');
+    my $user = logged_user();
     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
     my ($year, $turn) = split '/', $meta->{'current_year'};
     if($meta)
@@ -740,7 +744,8 @@ any '/users/login' => sub {
 };
 
 get '/users/logged' => sub {
-    my $user = session->read('user');
+    my $user = logged_user();
+    print "User is $user\n";
     if($user)
     {
         my $user_db = schema->resultset("BopUser")->find({ user => $user });
@@ -781,7 +786,7 @@ get '/users/logout' => sub {
 };
 
 get '/users/choose-game' => sub {
-    my $user = session->read('user');
+    my $user = logged_user();
     my @games = schema->resultset("BopGame")->search({ active => 1,
                                                        open => 1});
     my @available_games = grep { ! player_of_game($_->file, $user) } @games;
@@ -792,7 +797,7 @@ get '/users/choose-game' => sub {
 };
 
 get '/users/play-game' => sub {
-    my $user = session->read('user');
+    my $user = logged_user();
     if($user)
     {
         my $user_db = schema->resultset("BopUser")->find({ user => $user });
@@ -807,7 +812,7 @@ get '/users/play-game' => sub {
 };
 
 get '/users/select-game' => sub {
-    my $user = session->read('user');
+    my $user = logged_user();
     if($user)
     {
         my $user_db = schema->resultset("BopUser")->find({ user => $user });
@@ -999,7 +1004,8 @@ sub serialize
 ### ACTIONS
 
 post '/interact/:game/shop-command' => sub {
-    my $user = session->read('user');
+    my $user = logged_user();
+    print "shop-command: User is $user\n";
     my $usergame = player_of_game(params->{game}, $user);
     if(! $usergame)
     {
@@ -1021,6 +1027,13 @@ post '/interact/:game/shop-command' => sub {
     my $codes = get_nation_codes($meta->{nations});
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
     my $present_position = $codes->{$player->position};
+    my $friendship = $player->get_friendship($player->position);
+    if($friendship <  FRIENDSHIP_LIMIT_TO_SHOP)
+    {
+        my $redirection = "/play/" . params->{game} . "/i/shop?shop-posted=ko&err=hate";
+        redirect $redirection, 302;
+        return;  
+    }
     my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
     my %hold = get_hold($player->id);
     my $money = $player->money;
@@ -1041,8 +1054,8 @@ post '/interact/:game/shop-command' => sub {
             redirect $redirection, 302;
             return;  
         }
-        add_money(schema, $player->id, -1 * $cost);
-        add_cargo(schema, $player->id, $type, $quantity);
+        $player->add_money(-1 * $cost);
+        $player->add_cargo($type, $quantity);
         my $redirection = "/play/" . params->{game} . "/i/shop?shop-posted=ok";
         redirect $redirection, 302;
         return;  
@@ -1055,8 +1068,13 @@ post '/interact/:game/shop-command' => sub {
             redirect $redirection, 302;
             return;  
         }
-        add_money(schema, $player->id, $cost);
-        add_cargo(schema, $player->id, $type, -1 * $quantity);
+        if(params->{'bm'} && params->{'bm'} == 1)
+        {
+            $cost = $cost + (BLACK_MARKET_PERCENT_SELLING_BONUS * $cost) / 100;
+            $player->add_friendship($player->position, BLACK_MARKET_FRIENDSHIP_MALUS);
+        }
+        $player->add_money($cost);
+        $player->add_cargo($type, -1 * $quantity);
         my $redirection = "/play/" . params->{game} . "/i/shop?shop-posted=ok";
         redirect $redirection, 302;
         return;  
@@ -1070,7 +1088,7 @@ post '/interact/:game/shop-command' => sub {
 };
 
 post '/interact/:game/go' => sub {
-    my $user = session->read('user');
+    my $user = logged_user();
     my $usergame = player_of_game(params->{game}, $user);
     if(! $usergame)
     {
@@ -1129,7 +1147,7 @@ post '/interact/:game/go' => sub {
 };
 
 get '/interact/:game/arrive' => sub {
-    my $user = session->read('user');
+    my $user = logged_user();
     my $usergame = player_of_game(params->{game}, $user);
     if(! $usergame)
     {
@@ -1159,37 +1177,7 @@ get '/interact/:game/arrive' => sub {
     }
 };
 
-sub add_money
-{
-    my $schema = shift;
-    my $player = shift;
-    my $money = shift;
-    my $player_obj = $schema->resultset('BopPlayer')->find($player);
-    my $new_money = $player_obj->money + $money;
-    $player_obj->money($new_money);
-    $player_obj->update();
-}
-sub add_cargo
-{
-    my $schema = shift;
-    my $player = shift;
-    my $type = shift;
-    my $q = shift;
-    my $cargo_obj = $schema->resultset('Hold')->find({ player => $player,
-                                                       type => $type });
-    if(! $cargo_obj)
-    {
-        $schema->resultset('Hold')->create({ player => $player,
-                                           type => $type,
-                                           quantity => $q });
-    }
-    else
-    {
-        my $new_q = $cargo_obj->quantity + $q;
-        $cargo_obj->quantity($new_q);
-        $cargo_obj->update;
-    }
-}
+
 
 sub finished_travel
 {
@@ -1225,7 +1213,7 @@ sub enable_to_travel
 
 
 post '/interact/:game/stock-command' => sub {
-    my $user = session->read('user');
+    my $user = logged_user();
     if(! player_of_game(params->{game}, $user))
     {
         send_error("Access denied", 403);
@@ -1271,7 +1259,7 @@ post '/interact/:game/stock-command' => sub {
 };
 
 post '/interact/:game/influence-command' => sub {
-    my $user = session->read('user');
+    my $user = logged_user();
     if(! player_of_game(params->{game}, $user))
     {
         send_error("Access denied", 403);
@@ -1327,7 +1315,7 @@ post '/interact/:game/influence-command' => sub {
 };
 
 get '/interact/:game/delete-stock-order' => sub {
-    my $user = session->read('user');
+    my $user = logged_user();
     if(! player_of_game(params->{game}, $user))
     {
         send_error("Access denied", 403);
@@ -1354,7 +1342,7 @@ get '/interact/:game/delete-stock-order' => sub {
 
 }; 
 get '/interact/:game/delete-influence-order' => sub {
-    my $user = session->read('user');
+    my $user = logged_user();
     if(! player_of_game(params->{game}, $user))
     {
         send_error("Access denied", 403);
@@ -1398,6 +1386,12 @@ sub player_of_game
     {
         return undef;    
     }
+}
+
+sub logged_user
+{
+    return config->{'stubbed_user'} if(config->{'stubbed_user'});
+    return session->read('user');
 }
 
 

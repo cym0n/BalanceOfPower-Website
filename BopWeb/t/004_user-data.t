@@ -3,6 +3,9 @@ use warnings;
 use v5.10;
 
 use lib 'lib';
+BEGIN {
+    $ENV{DANCER_ENVIRONMENT} = 'autotest';
+}
 
 use Test::More;
 use Dancer2;
@@ -13,7 +16,6 @@ use Data::Dumper;
 use BopWeb;
 
 `cp autotest.sql.freeze autotest.sqlite`;
-BopWeb->config->{'plugins'}->{'DBIC'}->{'default'}->{'dsn'} = 'dbi:SQLite:dbname=autotest.sqlite' ;
 
 my $app = BopWeb->to_app;
 my $test = Plack::Test->create($app);
@@ -23,10 +25,10 @@ is($res->content, 'OK', "API answered OK");
 my $user1 = schema->resultset("BopPlayer")->find(1000);
 is($user1->money, 500, "User1 money changed to 500");
 
-my $res  = $test->request( POST '/api/thegame/user-data', [player => 'baduser1', password => 'thegame', money => 500, position => 'Romania'] );
+$res  = $test->request( POST '/api/thegame/user-data', [player => 'baduser1', password => 'thegame', money => 500, position => 'Romania'] );
 is($res->code, 400, "Bad user provided");
 
-my $res  = $test->request( POST '/api/thegame/user-data', [player => 'user3', password => 'thegame', money => 750, position => 'Greece'] );
+$res  = $test->request( POST '/api/thegame/user-data', [player => 'user3', password => 'thegame', money => 750, position => 'Greece'] );
 is($res->code, 200, "User update done");
 
 my $usergame3 = schema->resultset("UserGame")->find({ user => 1002, game => 1000 });

@@ -3,6 +3,9 @@ use warnings;
 use v5.10;
 
 use lib 'lib';
+BEGIN {
+    $ENV{DANCER_ENVIRONMENT} = 'autotest';
+}
 
 use Test::More;
 use Dancer2;
@@ -12,7 +15,6 @@ use Data::Dumper;
 use BopWeb;
 
 `cp autotest.sql.freeze autotest.sqlite`;
-config->{'plugins'}->{'DBIC'}->{'default'}->{'dsn'} = 'dbi:SQLite:dbname=autotest.sqlite' ;
 
 my $app = BopWeb->to_app;
 schema->resultset("BopGame")->create({ name => 'autotest', file => 'autotest', admin_password => 'autotest', active => 1, open => 1 });

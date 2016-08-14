@@ -7,6 +7,7 @@
         </div>
     [% ELSE %]
         <div class="alert alert-danger">
+        <strong>No transaction</strong><br />
         [% IF err == 'no-input' %]
             Transaction KO! Something went wrong with the input
         [% END %]
@@ -18,6 +19,9 @@
         [% END %]
         [% IF err == 'not-owned' %]
             Transaction KO! You don't own that quantity
+        [% END %]
+        [% IF err == 'hate' %]
+            Your relationship with the nation is compromised
         [% END %]
         </div>
     [% END %]
