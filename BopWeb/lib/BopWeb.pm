@@ -501,7 +501,7 @@ get '/play/:game/i/shop' => sub {
     my $now = DateTime->now;
     $now->set_time_zone("Europe/Rome");
     my $print_now = $now->dmy . " " . $now->hms;
-    my %hold = get_hold($player->id);
+    my %hold = $player->cargo_status(\@products);
     my $player_meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
     my $friendship = $player->get_friendship($player->position);
     my $template_data = {
@@ -651,30 +651,7 @@ sub get_nation_codes
     return \%out;
 }
 
-sub get_hold
-{
-    my $player = shift;
-    my $tot_q = 0;
-    my %hold = ();
-    foreach my $p (@products)
-    {
-        my $hold_element =  schema->resultset('Hold')->find({
-                                player => $player, type => $p
-                            });
-        if($hold_element)
-        {
-            $hold{$p} = $hold_element->quantity;
-            $tot_q += $hold_element->quantity;
-        }
-        else
-        {
-            $hold{$p} = 0;
-        }
-    }
-    $hold{'free'} = CARGO_TOTAL_SPACE - $tot_q; 
-    return %hold;
-     
-}
+
 
 ### USER MANAGEMENT
 
@@ -1034,7 +1011,7 @@ post '/interact/:game/shop-command' => sub {
         return;  
     }
     my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
-    my %hold = get_hold($player->id);
+    my %hold = $player->cargo_status(\@products);
     my $money = $player->money;
     my $price_label = $type . "_price";
     my $price = $nation_meta->{prices}->{$price_label};

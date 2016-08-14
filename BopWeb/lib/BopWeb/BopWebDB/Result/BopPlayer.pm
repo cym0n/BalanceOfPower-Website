@@ -1,5 +1,8 @@
 use utf8;
 package BopWeb::BopWebDB::Result::BopPlayer;
+use lib "/home/cymon/works/nations/repo/src/lib";
+use BalanceOfPower::Constants ':all';;
+
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
@@ -178,6 +181,30 @@ sub add_cargo
         $cargo_obj->update;
     }
 }
+sub cargo_status
+{
+    my $self = shift;
+    my $products = shift;
+    my $tot_q = 0;
+    my %hold = ();
+    foreach my $h ($self->holds)
+    {
+        $hold{$h->type} = $h->quantity;
+        $tot_q += $h->quantity;
+    }
+    foreach my $p(@{$products})
+    {
+        if(! exists $hold{$p})
+        {
+            $hold{$p} = 0;
+        }
+    }
+    $hold{'free'} = CARGO_TOTAL_SPACE - $tot_q; 
+    return %hold;
+}
+
+
+
 sub add_money
 {
     my $self = shift;
