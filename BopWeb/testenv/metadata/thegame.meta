@@ -1,0 +1,253 @@
+$VAR1 = {
+          'nations' => {
+                         'United Kingdom' => {
+                                               'code' => 'GBR',
+                                               'area' => 'Europe'
+                                             },
+                         'Nigeria' => {
+                                        'area' => 'Africa',
+                                        'code' => 'NIG'
+                                      },
+                         'Ethiopia' => {
+                                         'area' => 'Africa',
+                                         'code' => 'ETH'
+                                       },
+                         'Tanzania' => {
+                                         'area' => 'Africa',
+                                         'code' => 'TAN'
+                                       },
+                         'Romania' => {
+                                        'code' => 'ROM',
+                                        'area' => 'Europe'
+                                      },
+                         'Turkey' => {
+                                       'code' => 'TUR',
+                                       'area' => 'Middle East'
+                                     },
+                         'Israel' => {
+                                       'area' => 'Middle East',
+                                       'code' => 'ISR'
+                                     },
+                         'Zaire' => {
+                                      'area' => 'Africa',
+                                      'code' => 'ZAI'
+                                    },
+                         'Nicaragua' => {
+                                          'code' => 'NIC',
+                                          'area' => 'North America'
+                                        },
+                         'USA' => {
+                                    'code' => 'USA',
+                                    'area' => 'North America'
+                                  },
+                         'Panama' => {
+                                       'area' => 'North America',
+                                       'code' => 'PAN'
+                                     },
+                         'Afghanistan' => {
+                                            'area' => 'Middle East',
+                                            'code' => 'AFG'
+                                          },
+                         'Czechoslovakia' => {
+                                               'area' => 'Europe',
+                                               'code' => 'CZE'
+                                             },
+                         'South Korea' => {
+                                            'area' => 'Far East',
+                                            'code' => 'KOR'
+                                          },
+                         'Indonesia' => {
+                                          'code' => 'INA',
+                                          'area' => 'Pacific'
+                                        },
+                         'Chile' => {
+                                      'code' => 'CHI',
+                                      'area' => 'South America'
+                                    },
+                         'North Korea' => {
+                                            'code' => 'PRK',
+                                            'area' => 'Far East'
+                                          },
+                         'India' => {
+                                      'code' => 'IND',
+                                      'area' => 'Far East'
+                                    },
+                         'Vietnam' => {
+                                        'code' => 'VIE',
+                                        'area' => 'Far East'
+                                      },
+                         'Philippines' => {
+                                            'code' => 'PHI',
+                                            'area' => 'Pacific'
+                                          },
+                         'Zimbabwe' => {
+                                         'code' => 'ZIM',
+                                         'area' => 'Africa'
+                                       },
+                         'Yugoslavia' => {
+                                           'area' => 'Europe',
+                                           'code' => 'YUG'
+                                         },
+                         'Canada' => {
+                                       'code' => 'CAN',
+                                       'area' => 'North America'
+                                     },
+                         'Sudan' => {
+                                      'area' => 'Africa',
+                                      'code' => 'SUD'
+                                    },
+                         'Iraq' => {
+                                     'code' => 'IRQ',
+                                     'area' => 'Middle East'
+                                   },
+                         'Tunisia' => {
+                                        'area' => 'Africa',
+                                        'code' => 'TUN'
+                                      },
+                         'USSR' => {
+                                     'code' => 'URS',
+                                     'area' => 'Europe'
+                                   },
+                         'Kenya' => {
+                                      'code' => 'KEN',
+                                      'area' => 'Africa'
+                                    },
+                         'South Africa' => {
+                                             'area' => 'Africa',
+                                             'code' => 'RSA'
+                                           },
+                         'West Germany' => {
+                                             'area' => 'Europe',
+                                             'code' => 'BRD'
+                                           },
+                         'Japan' => {
+                                      'code' => 'JAP',
+                                      'area' => 'Pacific'
+                                    },
+                         'China' => {
+                                      'area' => 'Far East',
+                                      'code' => 'CHN'
+                                    },
+                         'Argentina' => {
+                                          'area' => 'South America',
+                                          'code' => 'ARG'
+                                        },
+                         'Sweden' => {
+                                       'area' => 'Europe',
+                                       'code' => 'SWE'
+                                     },
+                         'Venezuela' => {
+                                          'area' => 'South America',
+                                          'code' => 'VEN'
+                                        },
+                         'Greece' => {
+                                       'area' => 'Europe',
+                                       'code' => 'GRE'
+                                     },
+                         'Pakistan' => {
+                                         'code' => 'PAK',
+                                         'area' => 'Middle East'
+                                       },
+                         'France' => {
+                                       'code' => 'FRA',
+                                       'area' => 'Europe'
+                                     },
+                         'Libya' => {
+                                      'code' => 'LIB',
+                                      'area' => 'Africa'
+                                    },
+                         'Spain' => {
+                                      'area' => 'Europe',
+                                      'code' => 'SPA'
+                                    },
+                         'Mali' => {
+                                     'area' => 'Africa',
+                                     'code' => 'MAL'
+                                   },
+                         'Taiwan' => {
+                                       'area' => 'Pacific',
+                                       'code' => 'TWN'
+                                     },
+                         'Saudi Arabia' => {
+                                             'area' => 'Middle East',
+                                             'code' => 'KSA'
+                                           },
+                         'Burma' => {
+                                      'area' => 'Far East',
+                                      'code' => 'BIR'
+                                    },
+                         'Poland' => {
+                                       'code' => 'POL',
+                                       'area' => 'Europe'
+                                     },
+                         'Morocco' => {
+                                        'code' => 'MOR',
+                                        'area' => 'Africa'
+                                      },
+                         'Thailand' => {
+                                         'area' => 'Far East',
+                                         'code' => 'THA'
+                                       },
+                         'Honduras' => {
+                                         'code' => 'HON',
+                                         'area' => 'North America'
+                                       },
+                         'Australia' => {
+                                          'area' => 'Pacific',
+                                          'code' => 'AUS'
+                                        },
+                         'Peru' => {
+                                     'code' => 'PER',
+                                     'area' => 'South America'
+                                   },
+                         'Cuba' => {
+                                     'area' => 'North America',
+                                     'code' => 'CUB'
+                                   },
+                         'Egypt' => {
+                                      'area' => 'Africa',
+                                      'code' => 'EGY'
+                                    },
+                         'Iran' => {
+                                     'code' => 'IRI',
+                                     'area' => 'Middle East'
+                                   },
+                         'Mozambique' => {
+                                           'code' => 'MOZ',
+                                           'area' => 'Africa'
+                                         },
+                         'Syria' => {
+                                      'area' => 'Middle East',
+                                      'code' => 'SYR'
+                                    },
+                         'Mexico' => {
+                                       'code' => 'MEX',
+                                       'area' => 'North America'
+                                     },
+                         'Brazil' => {
+                                       'area' => 'South America',
+                                       'code' => 'BRA'
+                                     },
+                         'Angola' => {
+                                       'code' => 'ANG',
+                                       'area' => 'Africa'
+                                     },
+                         'Algeria' => {
+                                        'code' => 'ALG',
+                                        'area' => 'Africa'
+                                      },
+                         'Italy' => {
+                                      'code' => 'ITA',
+                                      'area' => 'Europe'
+                                    },
+                         'East Germany' => {
+                                             'code' => 'DDR',
+                                             'area' => 'Europe'
+                                           },
+                         'Colombia' => {
+                                         'code' => 'COL',
+                                         'area' => 'South America'
+                                       }
+                       },
+          'current_year' => '1987/2'
+        };
