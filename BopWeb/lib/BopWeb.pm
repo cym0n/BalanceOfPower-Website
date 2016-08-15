@@ -504,6 +504,18 @@ get '/play/:game/i/shop' => sub {
     my %hold = $player->cargo_status(\@products);
     my $player_meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
     my $friendship = $player->get_friendship($player->position);
+    my %lower_me = ();
+    for(@products)
+    {
+        if( $hold{$_} > 0 && ask_lowered_price($_, $player->get_hold($_)->{'price'}, $nation_meta->{'prices'}->{$_}->{price}))
+        {
+            $lower_me{$_} = 1
+        }
+        else
+        {
+            $lower_me{$_} = 0;
+        }
+    }
     my $template_data = {
         'player' => $user,
         'interactive' => 1,
@@ -513,6 +525,7 @@ get '/play/:game/i/shop' => sub {
         'p_stock_value' => $player_meta->{'stock_value'},
         'nation_codes' => get_nation_codes($meta->{nations}),
         'prices' => $nation_meta->{'prices'},
+        'lower_price' => \%lower_me,
         'position' => $player->position,
         'position_code' => $present_position,
         'nation_friendship' => $friendship,
@@ -1014,6 +1027,7 @@ post '/interact/:game/shop-command' => sub {
     my %hold = $player->cargo_status(\@products);
     my $money = $player->money;
     my $price = $nation_meta->{prices}->{$type}->{price};
+    my $hold_price = $player->get_hold($type)->{'price'};
     my $stat = $nation_meta->{prices}->{$type}->{stat};
     my $cost = $price * $quantity; 
     if($command eq 'buy')
@@ -1049,6 +1063,21 @@ post '/interact/:game/shop-command' => sub {
             $cost = $cost + (BLACK_MARKET_PERCENT_SELLING_BONUS * $cost) / 100;
             $player->add_friendship($player->position, BLACK_MARKET_FRIENDSHIP_MALUS);
         }
+        if(params->{'lp'} && params->{'lp'} eq 'on')
+        {
+            $cost = $cost - (LOWERED_PRICE_PERCENT_SELLING_MALUS * $cost) / 100;
+            if( ! ask_lowered_price($type, $hold_price, $price))
+            {
+                $player->add_friendship($player->position, LOWERED_PRICE_FRIENDSHIP_BONUS);
+            }
+        }
+        else
+        {
+            if(ask_lowered_price($type, $hold_price, $price))
+            {
+                $player->add_friendship($player->position, NOT_LOWERED_PRICE_FRIENDSHIP_MALUS);
+            }
+        }
         $player->add_money($cost);
         $player->add_cargo($type, -1 * $quantity, $price, $stat);
         my $redirection = "/play/" . params->{game} . "/i/shop?shop-posted=ok";
@@ -1062,6 +1091,19 @@ post '/interact/:game/shop-command' => sub {
         return;  
     }
 };
+
+sub ask_lowered_price
+{
+    my $type = shift;
+    my $hold_price = shift;
+    my $sell_price = shift;
+    
+    #Formula is sell_price > A*(MaxPrice - MinPrice) + hold_price
+
+    my $delta = LOWER_MY_PRICE_FACTOR * ((PRICE_RANGES->{$type}->[1] - PRICE_RANGES->{$type}->[0]) * SHOP_PRICE_FACTOR);
+    return $sell_price > $delta + $hold_price;
+
+}
 
 post '/interact/:game/go' => sub {
     my $user = logged_user();

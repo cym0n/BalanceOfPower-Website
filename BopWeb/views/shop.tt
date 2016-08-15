@@ -1,6 +1,14 @@
 [% BLOCK price_card %]
 <div class="well">
     <div class="row">
+        [% IF lower_price.$prod %]
+        <div class="badge">
+            <a style="color:white" href="#" data-toggle="tooltip" data-placement="top" title="Nation pretends a lowered price to avoid speculation">!</a>
+        </div>
+        [% ELSE %]
+        <div><br /></div>
+        [% END %]
+        
         <center>
             <div class="center-block">
                 <img style="height:40px" src="/images/[% prod %].png">
@@ -52,10 +60,12 @@
         </div>
     </div>
     <div class="col-sm-10">
+        <div class="row">
+        <div class="col-sm-6">
         <div class="well">
+            <p>Buy/Sell on the <strong>market</strong><br /><br /></p>
             <form class="form-inline" action="/interact/[% game %]/shop-command" method="post">
                 <div class="form-group">
-                    <label for="command">Buy/Sell</label>
                     <select name="command" id="command" class="form-control">
                         <option>Buy</option>
                         <option>Sell</option>
@@ -63,7 +73,6 @@
                 </div>
                 <div class="form-group"></div>
                 <div class="form-group">
-                    <label for="type">Type</label>
                     <select name="type" id="type" class="form-control">
                         <option value="">-- select --</option>
                         [% FOR t IN products %]
@@ -71,25 +80,28 @@
                         [% END %]
                     </select>
                 </div>
+                <br /><br />
                 <div class="form-group"></div>
                 <div class="form-group">
                     <label for="quantity">Quantity</label>
                     <input id="quantity" name="quantity" class="form-control"></input>
                 </div>
-                <div class="form-group"></div>
+                <br /><br />
+                <div class="form-group">
+                    <label for="quantity">Low Price</label>
+                    <input id="lp" name="lp" class="form-control" type="checkbox"></input>
+                </div>
                 <button type="submit" class="btn btn-default">OK</button>
             </form>
         </div>
+        </div>
+        <div class="col-sm-6">
         <div class="well">
             <p>Sell on the <strong>black market</strong> for higher prices (beware nation's hate)</p>
             <form class="form-inline" action="/interact/[% game %]/shop-command" method="post">
-                <div class="form-group">
-                    <label for="command">Sell</label>
-                    <input type="hidden" name="command" id="command" value="sell">
-                </div>
+                <input type="hidden" name="command" id="command" value="sell">
                 <div class="form-group"></div>
                 <div class="form-group">
-                    <label for="type">Type</label>
                     <select name="type" id="type" class="form-control">
                         <option value="">-- select --</option>
                         [% FOR t IN products %]
@@ -97,6 +109,7 @@
                         [% END %]
                     </select>
                 </div>
+                <br /><br />
                 <div class="form-group"></div>
                 <div class="form-group">
                     <label for="quantity">Quantity</label>
@@ -104,8 +117,11 @@
                 </div>
                 <div class="form-group"></div>
                 <input type="hidden" name="bm" value="1" />
+                <br /><br />
                 <button type="submit" class="btn btn-default">OK</button>
             </form>
+        </div>
+        </div>
         </div>
     </div>
 </div>

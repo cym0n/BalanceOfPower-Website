@@ -219,9 +219,18 @@ sub get_hold
     my $self = shift;
     my $product = shift;
     my $hold = $self->holds->find({ type => $product });
-    return { quantity => $hold->quantity,
-             stat     => $hold->stat,
-             price    => $hold->price };
+    if($hold)
+    {
+        return { quantity => $hold->quantity,
+                 stat     => $hold->stat,
+                 price    => $hold->price };
+    }
+    else
+    {
+        return { quantity => 0,
+                 stat     => 0,
+                 price    => 0 };
+    }
 }
 
 
