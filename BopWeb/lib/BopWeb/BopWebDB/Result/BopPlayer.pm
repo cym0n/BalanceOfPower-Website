@@ -169,15 +169,26 @@ sub add_cargo
     my $self = shift;
     my $type = shift;
     my $q = shift;
+    my $price = shift;
+    my $stat = shift;
     my $cargo_obj = $self->holds->find({ type => $type });
-    if(! $cargo_obj)
+    if(! $cargo_obj && $q > 0)
     {
-        $self->holds->create({ type => $type,
-                               quantity => $q });
+        $self->holds->create({ 'type' => $type,
+                               'quantity' => $q, 
+                               'price' => $price,
+                               'stat' => $stat});
     }
     else
     {
         my $new_q = $cargo_obj->quantity + $q;
+        if($q > 0)
+        {
+            my $new_stat = (($cargo_obj->stat * $cargo_obj->quantity) + ($stat * $q)) / $new_q;
+            my $new_price = (($cargo_obj->price * $cargo_obj->quantity) + ($price * $q)) / $new_q;
+            $cargo_obj->stat($new_stat);
+            $cargo_obj->price($new_price);
+        }
         $cargo_obj->quantity($new_q);
         $cargo_obj->update;
     }
@@ -202,6 +213,15 @@ sub cargo_status
     }
     $hold{'free'} = CARGO_TOTAL_SPACE - $tot_q; 
     return %hold;
+}
+sub get_hold
+{
+    my $self = shift;
+    my $product = shift;
+    my $hold = $self->holds->find({ type => $product });
+    return { quantity => $hold->quantity,
+             stat     => $hold->stat,
+             price    => $hold->price };
 }
 
 

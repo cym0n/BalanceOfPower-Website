@@ -25,8 +25,25 @@ my $test = Plack::Test->create($app);
 my $res;
 my $player;
 my %cargo;
+my $hold;
 
-diag("BUY 5 GOODS IN ITALY (GOODS COST: 10");
+diag("BUY 5 GOODS IN ITALY (GOODS COST: 10)");
+$res  = $test->request( POST '/interact/thegame/shop-command', 
+                           [command => 'buy', 
+                            type => 'goods', 
+                            quantity => 5] );
+is($res->code, 302, "API redirection");
+is($res->header('location'), 'http://localhost/play/thegame/i/shop?shop-posted=ok', 'Redirect is correct, shop-posted=ok');
+$player = schema->resultset('BopPlayer')->find({ id => 1000 });
+%cargo = $player->cargo_status([ 'goods' ]);
+$hold = $player->get_hold('goods');
+is($cargo{'goods'}, 5, "5 units of goods in the hold");
+is($cargo{'free'}, 495, "495 free space in the hold");
+is($player->money, 950, "Money of player is now 950");
+is($hold->{price}, 10, "Price is 10");
+is($hold->{stat}, 40, "Stat is 40");
+
+diag("BUY 10 MORE GOODS IN ITALY (GOODS COST: 10)");
 $res  = $test->request( POST '/interact/thegame/shop-command', 
                            [command => 'buy', 
                             type => 'goods', 
@@ -35,9 +52,13 @@ is($res->code, 302, "API redirection");
 is($res->header('location'), 'http://localhost/play/thegame/i/shop?shop-posted=ok', 'Redirect is correct, shop-posted=ok');
 $player = schema->resultset('BopPlayer')->find({ id => 1000 });
 %cargo = $player->cargo_status([ 'goods' ]);
-is($cargo{'goods'}, 10, "10 units of goods in the hold");
-is($cargo{'free'}, 490, "490 free space in the hold");
-is($player->money, 900, "Money of player is now 900");
+$hold = $player->get_hold('goods');
+is($cargo{'goods'}, 15, "15 units of goods in the hold");
+is($cargo{'free'}, 485, "485 free space in the hold");
+is($player->money, 850, "Money of player is now 850");
+is($hold->{price}, 10, "Price is 10");
+is($hold->{stat}, 40, "Stat is 40");
+
 
 diag("SELL 5 GOODS IN ITALY (GOODS COST: 10)");
 $res  = $test->request( POST '/interact/thegame/shop-command', 
@@ -48,9 +69,12 @@ is($res->code, 302, "API redirection");
 is($res->header('location'), 'http://localhost/play/thegame/i/shop?shop-posted=ok', 'Redirect is correct, shop-posted=ok');
 $player = schema->resultset('BopPlayer')->find({ id => 1000 });
 %cargo = $player->cargo_status([ 'goods' ]);
-is($cargo{'goods'}, 5, "5 units of goods in the hold");
-is($cargo{'free'}, 495, "495 free space in the hold");
-is($player->money, 950, "Money of player is now 950");
+$hold = $player->get_hold('goods');
+is($cargo{'goods'}, 10, "10 units of goods in the hold");
+is($cargo{'free'}, 490, "490 free space in the hold");
+is($player->money, 900, "Money of player is now 900");
+is($hold->{price}, 10, "Price is 10");
+is($hold->{stat}, 40, "Stat is 40");
 
 diag("SELL 5 GOODS IN ITALY ON BLACK MARKET (GOODS COST: 10 + 10% = 11)");
 $res  = $test->request( POST '/interact/thegame/shop-command', 
@@ -62,10 +86,33 @@ is($res->code, 302, "API redirection");
 is($res->header('location'), 'http://localhost/play/thegame/i/shop?shop-posted=ok', 'Redirect is correct, shop-posted=ok');
 $player = schema->resultset('BopPlayer')->find({ id => 1000 });
 %cargo = $player->cargo_status([ 'goods' ]);
-is($cargo{'goods'}, 0, "0 units of goods in the hold");
-is($cargo{'free'}, 500, "500 free space in the hold");
-is($player->money, 1005, "Money of player is now 1005");
+$hold = $player->get_hold('goods');
+is($cargo{'goods'}, 5, "5 units of goods in the hold");
+is($cargo{'free'}, 495, "495 free space in the hold");
+is($player->money, 955, "Money of player is now 955");
 is($player->get_friendship('Italy'), 45, "Friendship with Italy is now 45");
+is($hold->{price}, 10, "Price is 10");
+is($hold->{stat}, 40, "Stat is 40");
+
+diag("BUY 5 GOODS IN FRANCE (GOODS COST: 20)");
+$player->position("France");
+$player->update;
+$res  = $test->request( POST '/interact/thegame/shop-command', 
+                           [command => 'buy', 
+                            type => 'goods', 
+                            quantity => 5] );
+is($res->code, 302, "API redirection");
+is($res->header('location'), 'http://localhost/play/thegame/i/shop?shop-posted=ok', 'Redirect is correct, shop-posted=ok');
+$player = schema->resultset('BopPlayer')->find({ id => 1000 });
+%cargo = $player->cargo_status([ 'goods' ]);
+$hold = $player->get_hold('goods');
+is($cargo{'goods'}, 10, "10 units of goods in the hold");
+is($cargo{'free'}, 490, "490 free space in the hold");
+is($player->money, 855, "Money of player is now 855");
+is($hold->{price}, 15, "Price is 15");
+is($hold->{stat}, 35, "Stat is 35");
+$player->position("Italy"); #undo scenario
+$player->update;
 
 diag("ERRORS: no-input");
 $res  = $test->request( POST '/interact/thegame/shop-command', 
@@ -101,7 +148,7 @@ $res  = $test->request( POST '/interact/thegame/shop-command',
 is($res->code, 302, "API redirection");
 is($res->header('location'), 'http://localhost/play/thegame/i/shop?shop-posted=ko&err=no-money', 'Redirect is correct, shop-posted=ko err=no-money');
 
-diag("ERRORS: no-money");
+diag("ERRORS: no-space");
 $player = schema->resultset('BopPlayer')->find({ id => 1000 });
 $player->add_cargo('tech', 500);
 $res  = $test->request( POST '/interact/thegame/shop-command', 

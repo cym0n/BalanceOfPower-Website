@@ -1013,8 +1013,8 @@ post '/interact/:game/shop-command' => sub {
     my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
     my %hold = $player->cargo_status(\@products);
     my $money = $player->money;
-    my $price_label = $type . "_price";
-    my $price = $nation_meta->{prices}->{$price_label};
+    my $price = $nation_meta->{prices}->{$type}->{price};
+    my $stat = $nation_meta->{prices}->{$type}->{stat};
     my $cost = $price * $quantity; 
     if($command eq 'buy')
     {
@@ -1031,7 +1031,7 @@ post '/interact/:game/shop-command' => sub {
             return;  
         }
         $player->add_money(-1 * $cost);
-        $player->add_cargo($type, $quantity);
+        $player->add_cargo($type, $quantity, $price, $stat);
         my $redirection = "/play/" . params->{game} . "/i/shop?shop-posted=ok";
         redirect $redirection, 302;
         return;  
@@ -1050,7 +1050,7 @@ post '/interact/:game/shop-command' => sub {
             $player->add_friendship($player->position, BLACK_MARKET_FRIENDSHIP_MALUS);
         }
         $player->add_money($cost);
-        $player->add_cargo($type, -1 * $quantity);
+        $player->add_cargo($type, -1 * $quantity, $price, $stat);
         my $redirection = "/play/" . params->{game} . "/i/shop?shop-posted=ok";
         redirect $redirection, 302;
         return;  

@@ -9,8 +9,7 @@
         <br />
         <div>
             <center><strong>[% prod FILTER ucfirst %]</strong></center><br />
-            [% label = prod _ '_price' %]
-            <center><strong>[% prices.$label %]</strong></center>
+            <center><strong>[% prices.$prod.price %]</strong></center>
         </div>
     </div>
 </div>

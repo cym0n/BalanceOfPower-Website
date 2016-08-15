@@ -1,0 +1,250 @@
+$VAR1 = {
+          'travels' => {
+                         'ground' => {
+                                       'Italy' => {
+                                                    'cost' => 2,
+                                                    'status' => 'OK'
+                                                  },
+                                       'West Germany' => {
+                                                           'cost' => 2,
+                                                           'status' => 'OK'
+                                                         },
+                                       'United Kingdom' => {
+                                                             'status' => 'OK',
+                                                             'cost' => 2
+                                                           },
+                                       'Spain' => {
+                                                    'cost' => 2,
+                                                    'status' => 'OK'
+                                                  }
+                                     },
+                         'air' => {
+                                    'Morocco' => {
+                                                   'cost' => 2,
+                                                   'status' => 'OK'
+                                                 },
+                                    'Argentina' => {
+                                                     'cost' => 4,
+                                                     'status' => 'OK'
+                                                   }
+                                  }
+                       },
+          'prestige' => 3,
+          'export_production' => 39,
+          'army' => 6,
+          'prices' => {
+                        'luxury' => {
+                                      'stat' => '34.87',
+                                      'price' => '74.37'
+                                    },
+                        'tech' => {
+                                    'price' => '47.39',
+                                    'stat' => '0.3'
+                                  },
+                        'goods' => {
+                                     'price' => '20',
+                                     'stat' => '30'
+                                   },
+                        'culture' => {
+                                       'price' => '65.9',
+                                       'stat' => 3
+                                     },
+                        'arms' => {
+                                    'price' => '122.72',
+                                    'stat' => 6
+                                  }
+                      },
+          'civil_war' => 0,
+          'internal_production' => 91,
+          'stocks' => '11',
+          'commands' => {
+                          'ADD ROUTE' => {
+                                           'argument' => 0
+                                         },
+                          'MILITARY SUPPORT' => {
+                                                  'targets' => [
+                                                                 'China',
+                                                                 'South Africa',
+                                                                 'Poland',
+                                                                 'Canada'
+                                                               ],
+                                                  'argument' => 1
+                                                },
+                          'BOOST PRODUCTION' => {
+                                                  'argument' => 0
+                                                },
+                          'RECALL MILITARY SUPPORT' => {
+                                                         'targets' => [
+                                                                        'Poland'
+                                                                      ],
+                                                         'argument' => 1
+                                                       },
+                          'DELETE TRADEROUTE' => {
+                                                   'argument' => 1,
+                                                   'targets' => [
+                                                                  'Argentina'
+                                                                ]
+                                                 },
+                          'PROGRESS' => {
+                                          'argument' => 0
+                                        },
+                          'BUILD TROOPS' => {
+                                              'argument' => 0
+                                            },
+                          'ECONOMIC AID FOR' => {
+                                                  'targets' => [
+                                                                 'Egypt',
+                                                                 'Syria',
+                                                                 'Australia',
+                                                                 'Taiwan',
+                                                                 'Sweden',
+                                                                 'United Kingdom',
+                                                                 'Pakistan',
+                                                                 'Czechoslovakia',
+                                                                 'USSR',
+                                                                 'Canada',
+                                                                 'Iraq',
+                                                                 'China',
+                                                                 'Thailand',
+                                                                 'Mozambique',
+                                                                 'East Germany',
+                                                                 'Ethiopia',
+                                                                 'Angola',
+                                                                 'South Africa',
+                                                                 'Iran',
+                                                                 'Peru',
+                                                                 'Indonesia',
+                                                                 'Vietnam',
+                                                                 'Saudi Arabia',
+                                                                 'Argentina',
+                                                                 'Zaire',
+                                                                 'Honduras',
+                                                                 'Tanzania',
+                                                                 'Romania',
+                                                                 'Nigeria',
+                                                                 'Nicaragua',
+                                                                 'Greece',
+                                                                 'Italy',
+                                                                 'Turkey',
+                                                                 'Philippines',
+                                                                 'Zimbabwe',
+                                                                 'West Germany',
+                                                                 'Morocco',
+                                                                 'Tunisia',
+                                                                 'Mexico',
+                                                                 'Chile',
+                                                                 'Colombia',
+                                                                 'Yugoslavia',
+                                                                 'USA',
+                                                                 'Brazil',
+                                                                 'Japan',
+                                                                 'Venezuela',
+                                                                 'Burma',
+                                                                 'Mali',
+                                                                 'South Korea',
+                                                                 'Poland',
+                                                                 'Libya',
+                                                                 'Israel',
+                                                                 'Sudan',
+                                                                 'Afghanistan',
+                                                                 'India',
+                                                                 'Cuba',
+                                                                 'Algeria',
+                                                                 'Panama',
+                                                                 'Spain',
+                                                                 'Kenya',
+                                                                 'North Korea'
+                                                               ],
+                                                  'argument' => 1
+                                                },
+                          'REBEL MILITARY SUPPORT' => {
+                                                        'targets' => [
+                                                                       'Panama'
+                                                                     ],
+                                                        'argument' => 1
+                                                      },
+                          'LOWER DISORDER' => {
+                                                'argument' => 0
+                                              },
+                          'AID INSURGENTS IN' => {
+                                                   'targets' => [
+                                                                  'Sweden',
+                                                                  'United Kingdom',
+                                                                  'Czechoslovakia',
+                                                                  'USSR',
+                                                                  'East Germany',
+                                                                  'Italy',
+                                                                  'West Germany',
+                                                                  'Poland',
+                                                                  'Spain'
+                                                                ],
+                                                   'argument' => 1
+                                                 },
+                          'MILITARY AID FOR' => {
+                                                  'argument' => 1,
+                                                  'targets' => [
+                                                                 'Egypt',
+                                                                 'Syria',
+                                                                 'Australia',
+                                                                 'Taiwan',
+                                                                 'Sweden',
+                                                                 'United Kingdom',
+                                                                 'Pakistan',
+                                                                 'Czechoslovakia',
+                                                                 'USSR',
+                                                                 'Canada',
+                                                                 'Iraq',
+                                                                 'China',
+                                                                 'Thailand',
+                                                                 'Mozambique',
+                                                                 'East Germany',
+                                                                 'Ethiopia',
+                                                                 'Angola',
+                                                                 'South Africa',
+                                                                 'Iran',
+                                                                 'Peru',
+                                                                 'Indonesia',
+                                                                 'Vietnam',
+                                                                 'Saudi Arabia',
+                                                                 'Argentina',
+                                                                 'Zaire',
+                                                                 'Honduras',
+                                                                 'Tanzania',
+                                                                 'Romania',
+                                                                 'Nigeria',
+                                                                 'Nicaragua',
+                                                                 'Greece',
+                                                                 'Italy',
+                                                                 'Turkey',
+                                                                 'Philippines',
+                                                                 'Zimbabwe',
+                                                                 'West Germany',
+                                                                 'Morocco',
+                                                                 'Tunisia',
+                                                                 'Mexico',
+                                                                 'Chile',
+                                                                 'Colombia',
+                                                                 'Yugoslavia',
+                                                                 'USA',
+                                                                 'Brazil',
+                                                                 'Japan',
+                                                                 'Venezuela',
+                                                                 'Burma',
+                                                                 'Mali',
+                                                                 'South Korea',
+                                                                 'Poland',
+                                                                 'Libya',
+                                                                 'Israel',
+                                                                 'Sudan',
+                                                                 'Afghanistan',
+                                                                 'India',
+                                                                 'Cuba',
+                                                                 'Algeria',
+                                                                 'Panama',
+                                                                 'Spain',
+                                                                 'Kenya',
+                                                                 'North Korea'
+                                                               ]
+                                                }
+                        }
+        };
