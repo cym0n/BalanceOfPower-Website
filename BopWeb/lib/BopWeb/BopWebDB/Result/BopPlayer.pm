@@ -177,7 +177,8 @@ sub add_cargo
         $self->holds->create({ 'type' => $type,
                                'quantity' => $q, 
                                'price' => $price,
-                               'stat' => $stat});
+                               'stat' => $stat,
+                               'used' => 1});
     }
     else
     {
@@ -190,7 +191,18 @@ sub add_cargo
             $cargo_obj->price($new_price);
         }
         $cargo_obj->quantity($new_q);
+        $cargo_obj->used(1);
         $cargo_obj->update;
+    }
+}
+sub reset_used
+{
+    my $self = shift;
+    my @holds =  $self->holds;
+    foreach my $h (@holds)
+    {
+        $h->used(0);
+        $h->update();
     }
 }
 sub cargo_status
@@ -223,13 +235,15 @@ sub get_hold
     {
         return { quantity => $hold->quantity,
                  stat     => $hold->stat,
-                 price    => $hold->price };
+                 price    => $hold->price,
+                 used     => $hold->used };
     }
     else
     {
         return { quantity => 0,
                  stat     => 0,
-                 price    => 0 };
+                 price    => 0,
+                 used     => 0 };
     }
 }
 

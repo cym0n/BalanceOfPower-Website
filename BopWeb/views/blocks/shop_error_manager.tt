@@ -23,6 +23,9 @@
         [% IF err == 'hate' %]
             Your relationship with the nation is compromised
         [% END %]
+        [% IF err == 'used' %]
+            You already had transaction with that type here
+        [% END %]
         </div>
     [% END %]
     </div>

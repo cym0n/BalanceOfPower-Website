@@ -61,6 +61,12 @@ __PACKAGE__->table("HOLD");
   data_type: 'real'
   is_nullable: 1
 
+=head2 used
+
+  data_type: 'tinyint'
+  is_nullable: 1
+  size: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -74,11 +80,13 @@ __PACKAGE__->add_columns(
   { data_type => "real", is_nullable => 1 },
   "stat",
   { data_type => "real", is_nullable => 1 },
+  "used",
+  { data_type => "tinyint", is_nullable => 1, size => 1 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-08-14 18:33:11
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:4V1cOnLhQj2Q7EZns/AMxA
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-08-17 23:46:06
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ap8rYoWH6mYNtNPQdd0azw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

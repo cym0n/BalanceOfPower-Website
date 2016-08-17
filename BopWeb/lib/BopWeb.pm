@@ -505,6 +505,7 @@ get '/play/:game/i/shop' => sub {
     my $player_meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
     my $friendship = $player->get_friendship($player->position);
     my %lower_me = ();
+    my %used_products = ();
     for(@products)
     {
         if( $hold{$_} > 0 && ask_lowered_price($_, $player->get_hold($_)->{'price'}, $nation_meta->{'prices'}->{$_}->{price}))
@@ -515,6 +516,7 @@ get '/play/:game/i/shop' => sub {
         {
             $lower_me{$_} = 0;
         }
+        $used_products{$_} = $player->get_hold($_)->{'used'};
     }
     my $template_data = {
         'player' => $user,
@@ -526,6 +528,7 @@ get '/play/:game/i/shop' => sub {
         'nation_codes' => get_nation_codes($meta->{nations}),
         'prices' => $nation_meta->{'prices'},
         'lower_price' => \%lower_me,
+        'used_products' => \%used_products,
         'position' => $player->position,
         'position_code' => $present_position,
         'nation_friendship' => $friendship,
@@ -1030,6 +1033,12 @@ post '/interact/:game/shop-command' => sub {
     my $hold_price = $player->get_hold($type)->{'price'};
     my $stat = $nation_meta->{prices}->{$type}->{stat};
     my $cost = $price * $quantity; 
+    if($player->get_hold($type)->{'used'})
+    {
+        my $redirection = "/play/" . params->{game} . "/i/shop?shop-posted=ko&err=used";
+        redirect $redirection, 302;
+        return;  
+    }
     if($command eq 'buy')
     {
         if($cost > $money)
@@ -1182,6 +1191,7 @@ get '/interact/:game/arrive' => sub {
         my $time = DateTime->now;
         $time->set_time_zone('Europe/Rome');
         $player->disembark_time($time);
+        $player->reset_used();
         $player->update();
         my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ok&err=arrived";
         redirect $redirection, 302;

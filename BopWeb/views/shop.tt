@@ -15,7 +15,7 @@
             </div>
         </center>  
         <br />
-        <div>
+        <div [% IF used %]style="color:#bababa"[% END %]>
             <center><strong>[% prod FILTER ucfirst %]</strong></center><br />
             <center><strong>[% prices.$prod.price %]</strong></center>
         </div>
@@ -46,7 +46,7 @@
             <div class="row">
                 [% FOREACH p IN products %]
                 <div class="col-sm-2">
-                    [% PROCESS price_card prod=p %]
+                    [% PROCESS price_card prod=p used=used_products.$p %]
                 </div>
                 [% END %]
             </div>
