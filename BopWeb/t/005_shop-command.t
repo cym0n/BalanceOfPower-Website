@@ -42,6 +42,9 @@ is($cargo{'free'}, 495, "495 free space in the hold");
 is($player->money, 950, "Money of player is now 950");
 is($hold->{price}, 10, "Price is 10");
 is($hold->{stat}, 40, "Stat is 40");
+is($hold->{used}, 1, "Goods is used");
+
+$player->reset_used(); #Reset used to allow next test
 
 diag("BUY 10 MORE GOODS IN ITALY (GOODS COST: 10)");
 $res  = $test->request( POST '/interact/thegame/shop-command', 
@@ -58,7 +61,9 @@ is($cargo{'free'}, 485, "485 free space in the hold");
 is($player->money, 850, "Money of player is now 850");
 is($hold->{price}, 10, "Price is 10");
 is($hold->{stat}, 40, "Stat is 40");
+is($hold->{used}, 1, "Goods is used");
 
+$player->reset_used(); #Reset used to allow next test
 
 diag("SELL 5 GOODS IN ITALY (GOODS COST: 10)");
 $res  = $test->request( POST '/interact/thegame/shop-command', 
@@ -75,6 +80,9 @@ is($cargo{'free'}, 490, "490 free space in the hold");
 is($player->money, 900, "Money of player is now 900");
 is($hold->{price}, 10, "Price is 10");
 is($hold->{stat}, 40, "Stat is 40");
+is($hold->{used}, 1, "Goods is used");
+
+$player->reset_used(); #Reset used to allow next test
 
 diag("SELL 5 GOODS IN ITALY ON BLACK MARKET (GOODS COST: 10 + 10% = 11)");
 $res  = $test->request( POST '/interact/thegame/shop-command', 
@@ -93,6 +101,9 @@ is($player->money, 955, "Money of player is now 955");
 is($player->get_friendship('Italy'), 45, "Friendship with Italy is now 45");
 is($hold->{price}, 10, "Price is 10");
 is($hold->{stat}, 40, "Stat is 40");
+is($hold->{used}, 1, "Goods is used");
+
+$player->reset_used(); #Reset used to allow next test
 
 diag("BUY 5 GOODS IN FRANCE (GOODS COST: 20)");
 $player->position("France");
@@ -111,6 +122,9 @@ is($cargo{'free'}, 490, "490 free space in the hold");
 is($player->money, 855, "Money of player is now 855");
 is($hold->{price}, 15, "Price is 15");
 is($hold->{stat}, 35, "Stat is 35");
+is($hold->{used}, 1, "Goods is used");
+
+$player->reset_used(); #Reset used to allow next test
 $player->position("Italy"); #undo scenario
 $player->update;
 
