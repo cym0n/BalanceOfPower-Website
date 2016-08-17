@@ -44,6 +44,14 @@ is($hold->{price}, 10, "Price is 10");
 is($hold->{stat}, 40, "Stat is 40");
 is($hold->{used}, 1, "Goods is used");
 
+diag("ERROR: used");
+$res  = $test->request( POST '/interact/thegame/shop-command', 
+                           [command => 'buy', 
+                            type => 'goods', 
+                            quantity => 5] );
+is($res->code, 302, "API redirection");
+is($res->header('location'), 'http://localhost/play/thegame/i/shop?shop-posted=ko&err=used', 'Redirect is correct, shop-posted=ko err=used');
+
 $player->reset_used(); #Reset used to allow next test
 
 diag("BUY 10 MORE GOODS IN ITALY (GOODS COST: 10)");
