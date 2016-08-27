@@ -1,0 +1,58 @@
+[% INCLUDE blocks/head.tt %]
+<div class="col-xs-12 col-sm-9">
+<h3>NETWORK</h3>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="col-sm-2">
+        [% INCLUDE blocks/position_badge.tt icon='network.png' %]
+        </div>
+        <div class="col-sm-10">
+            <div class="row">
+                <div class="alert alert-info">
+                    Time is [% now %] (Europe/Rome)
+                </div>
+            </div>
+            <div class="row">
+                <h4>Missions</h4>
+                <div class="col-sm-12">
+                    <div class="col-sm-4">
+                        [% FOREACH m in missions %]
+                        <div class="well"><strong>Mission type: [% m.type %]</strong><br />
+                        [% m.configuration.from %] -> [% m.configuration.to %]<br /><br />
+                        <button class="btn btn-default" onclick="show_mission([% m.id %])">SHOW</button>
+                        </div>
+                        [% END %]
+                    </div>
+                    <div class="col-sm-8">
+                        <div id="nomission" class="well missiondetails">
+                        <p>Click on SHOW button for details on missions</p>
+                        </div>
+                        [% FOREACH m in missions %]
+                        <div id="mission[% m.id %]" class="well missiondetails">
+                            <strong>Mission type: [% m.type %]</strong><br /><br />
+                            <br />
+                            <center><img style="height:100px" src="/images/parcel.png"></center>
+                            <br />
+                            <p>Your mission is to take a secret parcel from [% INCLUDE blocks/linked_nation.tt n = m.configuration.from %] to 
+                            [% INCLUDE blocks/linked_nation.tt n = m.configuration.to %].</p>
+                            <p>Here's what will be of your relationships with the nations involved:<br />
+                            <center>
+                            [% INCLUDE blocks/linked_nation.tt n = m.configuration.assignment %]: [% m.reward.friendship.assignment %]<br />
+                            [% INCLUDE blocks/linked_nation.tt n = m.configuration.from %]: [% m.reward.friendship.from %]<br />
+                            [% INCLUDE blocks/linked_nation.tt n = m.configuration.to %]: [% m.reward.friendship.to %]<br />
+                            </center>
+                            </p>
+                        </div>
+                        [% END %]
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+</div>
+</div>
+
+[% INCLUDE blocks/side.tt %]
+[% INCLUDE blocks/foot.tt %]
