@@ -1,16 +1,23 @@
 <div class="row">
     <h4>[% missions_title %]</h4>
-        <div class="col-sm-12">
-            <div class="col-sm-4">
-                [% FOREACH m in missions %]
-                <div class="well">
-                    <strong>Mission type: [% m.type %]</strong><br />
-                    [% m.configuration.from %] -> [% m.configuration.to %]<br /><br />
-                    <button class="btn btn-default" onclick="show_mission([% m.id %])">SHOW</button>
-                </div>
-                [% END %]
+    [% IF my == 0 %]
+    <p><a href="/play/[% game %]/i/mymissions">Your missions: [% player_missions.size %]/[% max_missions %]</a></p>
+    [% ELSE %]
+    <p>Your missions: [% player_missions.size %]/[% max_missions %]</p>
+    [% END %]
+    
+    <div class="col-sm-12">
+        [% IF missions.size > 0 %]
+        <div class="col-sm-4">
+            [% FOREACH m in missions %]
+            <div class="well">
+                <strong>Mission type: [% m.type %]</strong><br />
+                [% m.configuration.from %] -> [% m.configuration.to %]<br /><br />
+                <button class="btn btn-default" onclick="show_mission([% m.id %])">SHOW</button>
             </div>
-            <div class="col-sm-8">
+            [% END %]
+        </div>
+        <div class="col-sm-8">
             <div id="nomission" class="well missiondetails">
                 <center>Click on SHOW button for details on missions</center>
             </div>
@@ -26,18 +33,39 @@
                 </p>
                 <p>
                     Here's what will be of your relationships with the nations involved:<br />
-                    <center>
+                    <p style="padding-left: 30px">
                         [% INCLUDE blocks/linked_nation.tt n = m.configuration.assignment %]: [% m.reward.friendship.assignment %]<br />
                         [% INCLUDE blocks/linked_nation.tt n = m.configuration.from %]: [% m.reward.friendship.from %]<br />
                         [% INCLUDE blocks/linked_nation.tt n = m.configuration.to %]: [% m.reward.friendship.to %]<br />
-                    </center>
+                    </p>
                 </p>
                 <br />
-                Money: [% m.reward.money %]<br />
+                <strong>Money</strong>: [% m.reward.money %]<br />
                 <br />
-                <button class="btn btn-success">Accept</button>
+                <strong>Mission will expire on</strong>: [% m.expire_turn %]<br />
+                <br />
+                <strong>Penalty for dropping mission</strong>: [% m.drop_penalty %]<br />
+                <br />
+                [% if my == 0 %]
+                <form method="post" action="/interact/[% game %]/mission-command">
+                <input type="hidden" name="mission" value="[% m.id %]" />
+                <input type="hidden" name="command" value="accept" />
+                <button type="submit" class="btn btn-success">Accept</button>
+                </form>
+                [% else %]
+                <form method="post" action="/interact/[% game %]/mission-command">
+                <input type="hidden" name="mission" value="[% m.id %]" />
+                <input type="hidden" name="command" value="drop" />
+                <button type="submit" class="btn btn-danger">Drop</button>
+                </form>
+                [% end %]
             </div>
             [% END %]
         </div>
+        [% ELSE %]
+        <div class="well">
+            <center>No missions to display</center>
+        </div>
+        [% END %]
     </div>
 </div>

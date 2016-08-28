@@ -12,7 +12,7 @@
                     Time is [% now %] (Europe/Rome)
                 </div>
             </div>
-            [% INCLUDE blocks/missions_browser.tt missions_title='My missions' %]
+            [% INCLUDE blocks/missions_browser.tt missions_title="Missions in $position" my=0 %]
         </div>
     </div>
 </div>

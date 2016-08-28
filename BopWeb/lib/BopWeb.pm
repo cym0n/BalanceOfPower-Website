@@ -13,7 +13,7 @@ use DateTime;
 use List::Util qw(shuffle);
 
 use BalanceOfPower::Utils qw (prev_turn);
-use BalanceOfPower::Constants ':all';;
+use BalanceOfPower::Constants ':all';
 
 our $VERSION = '0.1';
 
@@ -587,8 +587,8 @@ get '/play/:game/i/network' => sub {
     my $player_meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
     my $friendship = $player->get_friendship($player->position);
 
-    my @missions = schema->resultset('BopMission')->search({ location => $player->position,
-                                                             status => { '>' => 0 } });
+    my @missions = missions_for_nation($player->position, 1);
+    my @player_missions = missions_for_player($player->id, 1);
     my @missions_data;
     for(@missions)
     {
@@ -600,6 +600,7 @@ get '/play/:game/i/network' => sub {
         'interactive' => 1,
         'menu' => $menu,
         'menu_urls' => $ordered,
+        'money' => $player->money_to_print,
         'p_stock_value' => $player_meta->{'stock_value'},
         'nation_codes' => get_nation_codes($meta->{nations}),
         'prices' => $nation_meta->{'prices'},
@@ -617,6 +618,8 @@ get '/play/:game/i/network' => sub {
         'context' => 'i',
         'now' => $print_now,
         'missions' => \@missions_data,
+        'player_missions' => \@player_missions,
+        'max_missions' => MAX_MISSIONS_FOR_USER,
     };
     template 'network', $template_data;
 };
@@ -651,8 +654,7 @@ get '/play/:game/i/mymissions' => sub {
     my $player_meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
     my $friendship = $player->get_friendship($player->position);
 
-    my @missions = schema->resultset('BopMission')->search({ assigned => $player->id,
-                                                             status => { '>' => 0 } });
+    my @missions = missions_for_player($player->id, 1);
     my @missions_data;
     for(@missions)
     {
@@ -664,6 +666,7 @@ get '/play/:game/i/mymissions' => sub {
         'interactive' => 1,
         'menu' => $menu,
         'menu_urls' => $ordered,
+        'money' => $player->money_to_print,
         'p_stock_value' => $player_meta->{'stock_value'},
         'nation_codes' => get_nation_codes($meta->{nations}),
         'prices' => $nation_meta->{'prices'},
@@ -681,6 +684,8 @@ get '/play/:game/i/mymissions' => sub {
         'context' => 'i',
         'now' => $print_now,
         'missions' => \@missions_data,
+        'player_missions' => \@missions_data,
+        'max_missions' => MAX_MISSIONS_FOR_USER,
     };
     template 'mymissions', $template_data;
 };
@@ -803,6 +808,30 @@ sub get_nation_codes
     }
     return \%out;
 }
+
+sub missions_for_player
+{
+    my $player = shift;
+    my $status = shift;
+    my $query = { assigned => $player };
+    if($status)
+    {
+        $query->{status} = $status;
+    }
+    return schema->resultset('BopMission')->search($query);
+}
+sub missions_for_nation
+{
+    my $nation = shift;
+    my $status = shift;
+    my $query = { location => $nation };
+    if($status)
+    {
+        $query->{status} = $status;
+    }
+    return schema->resultset('BopMission')->search($query);
+}
+
 
 
 
@@ -1374,6 +1403,84 @@ sub enable_to_travel
     $now->set_time_zone('Europe/Rome');
     return DateTime->compare($now, $enable_to_travel) == 1
 }
+
+post '/interact/:game/mission-command' => sub {
+    my $user = logged_user();
+    my $usergame = player_of_game(params->{game}, $user);
+    if(! $usergame)
+    {
+        send_error("Access denied", 403);
+        return;
+    }
+    my $player = schema->resultset('BopPlayer')->find($usergame->player);
+    my $game = params->{game};
+    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my ($year, $turn) = split '/', $meta->{'current_year'};
+    my $command = lc(params->{command});
+    my $mission = params->{mission};
+    if(! $command || ! $mission)
+    { 
+        my $redirection = "/play/" . params->{game} . "/i/network?mission-posted=ko&err=no-input";
+        redirect $redirection, 302;
+        return;  
+    }
+    my $mission_obj = schema->resultset('BopMission')->find($mission);
+    if(! $mission_obj)
+    {
+        my $redirection = "/play/" . params->{game} . "/i/network?mission-posted=ko&err=no-mission";
+        redirect $redirection, 302;
+        return;  
+    }
+    if($mission_obj->status != 1)
+    {
+        my $redirection = "/play/" . params->{game} . "/i/network?mission-posted=ko&err=bad-mission";
+        redirect $redirection, 302;
+        return;  
+    }
+
+    if($command eq 'accept')
+    {
+        my @player_missions = missions_for_player($player->id, 1);
+        if(@player_missions >= MAX_MISSIONS_FOR_USER)
+        { 
+            my $redirection = "/play/" . params->{game} . "/i/network?mission-posted=ko&err=missions-limit";
+            redirect $redirection, 302;
+            return;  
+        }
+        if($mission_obj->assigned)
+        {
+            my $redirection = "/play/" . params->{game} . "/i/network?mission-posted=ko&err=assigned-missions-limit";
+            redirect $redirection, 302;
+            return;  
+        }
+        $mission_obj->assigned($player->id);
+        $mission_obj->update();
+        my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ok&err=accepted";
+        redirect $redirection, 302;
+        return;  
+    } 
+    elsif($command eq 'drop')
+    {
+        if($mission_obj->assigned ne $player->id)
+        {
+            my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ko&err=not-owned";
+            redirect $redirection, 302;
+            return;  
+        }
+        $mission_obj->assigned(undef);
+        $mission_obj->update();
+        $player->add_money(-1 * $mission_obj->drop_penalty);
+         my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ok&err=dropped";
+         redirect $redirection, 302;
+         return;  
+    }
+    else
+    {
+        my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ko&err=bad-command";
+        redirect $redirection, 302;
+        return;  
+    }
+};
 
 
 

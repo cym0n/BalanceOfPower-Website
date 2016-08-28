@@ -120,6 +120,7 @@ __PACKAGE__->set_primary_key("id");
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 
 use JSON;
+use BalanceOfPower::Constants ':all';
 
 sub to_hash
 {
@@ -132,6 +133,23 @@ sub to_hash
     $out{'location'} = $self->location;
     $out{'configuration'} = decode_json $self->configuration;
     $out{'reward'} = decode_json $self->reward;
+    $out{'drop_penalty'} = $self->drop_penalty;
     return \%out;
 }
+
+sub drop_penalty
+{
+    my $self = shift;
+    my $reward =  decode_json $self->reward;
+    if(exists $reward->{'money'} && $reward->{'money'} > 0)
+    {
+        return int(($reward->{'money'} * PENALTY_FACTOR_FOR_DROP_MISSION) * 100)/100;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+
 1;
