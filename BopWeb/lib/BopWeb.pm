@@ -33,7 +33,7 @@ my $metadata_path = config->{'metadata_path'} || $root_path . "metadata";
 my @reports_menu = ('r/situation', 'r/newspaper', 'r/hotspots', 'r/alliances', 'r/influences', 'r/supports', 'r/rebel-supports', 'r/combo-history', 'r/prices' );
 my @nation_reports_menu = ('n/actual', 'n/borders', 'n/near', 'n/diplomacy', 'n/events', 'n/graphs', 'n/prices' );
 my @player_reports_menu = ('r/market', 'p/stocks', 'p/targets', 'p/events', 'db/orders', 'p/ranking', 'p/graphs' );
-my @travel_menu = ('i/travel', 'i/shop', 'i/network');
+my @travel_menu = ('i/travel', 'i/shop', 'i/network', 'i/mymissions');
 
 my @products = ( 'goods', 'luxury', 'arms', 'tech', 'culture' );
 
@@ -187,6 +187,10 @@ my %report_configuration = (
             },
             'i/network' => {
                 menu_name => 'Network',
+                custom_js => 'blocks/missions.tt'
+            },
+            'i/mymissions' => {
+                menu_name => 'My Missions',
                 custom_js => 'blocks/missions.tt'
             }
     );
@@ -608,7 +612,7 @@ get '/play/:game/i/network' => sub {
         'year' => $year,
         'turn' => $turn,
         'active_top' => 'travel',
-        'active' => 'i/shop',
+        'active' => 'i/network',
         'custom_js' => $report_conf->{'custom_js'},
         'context' => 'i',
         'now' => $print_now,
@@ -616,6 +620,71 @@ get '/play/:game/i/network' => sub {
     };
     template 'network', $template_data;
 };
+
+get '/play/:game/i/mymissions' => sub {
+    my $user = logged_user();
+    my $usergame = player_of_game(params->{game}, $user);
+    if(! $usergame)
+    {
+        send_error("Access denied", 403);
+        return;
+    }    
+    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my ($year, $turn) = split '/', $meta->{'current_year'};
+    my $codes = get_nation_codes($meta->{nations});
+    my $player = schema->resultset('BopPlayer')->find($usergame->player);
+    my $present_position = $codes->{$player->position};
+    my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
+    my $report_conf = $report_configuration{'i/mymissions'};
+    my $standards = get_report_standard_from_context('i');
+    for(keys %{$standards})
+    {
+        if(! exists $report_conf->{$_})
+        {
+            $report_conf->{$_} = $standards->{$_}
+        }
+    }
+    my ($menu, $ordered) = make_menu($report_conf->{menu}, undef);
+    my $now = DateTime->now;
+    $now->set_time_zone("Europe/Rome");
+    my $print_now = $now->dmy . " " . $now->hms;
+    my $player_meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
+    my $friendship = $player->get_friendship($player->position);
+
+    my @missions = schema->resultset('BopMission')->search({ assigned => $player->id,
+                                                             status => { '>' => 0 } });
+    my @missions_data;
+    for(@missions)
+    {
+        push @missions_data, $_->to_hash;
+    }
+ 
+    my $template_data = {
+        'player' => $user,
+        'interactive' => 1,
+        'menu' => $menu,
+        'menu_urls' => $ordered,
+        'p_stock_value' => $player_meta->{'stock_value'},
+        'nation_codes' => get_nation_codes($meta->{nations}),
+        'prices' => $nation_meta->{'prices'},
+        'position' => $player->position,
+        'position_code' => $present_position,
+        'nation_friendship' => $friendship,
+        'nation_friendship_good' => $friendship < FRIENDSHIP_LIMIT_TO_SHOP ? 0 : 1,
+        'products' => \@products,
+        'game' => params->{game},
+        'year' => $year,
+        'turn' => $turn,
+        'active_top' => 'travel',
+        'active' => 'i/mymissions',
+        'custom_js' => $report_conf->{'custom_js'},
+        'context' => 'i',
+        'now' => $print_now,
+        'missions' => \@missions_data,
+    };
+    template 'mymissions', $template_data;
+};
+
 
 get '/play/:game' => sub {
     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');

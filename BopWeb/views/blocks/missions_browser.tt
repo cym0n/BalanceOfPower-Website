@@ -1,0 +1,43 @@
+<div class="row">
+    <h4>[% missions_title %]</h4>
+        <div class="col-sm-12">
+            <div class="col-sm-4">
+                [% FOREACH m in missions %]
+                <div class="well">
+                    <strong>Mission type: [% m.type %]</strong><br />
+                    [% m.configuration.from %] -> [% m.configuration.to %]<br /><br />
+                    <button class="btn btn-default" onclick="show_mission([% m.id %])">SHOW</button>
+                </div>
+                [% END %]
+            </div>
+            <div class="col-sm-8">
+            <div id="nomission" class="well missiondetails">
+                <center>Click on SHOW button for details on missions</center>
+            </div>
+            [% FOREACH m in missions %]
+            <div id="mission[% m.id %]" class="well missiondetails" style="display:none">
+                <strong>Mission type: [% m.type %]</strong><br /><br />
+                <br />
+                <center><img style="height:100px" src="/images/parcel.png"></center>
+                <br />
+                <p>
+                    Your mission is to take a secret parcel from [% INCLUDE blocks/linked_nation.tt n = m.configuration.from %] to 
+                    [% INCLUDE blocks/linked_nation.tt n = m.configuration.to %].
+                </p>
+                <p>
+                    Here's what will be of your relationships with the nations involved:<br />
+                    <center>
+                        [% INCLUDE blocks/linked_nation.tt n = m.configuration.assignment %]: [% m.reward.friendship.assignment %]<br />
+                        [% INCLUDE blocks/linked_nation.tt n = m.configuration.from %]: [% m.reward.friendship.from %]<br />
+                        [% INCLUDE blocks/linked_nation.tt n = m.configuration.to %]: [% m.reward.friendship.to %]<br />
+                    </center>
+                </p>
+                <br />
+                Money: [% m.reward.money %]<br />
+                <br />
+                <button class="btn btn-success">Accept</button>
+            </div>
+            [% END %]
+        </div>
+    </div>
+</div>
