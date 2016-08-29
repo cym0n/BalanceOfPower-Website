@@ -13,7 +13,16 @@
             <div class="well">
                 <strong>Mission type: [% m.type %]</strong><br />
                 [% m.configuration.from %] -> [% m.configuration.to %]<br /><br />
-                <button class="btn btn-default" onclick="show_mission([% m.id %])">SHOW</button>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <button class="btn btn-default" onclick="show_mission([% m.id %])">SHOW</button>
+                    </div>
+                    [% IF m.action == 1 %]
+                    <div class="col-sm-6">
+                        <center><img style="height:30px" src="/images/warning.png"></center>
+                    </div>
+                    [% END %]
+                </div>
             </div>
             [% END %]
         </div>

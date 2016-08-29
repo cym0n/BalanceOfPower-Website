@@ -79,6 +79,11 @@ __PACKAGE__->table("BOP_MISSIONS");
   is_nullable: 1
   size: 50
 
+=head2 progress
+
+  data_type: 'integer'
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -98,6 +103,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "location",
   { data_type => "varchar", is_nullable => 1, size => 50 },
+  "progress",
+  { data_type => "integer", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -113,8 +120,8 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-08-24 23:24:20
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lkXG938IqxRJfXRe9ZjtHg
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-08-28 23:00:10
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:skQgDUD/k+koQFUD69bHZg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
@@ -134,6 +141,7 @@ sub to_hash
     $out{'configuration'} = decode_json $self->configuration;
     $out{'reward'} = decode_json $self->reward;
     $out{'drop_penalty'} = $self->drop_penalty;
+    $out{'progress'} = $self->progress;
     return \%out;
 }
 
@@ -144,6 +152,46 @@ sub drop_penalty
     if(exists $reward->{'money'} && $reward->{'money'} > 0)
     {
         return int(($reward->{'money'} * PENALTY_FACTOR_FOR_DROP_MISSION) * 100)/100;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+sub action_available
+{
+    my $self = shift;
+    my $player = shift;
+    my $data = $self->to_hash;
+
+    if($self->type eq 'parcel')
+    {
+        if($self->progress == 0) #Parcel must be retrieved
+        {
+            return $data->{'configuration'}->{'from'} eq $player->position;
+        }
+        elsif($self->progress == 1)
+        {
+            return $data->{'configuration'}->{'to'} eq $player->position;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+sub mission_done
+{
+    my $self = shift;
+    if($self->type eq 'parcel')
+    {
+        return $self->progress == 2;
     }
     else
     {

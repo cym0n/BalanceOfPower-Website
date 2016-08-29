@@ -589,6 +589,14 @@ get '/play/:game/i/network' => sub {
 
     my @missions = missions_for_nation($player->position, 1);
     my @player_missions = missions_for_player($player->id, 1);
+    my $mission_warning = 0;
+    for(@player_missions)
+    {
+        if($_->action_available($player))
+        {
+            $mission_warning = 1;
+        }
+    }
     my @missions_data;
     for(@missions)
     {
@@ -618,6 +626,7 @@ get '/play/:game/i/network' => sub {
         'context' => 'i',
         'now' => $print_now,
         'missions' => \@missions_data,
+        'mission_warning' => $mission_warning,
         'player_missions' => \@player_missions,
         'max_missions' => MAX_MISSIONS_FOR_USER,
     };
@@ -658,7 +667,17 @@ get '/play/:game/i/mymissions' => sub {
     my @missions_data;
     for(@missions)
     {
-        push @missions_data, $_->to_hash;
+        my $mdata = $_->to_hash;
+        if($_->action_available($player))
+        {
+            $mdata->{'action'} = 1;
+        }
+        else
+        {
+            $mdata->{'action'} = 0;
+        }
+        push @missions_data, $mdata;
+        
     }
  
     my $template_data = {
