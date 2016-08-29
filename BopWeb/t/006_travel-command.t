@@ -24,6 +24,10 @@ my $test = Plack::Test->create($app);
 my $res;
 my $player;
 
+diag("SHOP PAGE");
+$res =$test->request( GET '/play/thegame/i/travel' );
+is($res->code, 200, "Shop page retrieved");
+
 diag("---- GO ----");
 diag("ERROR: not-ready");
 $player = schema->resultset('BopPlayer')->find({ id => 1000 });

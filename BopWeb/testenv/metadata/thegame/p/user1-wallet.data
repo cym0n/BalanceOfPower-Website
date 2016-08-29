@@ -1,0 +1,135 @@
+$VAR1 = {
+          'stock_value' => '500.34',
+          'wallet' => {
+                        'PAK' => {
+                                   'influence' => '0',
+                                   'war_bonds' => 0,
+                                   'stocks' => '2'
+                                 },
+                        'CHN' => {
+                                   'stocks' => '0',
+                                   'war_bonds' => '0',
+                                   'influence' => '0'
+                                 },
+                        'ZAI' => {
+                                   'stocks' => '4',
+                                   'influence' => '2',
+                                   'war_bonds' => '0'
+                                 },
+                        'KOR' => {
+                                   'war_bonds' => '0',
+                                   'influence' => '1.5',
+                                   'stocks' => '0'
+                                 },
+                        'DDR' => {
+                                   'stocks' => '0',
+                                   'war_bonds' => '0',
+                                   'influence' => '0'
+                                 },
+                        'TAN' => {
+                                   'influence' => '1',
+                                   'war_bonds' => '0',
+                                   'stocks' => '0'
+                                 },
+                        'COL' => {
+                                   'influence' => '0',
+                                   'war_bonds' => '0',
+                                   'stocks' => '0'
+                                 },
+                        'YUG' => {
+                                   'stocks' => '4',
+                                   'war_bonds' => '0',
+                                   'influence' => '2'
+                                 },
+                        'ITA' => {
+                                   'war_bonds' => '0',
+                                   'influence' => '1',
+                                   'stocks' => 0
+                                 },
+                        'BRA' => {
+                                   'war_bonds' => '0',
+                                   'influence' => '2',
+                                   'stocks' => '0'
+                                 },
+                        'ARG' => {
+                                   'war_bonds' => 3,
+                                   'influence' => '0',
+                                   'stocks' => '2'
+                                 },
+                        'AUS' => {
+                                   'stocks' => '0',
+                                   'influence' => '1',
+                                   'war_bonds' => '0'
+                                 },
+                        'HON' => {
+                                   'stocks' => '0',
+                                   'influence' => '2',
+                                   'war_bonds' => '0'
+                                 },
+                        'TWN' => {
+                                   'stocks' => '0',
+                                   'influence' => '0',
+                                   'war_bonds' => '0'
+                                 },
+                        'GBR' => {
+                                   'stocks' => '0',
+                                   'war_bonds' => '0',
+                                   'influence' => '0'
+                                 },
+                        'USA' => {
+                                   'war_bonds' => '0',
+                                   'influence' => '0.5',
+                                   'stocks' => '0'
+                                 },
+                        'SYR' => {
+                                   'influence' => '3',
+                                   'war_bonds' => '0',
+                                   'stocks' => 0
+                                 },
+                        'URS' => {
+                                   'stocks' => 1,
+                                   'influence' => '0.5',
+                                   'war_bonds' => '0'
+                                 },
+                        'IND' => {
+                                   'war_bonds' => 0,
+                                   'influence' => '1',
+                                   'stocks' => '2'
+                                 },
+                        'POL' => {
+                                   'stocks' => '0',
+                                   'war_bonds' => '0',
+                                   'influence' => '0'
+                                 },
+                        'PER' => {
+                                   'stocks' => 0,
+                                   'war_bonds' => '0',
+                                   'influence' => '2'
+                                 },
+                        'NIG' => {
+                                   'war_bonds' => '0',
+                                   'influence' => '2',
+                                   'stocks' => '0'
+                                 },
+                        'ALG' => {
+                                   'influence' => '2',
+                                   'war_bonds' => '0',
+                                   'stocks' => 4
+                                 },
+                        'FRA' => {
+                                   'stocks' => '0',
+                                   'influence' => '1',
+                                   'war_bonds' => '0'
+                                 },
+                        'CHI' => {
+                                   'influence' => '0',
+                                   'war_bonds' => '0',
+                                   'stocks' => '0'
+                                 },
+                        'LIB' => {
+                                   'stocks' => '0',
+                                   'war_bonds' => '0',
+                                   'influence' => '2'
+                                 }
+                      }
+        };

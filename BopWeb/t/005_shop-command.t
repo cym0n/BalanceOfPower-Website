@@ -27,6 +27,10 @@ my $player;
 my %cargo;
 my $hold;
 
+diag("SHOP PAGE");
+$res =$test->request( GET '/play/thegame/i/shop' );
+is($res->code, 200, "Shop page retrieved");
+
 diag("BUY 5 GOODS IN ITALY (GOODS COST: 10)");
 $res  = $test->request( POST '/interact/thegame/shop-command', 
                            [command => 'buy', 
