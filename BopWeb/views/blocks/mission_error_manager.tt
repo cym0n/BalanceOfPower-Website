@@ -27,8 +27,11 @@
         [% IF err == 'assigned' %]
             You're not the owner of the mission
         [% END %]
-        [% IF err == 'assigned' %]
+        [% IF err == 'bad-command' %]
             Bad command
+        [% END %]
+        [% IF err == 'not-here' %]
+            The mission is not here
         [% END %]
         </div>
     [% END %]

@@ -1468,7 +1468,13 @@ post '/interact/:game/mission-command' => sub {
         }
         if($mission_obj->assigned)
         {
-            my $redirection = "/play/" . params->{game} . "/i/network?mission-posted=ko&err=assigned-missions-limit";
+            my $redirection = "/play/" . params->{game} . "/i/network?mission-posted=ko&err=assigned";
+            redirect $redirection, 302;
+            return;  
+        }
+        if($mission_obj->location ne $player->position)
+        {
+            my $redirection = "/play/" . params->{game} . "/i/network?mission-posted=ko&err=not-here";
             redirect $redirection, 302;
             return;  
         }
@@ -1487,6 +1493,7 @@ post '/interact/:game/mission-command' => sub {
             return;  
         }
         $mission_obj->assigned(undef);
+        $mission_obj->progress(0);
         $mission_obj->update();
         $player->add_money(-1 * $mission_obj->drop_penalty);
          my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ok&err=dropped";
