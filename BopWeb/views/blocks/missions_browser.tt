@@ -33,6 +33,30 @@
             [% FOREACH m in missions %]
             <div id="mission[% m.id %]" class="well missiondetails" style="display:none">
                 <strong>Mission type: [% m.type %]</strong><br /><br />
+                [% IF my == 1 %]
+                [% IF err == 'action-done' %]
+                <div class="alert alert-warning">
+                    [% IF m.progress == 1 %]
+                    <strong>Package collected!</strong>
+                    [% END %]
+                    [% IF m.progress == 2 %]
+                    <strong>Package delivered!</strong>
+                    [% END %]
+                </div>
+                [% END %]
+                <div class="alert alert-warning">
+                [% IF m.progress == 0 %]
+                Position of the package acquired.<br />
+                <strong>Next step:</strong> go to [% m.configuration.from %] to collect the package
+                [% END %]
+                [% IF m.progress == 1 %]
+                The package is in your hands<br />
+                <strong>Next step:</strong> take the package to [% m.configuration.to %]
+                [% END %]
+                </div>
+                [% END %]
+
+                <br />
                 <br />
                 <center><img style="height:100px" src="/images/parcel.png"></center>
                 <br />
@@ -55,18 +79,39 @@
                 <br />
                 <strong>Penalty for dropping mission</strong>: [% m.drop_penalty %]<br />
                 <br />
-                [% if my == 0 %]
+                [% IF my == 0 %]
                 <form method="post" action="/interact/[% game %]/mission-command">
                 <input type="hidden" name="mission" value="[% m.id %]" />
                 <input type="hidden" name="command" value="accept" />
-                <button type="submit" class="btn btn-success">Accept</button>
+                <button type="submit" class="btn btn-info">Accept</button>
                 </form>
-                [% else %]
-                <form method="post" action="/interact/[% game %]/mission-command">
-                <input type="hidden" name="mission" value="[% m.id %]" />
-                <input type="hidden" name="command" value="drop" />
-                <button type="submit" class="btn btn-danger">Drop</button>
-                </form>
+                [% ELSE %]
+                <div class="row">
+                    [% IF m.action == 1 %]
+                    <div class="col-sm-6">
+                        [% IF m.progress == 0 %]
+                        [% action_label = "Collect the parcel" %]
+                        [% ELSE %]
+                        [% IF m.progress == 1 %]
+                        [% action_label = "Deliver the parcel" %]
+                        [% END %]
+                        [% END %]
+                        <form method="post" action="/interact/[% game %]/mission-command">
+                        <input type="hidden" name="mission" value="[% m.id %]" />
+                        <input type="hidden" name="command" value="action" />
+                        <button type="submit" class="btn btn-success">[% action_label %]</button>
+                        </form>
+                    </div>
+                    [% END %]
+                    <div class="col-sm-6">
+                        <form method="post" action="/interact/[% game %]/mission-command">
+                        <input type="hidden" name="mission" value="[% m.id %]" />
+                        <input type="hidden" name="command" value="drop" />
+                        <button type="submit" class="btn btn-danger">Drop</button>
+                        </form>
+                    </div>
+                   
+                </div>
                 [% end %]
             </div>
             [% END %]

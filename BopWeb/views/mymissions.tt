@@ -12,7 +12,8 @@
                     Time is [% now %] (Europe/Rome)
                 </div>
             </div>
-            [% INCLUDE blocks/missions_browser.tt missions_title='My missions' %]
+            [% INCLUDE blocks/mission_error_manager.tt %]
+            [% INCLUDE blocks/missions_browser.tt missions_title='My missions' my=1 %]
         </div>
     </div>
 </div>

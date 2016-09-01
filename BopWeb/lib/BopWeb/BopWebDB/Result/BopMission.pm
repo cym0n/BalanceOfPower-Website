@@ -186,6 +186,25 @@ sub action_available
     }
 }
 
+sub progress_limit
+{
+    my $self = shift;
+    if($self->type eq 'parcel')
+    {
+        return 2;
+    }
+}
+
+sub action
+{
+    my $self = shift;
+    if($self->progress < $self->progress_limit)
+    {
+        $self->progress($self->progress + 1);
+        $self->update;
+    }
+}
+
 sub mission_done
 {
     my $self = shift;

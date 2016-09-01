@@ -594,7 +594,7 @@ get '/play/:game/i/network' => sub {
     {
         if($_->action_available($player))
         {
-            $mission_warning = 1;
+            $mission_warning = $_->id;
         }
     }
     my @missions_data;
@@ -705,6 +705,9 @@ get '/play/:game/i/mymissions' => sub {
         'missions' => \@missions_data,
         'player_missions' => \@missions_data,
         'max_missions' => MAX_MISSIONS_FOR_USER,
+        'showme' => params->{showme},
+        'mission_posted' => params->{'mission-posted'},
+        'err' => params->{'err'},
     };
     template 'mymissions', $template_data;
 };
@@ -1480,7 +1483,7 @@ post '/interact/:game/mission-command' => sub {
         }
         $mission_obj->assigned($player->id);
         $mission_obj->update();
-        my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ok&err=accepted";
+        my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ok&err=accepted&showme=" . $mission_obj->id;
         redirect $redirection, 302;
         return;  
     } 
@@ -1499,6 +1502,27 @@ post '/interact/:game/mission-command' => sub {
          my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ok&err=dropped";
          redirect $redirection, 302;
          return;  
+    }
+    elsif($command eq 'action')
+    {
+        if($mission_obj->assigned ne $player->id)
+        {
+            my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ko&err=not-owned";
+            redirect $redirection, 302;
+            return;  
+        }
+        if(! $mission_obj->action_available($player))
+        {
+            my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ko&err=action-not-available";
+            redirect $redirection, 302;
+            return;  
+        }
+        $mission_obj->action();
+        my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ok&err=action-done&showme=" . $mission_obj->id;
+        redirect $redirection, 302;
+        return;  
+    
+    
     }
     else
     {

@@ -1,13 +1,16 @@
 [% IF mission_posted %]
 <div class="row">
     <div class="col-sm-12">
-    [% IF travel_posted == 'ok' %]
+    [% IF mission_posted == 'ok' %]
         <div class="alert alert-success">
         [% IF err == 'accepted' %]
         Mission accepted!
         [% END %]
         [% IF err == 'dropped' %]
         Mission dropped!
+        [% END %]
+        [% IF err == 'action-done' %]
+        Mission progress!
         [% END %]
         </div>
     [% ELSE %]

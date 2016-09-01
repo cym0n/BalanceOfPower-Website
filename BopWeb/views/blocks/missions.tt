@@ -6,6 +6,10 @@ function show_mission( mission )
 }
 $(document).ready(function() {
     $('.missiondetails').hide();
+    [% IF showme %]
+    $('#mission'+[% showme %]).show();
+    [% ELSE %]
     $('#nomission').show();
+    [% END %]
 });
 </script>

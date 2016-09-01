@@ -38,7 +38,8 @@ for(my $i = 0; $i < MISSIONS_TO_GENERATE_PER_TURN; $i++)
         status => 1,
         configuration => $config,
         reward => $reward,
-        location => $m{'assignment'}
+        location => $m{'assignment',
+        progress => 0}
     });
     say "Mission " . $mission->id . " generated";
 }
