@@ -25,6 +25,12 @@ my $res;
 my $mission;
 my $player;
 
+#Missions in test env
+#18|parcel||1987/3|1|0|{"assignment":"Italy","from":"Chile","to":"Indonesia"}|{"money":100,"friendship":{"assignment":3,"from":-2,"to":1}}|Italy
+#19|parcel||1987/3|1|0|{"assignment":"Pakistan","from":"France","to":"USA"}|{"money":100,"friendship":{"assignment":3,"from":-2,"to":1}}|Pakistan
+#20|parcel||1982/3|0|0|{"assignment":"Italy","from":"Chile","to":"Indonesia"}|{"money":100,"friendship":{"assignment":3,"from":-2,"to":1}}|Italy
+#21|parcel|1001|1987/3|1|0|{"assignment":"China","from":"Taiwan","to":"Japan"}|{"money":100,"friendship":{"assignment":3,"from":-2,"to":1}}|China
+
 my $good_mission = 18;
 my $second_mission = 19;
 my $expired_mission = 20;
@@ -84,7 +90,7 @@ $res  = $test->request( POST '/interact/thegame/mission-command',
                            [command => 'accept', mission => $good_mission] 
                       );
 is($res->code, 302, "API redirection");
-is($res->header('location'), 'http://localhost/play/thegame/i/mymissions?mission-posted=ok&err=accepted', 'Redirect is correct, mission-posted=ok err=accepted');
+is($res->header('location'), 'http://localhost/play/thegame/i/mymissions?mission-posted=ok&err=accepted&showme=18', 'Redirect is correct, mission-posted=ok err=accepted');
 $mission = schema->resultset('BopMission')->find({ id => $good_mission });
 is($mission->assigned, 1000, "Mission is assigned to user1");
 
@@ -118,14 +124,6 @@ is($mission->assigned, undef, "Mission not assigned");
 is($mission->progress, 0, "Progress reset");
 $player = schema->resultset('BopPlayer')->find({ id => 1000});
 is($player->money, 950, "Player payed the penalty");
-
-
-
-
-
-
-
-
 
 diag("MY MISSIONS PAGE");
 $res =$test->request( GET '/play/thegame/i/mymissions' );

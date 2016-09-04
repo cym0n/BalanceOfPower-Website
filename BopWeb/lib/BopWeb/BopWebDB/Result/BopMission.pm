@@ -84,6 +84,12 @@ __PACKAGE__->table("BOP_MISSIONS");
   data_type: 'integer'
   is_nullable: 1
 
+=head2 game
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 100
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -105,6 +111,8 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 1, size => 50 },
   "progress",
   { data_type => "integer", is_nullable => 1 },
+  "game",
+  { data_type => "varchar", is_nullable => 1, size => 100 },
 );
 
 =head1 PRIMARY KEY
@@ -120,8 +128,8 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-08-28 23:00:10
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:skQgDUD/k+koQFUD69bHZg
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-09-04 16:40:23
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:V79nSDDVHDjqptiKVTZlrA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

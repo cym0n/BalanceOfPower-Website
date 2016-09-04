@@ -587,8 +587,8 @@ get '/play/:game/i/network' => sub {
     my $player_meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
     my $friendship = $player->get_friendship($player->position);
 
-    my @missions = missions_for_nation($player->position, 1);
-    my @player_missions = missions_for_player($player->id, 1);
+    my @missions = missions_for_nation(params->{game}, $player->position, 1);
+    my @player_missions = missions_for_player(params->{game}, $player->id, 1);
     my $mission_warning = 0;
     for(@player_missions)
     {
@@ -833,9 +833,10 @@ sub get_nation_codes
 
 sub missions_for_player
 {
+    my $game = shift;
     my $player = shift;
     my $status = shift;
-    my $query = { assigned => $player };
+    my $query = { game => $game, assigned => $player };
     if($status)
     {
         $query->{status} = $status;
@@ -844,9 +845,10 @@ sub missions_for_player
 }
 sub missions_for_nation
 {
+    my $game = shift;
     my $nation = shift;
     my $status = shift;
-    my $query = { location => $nation };
+    my $query = { game => $game, location => $nation };
     if($status)
     {
         $query->{status} = $status;
@@ -1462,7 +1464,7 @@ post '/interact/:game/mission-command' => sub {
 
     if($command eq 'accept')
     {
-        my @player_missions = missions_for_player($player->id, 1);
+        my @player_missions = missions_for_player(params->{game}, $player->id, 1);
         if(@player_missions >= MAX_MISSIONS_FOR_USER)
         { 
             my $redirection = "/play/" . params->{game} . "/i/network?mission-posted=ko&err=missions-limit";
