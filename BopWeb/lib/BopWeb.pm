@@ -588,7 +588,7 @@ get '/play/:game/i/network' => sub {
     my $friendship = $player->get_friendship($player->position);
 
     my @missions = missions_for_nation(params->{game}, $player->position, 1);
-    my @player_missions = missions_for_player(params->{game}, $player->id, 1);
+    my @player_missions = missions_for_player($player->id, 1);
     my $mission_warning = 0;
     for(@player_missions)
     {
@@ -712,6 +712,74 @@ get '/play/:game/i/mymissions' => sub {
     template 'mymissions', $template_data;
 };
 
+get '/play/:game/i/accomplished' => sub {
+    my $user = logged_user();
+    my $usergame = player_of_game(params->{game}, $user);
+    if(! $usergame)
+    {
+        send_error("Access denied", 403);
+        return;
+    }    
+    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my ($year, $turn) = split '/', $meta->{'current_year'};
+    my $codes = get_nation_codes($meta->{nations});
+    my $player = schema->resultset('BopPlayer')->find($usergame->player);
+    my $present_position = $codes->{$player->position};
+    my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
+    my $report_conf = $report_configuration{'i/mymissions'};
+    my $standards = get_report_standard_from_context('i');
+    for(keys %{$standards})
+    {
+        if(! exists $report_conf->{$_})
+        {
+            $report_conf->{$_} = $standards->{$_}
+        }
+    }
+    my ($menu, $ordered) = make_menu($report_conf->{menu}, undef);
+    my $now = DateTime->now;
+    $now->set_time_zone("Europe/Rome");
+    my $print_now = $now->dmy . " " . $now->hms;
+    my $player_meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
+    my $friendship = $player->get_friendship($player->position);
+
+    my $mission = schema->resultset("BopMission")->find(params->{mission});
+    if($mission->status != 2)
+    {
+        send_error("Access denied", 403);
+        return;
+    }    
+    if($mission->assigned != $player->id)
+    {
+        send_error("Bad request", 400);
+        return;
+    }    
+    my $template_data = {
+        'player' => $user,
+        'interactive' => 1,
+        'menu' => $menu,
+        'menu_urls' => $ordered,
+        'money' => $player->money_to_print,
+        'p_stock_value' => $player_meta->{'stock_value'},
+        'nation_codes' => get_nation_codes($meta->{nations}),
+        'prices' => $nation_meta->{'prices'},
+        'position' => $player->position,
+        'position_code' => $present_position,
+        'nation_friendship' => $friendship,
+        'nation_friendship_good' => $friendship < FRIENDSHIP_LIMIT_TO_SHOP ? 0 : 1,
+        'products' => \@products,
+        'game' => params->{game},
+        'year' => $year,
+        'turn' => $turn,
+        'active_top' => 'travel',
+        'active' => 'i/mymissions',
+        'custom_js' => $report_conf->{'custom_js'},
+        'context' => 'i',
+        'now' => $print_now,
+        'mission' => $mission->to_hash(),
+    };
+    template 'accomplished', $template_data;
+};
+
 
 get '/play/:game' => sub {
     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
@@ -833,10 +901,9 @@ sub get_nation_codes
 
 sub missions_for_player
 {
-    my $game = shift;
     my $player = shift;
     my $status = shift;
-    my $query = { game => $game, assigned => $player };
+    my $query = { assigned => $player };
     if($status)
     {
         $query->{status} = $status;
@@ -848,7 +915,7 @@ sub missions_for_nation
     my $game = shift;
     my $nation = shift;
     my $status = shift;
-    my $query = { game => $game, location => $nation };
+    my $query = { game => $game, location => $nation, assigned => undef };
     if($status)
     {
         $query->{status} = $status;
@@ -1464,7 +1531,7 @@ post '/interact/:game/mission-command' => sub {
 
     if($command eq 'accept')
     {
-        my @player_missions = missions_for_player(params->{game}, $player->id, 1);
+        my @player_missions = missions_for_player($player->id, 1);
         if(@player_missions >= MAX_MISSIONS_FOR_USER)
         { 
             my $redirection = "/play/" . params->{game} . "/i/network?mission-posted=ko&err=missions-limit";
@@ -1507,7 +1574,7 @@ post '/interact/:game/mission-command' => sub {
     }
     elsif($command eq 'action')
     {
-        if($mission_obj->assigned ne $player->id)
+        if( $player->id ne $mission_obj->assigned)
         {
             my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ko&err=not-owned";
             redirect $redirection, 302;
@@ -1520,9 +1587,25 @@ post '/interact/:game/mission-command' => sub {
             return;  
         }
         $mission_obj->action();
-        my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ok&err=action-done&showme=" . $mission_obj->id;
-        redirect $redirection, 302;
-        return;  
+        if($mission_obj->accomplished)
+        {
+            my $mission_data = $mission_obj->to_hash();
+            $player->add_money($mission_data->{reward}->{money});
+            foreach my $f (keys %{$mission_data->{reward}->{friendship}})
+            {
+                my $place = $mission_data->{configuration}->{$f};
+                $player->add_friendship($place, $mission_data->{reward}->{friendship}->{$f});
+            }
+            my $redirection = "/play/" . params->{game} . "/i/accomplished?mission=" . $mission_obj->id;
+            redirect $redirection, 302;
+            return;  
+        }
+        else
+        {
+            my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ok&err=action-done&showme=" . $mission_obj->id;
+            redirect $redirection, 302;
+            return;  
+        }
     
     
     }

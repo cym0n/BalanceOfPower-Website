@@ -1,0 +1,66 @@
+[% INCLUDE blocks/head.tt %]
+<div class="col-xs-12 col-sm-9">
+<h3>AGENDA</h3>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="col-sm-2">
+        [% INCLUDE blocks/position_badge.tt icon='missions.png' %]
+        </div>
+        <div class="col-sm-10">
+            <div class="row">
+                <div class="alert alert-info">
+                    Time is [% now %] (Europe/Rome)
+                </div>
+            </div>
+            <div class="row">
+                <div class="alert alert-success">
+                    <strong>MISSION ACCOMPLISHED</strong>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-8">
+                    <div class="well">
+                        <strong>Mission type: [% mission.type %]</strong><br /><br />
+                        <br />
+                        <br />
+                        <center><img style="height:100px" src="/images/parcel.png"></center>
+                        <br />
+                        <p>
+                            Well done! You took the secret parcel to 
+                            [% INCLUDE blocks/linked_nation.tt n = mission.configuration.to %]!
+                        </p>
+                        <p>
+                            Your relationships with the nations involved changed this way:<br />
+                            <p style="padding-left: 30px">
+                                [% INCLUDE blocks/linked_nation.tt n = mission.configuration.assignment %]: [% mission.reward.friendship.assignment %]<br />
+                                [% INCLUDE blocks/linked_nation.tt n = mission.configuration.from %]: [% mission.reward.friendship.from %]<br />
+                                [% INCLUDE blocks/linked_nation.tt n = mission.configuration.to %]: [% mission.reward.friendship.to %]<br />
+                            </p>
+                        </p>
+                        <br />
+                        <strong>Money reward</strong>: [% mission.reward.money %]<br />
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <div class="row">
+                        <a href="/[% game %]/i/network" class="btn btn-default" role="button">Return to the network</a>
+                    </div>
+                    <div class="row">
+                        <br />
+                        <br />
+                        <br />
+                    </div>
+                    <div class="row">
+                        <a href="/[% game %]/i/mymissions" class="btn btn-default" role="button">Return to the agenda</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+</div>
+</div>
+
+[% INCLUDE blocks/side.tt %]
+[% INCLUDE blocks/foot.tt %]

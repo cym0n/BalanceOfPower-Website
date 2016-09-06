@@ -83,9 +83,15 @@ $res  = $test->request( POST '/interact/thegame/mission-command',
                            [command => 'action', mission => $good_mission] 
                       );
 is($res->code, 302, "API redirection");
-is($res->header('location'), 'http://localhost/play/thegame/i/mymissions?mission-posted=ok&err=action-done&showme=18', 'Redirect is correct, mission-posted=ok err=action-done');
+is($res->header('location'), "http://localhost/play/thegame/i/accomplished?mission=$good_mission", 'Redirect is correct, mission-posted=ok err=action-done');
 $mission = schema->resultset('BopMission')->find({ id => $good_mission });
 is($mission->progress, 2, "Mission progressed");
+is($mission->status, 2, "Mission accomplished");
+$player = schema->resultset('BopPlayer')->find({ id => 1000});
+is($player->money, 1100, "100 money earned");
+is($player->get_friendship('Italy'), 53, "Italy friendship is now 53");
+is($player->get_friendship('Chile'), 48, "Chile friendship is now 48");
+is($player->get_friendship('Indonesia'), 51, "Indonesia friendship is now 51");
 
 
 

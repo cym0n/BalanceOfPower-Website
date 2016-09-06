@@ -213,12 +213,14 @@ sub action
     }
 }
 
-sub mission_done
+sub accomplished
 {
     my $self = shift;
-    if($self->type eq 'parcel')
+    if( $self->progress == $self->progress_limit)
     {
-        return $self->progress == 2;
+        $self->status(2);
+        $self->update;
+        return 1;
     }
     else
     {
