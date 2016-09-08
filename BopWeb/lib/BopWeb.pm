@@ -643,6 +643,7 @@ get '/play/:game/i/mymissions' => sub {
     }    
     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
     my ($year, $turn) = split '/', $meta->{'current_year'};
+    my $prevturn = prev_turn($meta->{'current_year'});
     my $codes = get_nation_codes($meta->{nations});
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
     my $present_position = $codes->{$player->position};
@@ -664,6 +665,7 @@ get '/play/:game/i/mymissions' => sub {
     my $friendship = $player->get_friendship($player->position);
 
     my @missions = missions_for_player($player->id, 1);
+    my @expired = expired_missions_for_player($player->id, $prevturn);
     my @missions_data;
     for(@missions)
     {
@@ -704,6 +706,7 @@ get '/play/:game/i/mymissions' => sub {
         'now' => $print_now,
         'missions' => \@missions_data,
         'player_missions' => \@missions_data,
+        'expired_missions' => \@expired,
         'max_missions' => MAX_MISSIONS_FOR_USER,
         'showme' => params->{showme},
         'mission_posted' => params->{'mission-posted'},
@@ -922,6 +925,15 @@ sub missions_for_nation
     }
     return schema->resultset('BopMission')->search($query);
 }
+
+sub expired_missions_for_player
+{
+    my $player = shift;
+    my $year = shift;
+    return missions_for_player($player, 0)->search({ expire_turn => $year });
+}
+    
+
 
 
 
