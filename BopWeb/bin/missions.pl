@@ -44,3 +44,6 @@ for(my $i = 0; $i < MISSIONS_TO_GENERATE_PER_TURN; $i++)
     say "Mission " . $mission->id . " generated";
 }
 
+say "Turning off missions for $game expired in " . $world->current_year;
+schema->resultset("BopMission")->search({ expire_turn => $world->current_year })->update({ status => 0 });
+
