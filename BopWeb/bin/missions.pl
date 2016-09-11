@@ -32,14 +32,15 @@ for(my $i = 0; $i < MISSIONS_TO_GENERATE_PER_TURN; $i++)
                                      to => $m{'to'} });
     my $reward = BopWeb::serialize($m{'reward'});
     my $mission = schema->resultset("BopMission")->create({
+        game => $game,
         assigned => undef,
         type => 'parcel',
         expire_turn => $m{'expire'},
         status => 1,
         configuration => $config,
         reward => $reward,
-        location => $m{'assignment',
-        progress => 0}
+        location => $m{'assignment'},
+        progress => 0
     });
     say "Mission " . $mission->id . " generated";
 }
