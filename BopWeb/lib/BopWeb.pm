@@ -15,6 +15,8 @@ use List::Util qw(shuffle);
 use BalanceOfPower::Utils qw (prev_turn);
 use BalanceOfPower::Constants ':all';
 
+use BopWeb::MetaReader;
+
 our $VERSION = '0.1';
 
 get '/keepalive' => sub {
@@ -28,8 +30,11 @@ get '/keepalive' => sub {
 my $module_file_path = __FILE__;
 my $root_path = abs_path($module_file_path);
 $root_path =~ s/lib\/BopWeb\.pm//;
-
 my $metadata_path = config->{'metadata_path'} || $root_path . "metadata";
+my $metareader = BopWeb::MetaReader->new(path => $metadata_path);
+
+
+
 my @reports_menu = ('r/situation', 'r/newspaper', 'r/hotspots', 'r/alliances', 'r/influences', 'r/supports', 'r/rebel-supports', 'r/combo-history', 'r/prices' );
 my @nation_reports_menu = ('n/actual', 'n/borders', 'n/near', 'n/diplomacy', 'n/events', 'n/graphs', 'n/prices' );
 my @player_reports_menu = ('r/market', 'p/stocks', 'p/targets', 'p/events', 'db/orders', 'p/ranking', 'p/graphs' );
@@ -37,27 +42,6 @@ my @travel_menu = ('i/travel', 'i/shop', 'i/network', 'i/mymissions');
 
 my @products = ( 'goods', 'luxury', 'arms', 'tech', 'culture' );
 
-
-sub get_metafile
-{
-    my $meta = shift;
-    if(-e $meta)
-    {
-        open my $metafile, '<', $meta || die $!;
-        my $data;
-        {
-            local $/;    # slurp mode
-            my $metafile_data = <$metafile>;
-            my $VAR1;
-            eval $metafile_data;
-            return $VAR1;
-        }
-    }
-    else
-    {
-        return undef;
-    }
-}
 
 sub nation_from_code
 {
@@ -197,7 +181,7 @@ my %report_configuration = (
 
 get '/play/:game/:context/:report' => sub {
     my $report_id = params->{context} . '/' . params->{report};
-    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my $meta = $metareader->get_meta(params->{game});
     my ($year, $turn) = split '/', $meta->{'current_year'};
     my $context = params->{context};
     my $user = logged_user();
@@ -263,13 +247,12 @@ get '/play/:game/:context/:report' => sub {
     my $nation_meta = undef;
     my $selected_stock_action = undef;
     my $selected_influence_action = undef;
-    my $player_meta = undef;
     my $usergame = player_of_game(params->{game}, $user);
-    $player_meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data") if $user;
+    my $player_meta = $metareader->get_player_meta(params->{game}, $user, 'wallet');
     if(params->{context} eq 'n' && $user)
     {
         $wallet = $player_meta->{'wallet'};
-        $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$nation.data");
+        $nation_meta = $metareader->get_nation_meta(params->{game}, $nation);
         $selected_stock_action = schema->resultset('StockOrder')->find({
                 game => params->{game},
                 user => $user,
@@ -323,7 +306,7 @@ get '/play/:game/:context/:report' => sub {
 get '/play/:game/db/orders' => sub {
     my $report_id = 'db/orders';
     my $game = params->{game};
-    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my $meta = $metareader->get_meta(params->{game});
     my ($year, $turn) = split '/', $meta->{'current_year'};
     my $context = 'db';
     my $user = logged_user();
@@ -398,12 +381,12 @@ get '/play/:game/i/travel' => sub {
     }    
     my $travel_posted = params->{'travel-posted'};
     my $err = params->{'err'};
-    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my $meta = $metareader->get_meta(params->{game});
     my ($year, $turn) = split '/', $meta->{'current_year'};
     my $codes = get_nation_codes($meta->{nations});
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
     my $present_position = $codes->{$player->position};
-    my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
+    my $nation_meta = $metareader->get_nation_meta(params->{game}, $present_position);
     my $report_conf = $report_configuration{'i/travel'};
     my $standards = get_report_standard_from_context('i');
     for(keys %{$standards})
@@ -433,7 +416,7 @@ get '/play/:game/i/travel' => sub {
     my $now = DateTime->now;
     $now->set_time_zone("Europe/Rome");
     my $print_now = $now->dmy . " " . $now->hms;
-    my $player_meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
+    my $player_meta = $metareader->get_player_meta(params->{game}, $user, 'wallet');
     my $friendship = $player->get_friendship($player->position);
     my $template_data = {
         'player' => $user,
@@ -490,12 +473,12 @@ get '/play/:game/i/shop' => sub {
         send_error("Access denied", 403);
         return;
     }    
-    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my $meta = $metareader->get_meta(params->{game});
     my ($year, $turn) = split '/', $meta->{'current_year'};
     my $codes = get_nation_codes($meta->{nations});
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
     my $present_position = $codes->{$player->position};
-    my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
+    my $nation_meta = $metareader->get_nation_meta(params->{game}, $present_position);
     my $report_conf = $report_configuration{'i/travel'};
     my $standards = get_report_standard_from_context('i');
     for(keys %{$standards})
@@ -510,7 +493,7 @@ get '/play/:game/i/shop' => sub {
     $now->set_time_zone("Europe/Rome");
     my $print_now = $now->dmy . " " . $now->hms;
     my %hold = $player->cargo_status(\@products);
-    my $player_meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
+    my $player_meta = $metareader->get_player_meta(params->{game}, $user, 'wallet');
     my $friendship = $player->get_friendship($player->position);
     my %lower_me = ();
     my %used_products = ();
@@ -565,12 +548,12 @@ get '/play/:game/i/network' => sub {
         send_error("Access denied", 403);
         return;
     }    
-    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my $meta = $metareader->get_meta(params->{game});
     my ($year, $turn) = split '/', $meta->{'current_year'};
     my $codes = get_nation_codes($meta->{nations});
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
     my $present_position = $codes->{$player->position};
-    my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
+    my $nation_meta = $metareader->get_nation_meta(params->{game}, $present_position);
     my $report_conf = $report_configuration{'i/network'};
     my $standards = get_report_standard_from_context('i');
     for(keys %{$standards})
@@ -584,7 +567,7 @@ get '/play/:game/i/network' => sub {
     my $now = DateTime->now;
     $now->set_time_zone("Europe/Rome");
     my $print_now = $now->dmy . " " . $now->hms;
-    my $player_meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
+    my $player_meta = $metareader->get_player_meta(params->{game}, $user, 'wallet', $user);
     my $friendship = $player->get_friendship($player->position);
 
     my @missions = missions_for_nation(params->{game}, $player->position, 1);
@@ -641,13 +624,13 @@ get '/play/:game/i/mymissions' => sub {
         send_error("Access denied", 403);
         return;
     }    
-    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my $meta = $metareader->get_meta(params->{game});
     my ($year, $turn) = split '/', $meta->{'current_year'};
     my $prevturn = prev_turn($meta->{'current_year'});
     my $codes = get_nation_codes($meta->{nations});
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
     my $present_position = $codes->{$player->position};
-    my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
+    my $nation_meta = $metareader->get_nation_meta(params->{game}, $present_position);
     my $report_conf = $report_configuration{'i/mymissions'};
     my $standards = get_report_standard_from_context('i');
     for(keys %{$standards})
@@ -661,7 +644,7 @@ get '/play/:game/i/mymissions' => sub {
     my $now = DateTime->now;
     $now->set_time_zone("Europe/Rome");
     my $print_now = $now->dmy . " " . $now->hms;
-    my $player_meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
+    my $player_meta = $metareader->get_player_meta(params->{game}, $user, 'wallet');
     my $friendship = $player->get_friendship($player->position);
 
     my @missions = missions_for_player($player->id, 1);
@@ -723,12 +706,12 @@ get '/play/:game/i/accomplished' => sub {
         send_error("Access denied", 403);
         return;
     }    
-    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my $meta = $metareader->get_meta(params->{game});
     my ($year, $turn) = split '/', $meta->{'current_year'};
     my $codes = get_nation_codes($meta->{nations});
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
     my $present_position = $codes->{$player->position};
-    my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
+    my $nation_meta = $metareader->get_nation_meta(params->{game}, $present_position);
     my $report_conf = $report_configuration{'i/mymissions'};
     my $standards = get_report_standard_from_context('i');
     for(keys %{$standards})
@@ -742,7 +725,7 @@ get '/play/:game/i/accomplished' => sub {
     my $now = DateTime->now;
     $now->set_time_zone("Europe/Rome");
     my $print_now = $now->dmy . " " . $now->hms;
-    my $player_meta = get_metafile($metadata_path . '/' . params->{game} . "/p/$user-wallet.data");
+    my $player_meta = $metareader->get_player_meta(params->{game}, $user, 'wallet');
     my $friendship = $player->get_friendship($player->position);
 
     my $mission = schema->resultset("BopMission")->find(params->{mission});
@@ -785,7 +768,7 @@ get '/play/:game/i/accomplished' => sub {
 
 
 get '/play/:game' => sub {
-    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my $meta = $metareader->get_meta(params->{game});
     if($meta)
     {
         my $redirection = "/play/" . params->{game} . "/r/situation";
@@ -800,7 +783,7 @@ get '/play/:game' => sub {
 get '/play/:game/n' => sub {
     my $nation = params->{nation};
     my $user = logged_user();
-    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my $meta = $metareader->get_meta(params->{game});
     my ($year, $turn) = split '/', $meta->{'current_year'};
     if($meta)
     {
@@ -1097,7 +1080,7 @@ get '/users/select-game' => sub {
                 redirect '/users/choose-game?not-invited=1';
                 return;
             }
-            my $meta = get_metafile($metadata_path . '/' . $game_db->name . '.meta');
+            my $meta = $metareader->get_meta($game_db->name);
             my @nations = keys %{$meta->{'nations'}};
             @nations = shuffle @nations;
             my $player = schema->resultset("BopPlayer")->create({ money =>  START_PLAYER_MONEY, position => $nations[0] });
@@ -1169,7 +1152,7 @@ get '/api/:game/stock-orders' => sub {
      my $game = params->{game};
      my $user = params->{player};
      my $password = params->{password};
-     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+     my $meta = $metareader->get_meta(params->{game});
      my $game_db = schema->resultset("BopGame")->find({ file => $game });
      if($game_db->admin_password ne $password)
      {
@@ -1193,7 +1176,7 @@ get '/api/:game/influence-orders' => sub {
      my $game = params->{game};
      my $user = params->{player};
      my $password = params->{password};
-     my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+     my $meta = $metareader->get_meta(params->{game});
      my $game_db = schema->resultset("BopGame")->find({ file => $game });
      if($game_db->admin_password ne $password)
      {
@@ -1274,7 +1257,7 @@ post '/interact/:game/shop-command' => sub {
         return;
     }
     my $game = params->{game};
-    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my $meta = $metareader->get_meta(params->{game});
     my ($year, $turn) = split '/', $meta->{'current_year'};
     my $command = lc(params->{command});
     my $type = params->{type};
@@ -1295,7 +1278,7 @@ post '/interact/:game/shop-command' => sub {
         redirect $redirection, 302;
         return;  
     }
-    my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
+    my $nation_meta = $metareader->get_nation_meta(params->{game}, $present_position);
     my %hold = $player->cargo_status(\@products);
     my $money = $player->money;
     my $price = $nation_meta->{prices}->{$type}->{price};
@@ -1392,7 +1375,7 @@ post '/interact/:game/go' => sub {
         return;
     }
     my $game = params->{game};
-    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my $meta = $metareader->get_meta(params->{game});
     my ($year, $turn) = split '/', $meta->{'current_year'};
     my $destination = params->{destination};
     if(! $destination)
@@ -1418,7 +1401,7 @@ post '/interact/:game/go' => sub {
     }
     
     my $present_position = $codes->{$player->position};
-    my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$present_position.data");
+    my $nation_meta = $metareader->get_nation_meta(params->{game}, $present_position);
     my $data;
     $data = exists $nation_meta->{'travels'}->{'air'}->{$destination} &&  $nation_meta->{'travels'}->{'air'}->{$destination}->{'status'} eq 'OK' ? 
                 $nation_meta->{'travels'}->{'air'}->{$destination} :
@@ -1517,7 +1500,7 @@ post '/interact/:game/mission-command' => sub {
     }
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
     my $game = params->{game};
-    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my $meta = $metareader->get_meta(params->{game});
     my ($year, $turn) = split '/', $meta->{'current_year'};
     my $command = lc(params->{command});
     my $mission = params->{mission};
@@ -1639,7 +1622,7 @@ post '/interact/:game/stock-command' => sub {
         return;
     }
     my $game = params->{game};
-    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my $meta = $metareader->get_meta(params->{game});
     my ($year, $turn) = split '/', $meta->{'current_year'};
     my $command = params->{command};
     my $nation = params->{nation};
@@ -1685,12 +1668,12 @@ post '/interact/:game/influence-command' => sub {
         return;
     }
     my $game = params->{game};
-    my $meta = get_metafile($metadata_path . '/' . params->{game} . '.meta');
+    my $meta = $metareader->get_metafile(params->{game});
     my ($year, $turn) = split '/', $meta->{'current_year'};
     my $command = params->{orders};
     my $nation = params->{nation};
     my $target = params->{target};
-    my $nation_meta = get_metafile($metadata_path . '/' . params->{game} . "/n/$nation.data");
+    my $nation_meta = $metareader->get_nation_meta(params->{game}, $nation);
     if(! $command || ! $nation)
     { 
         my $redirection = "/play/" . params->{game} . "/n/actual?nation=" . params->{nation} . "&influence-posted=ko";
