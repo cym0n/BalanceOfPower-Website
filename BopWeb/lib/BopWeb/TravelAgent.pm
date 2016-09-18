@@ -24,8 +24,7 @@ sub go
     die "not-ready-to-travel\n" if( ! $self->enabled_to_travel($player));
     die "ongoing-travel\n" if($player->destination);
 
-    my $codes = $self->get_nation_codes($game);
-    my $nation_meta = $self->get_nation_meta($game, $codes->{$player->position});
+    my $nation_meta = $self->get_nation_meta($game, $player->position);
     my $data;
     $data = exists $nation_meta->{'travels'}->{'air'}->{$destination} &&  $nation_meta->{'travels'}->{'air'}->{$destination}->{'status'} eq 'OK' ? 
                 $nation_meta->{'travels'}->{'air'}->{$destination} :

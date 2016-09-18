@@ -46,11 +46,11 @@
                     <div class="col-sm-2"></div>
                 </div>
                 [% glyph = 'road' %]
-                [% FOREACH t IN travels.ground.keys %]
+                [% FOREACH t IN nation_meta.travels.ground.keys %]
                 <div class="row" style="margin-top:20px">
                     <div class="col-sm-2"></div>
                     <div class="col-sm-8">
-                        [% PROCESS travelbutton travel_status=travels.ground.$t.status cost=travels.ground.$t.cost %]
+                        [% PROCESS travelbutton travel_status=nation_meta.travels.ground.$t.status cost=nation_meta.travels.ground.$t.cost %]
                     </div>
                     <div class="col-sm-2"></div>
                 </div>
@@ -65,11 +65,11 @@
                     <div class="col-sm-2"></div>
                 </div>
                 [% glyph = 'send' %]
-                [% FOREACH t IN travels.air.keys %]
+                [% FOREACH t IN nation_meta.travels.air.keys %]
                 <div class="row"  style="margin-top:20px">
                     <div class="col-sm-2"></div>
                     <div class="col-sm-8">
-                        [% PROCESS travelbutton travel_status=travels.air.$t.status cost=travels.air.$t.cost %]
+                        [% PROCESS travelbutton travel_status=nation_meta.travels.air.$t.status cost=nation_meta.travels.air.$t.cost %]
                     </div>
                     <div class="col-sm-2"></div>
                 </div>

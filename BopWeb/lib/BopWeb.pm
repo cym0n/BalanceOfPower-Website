@@ -372,24 +372,23 @@ get '/play/:game/db/orders' => sub {
     }; 
 };
 
-get '/play/:game/i/travel' => sub {
+sub page_data
+{
+    my $game = shift;
+    my $context = shift;
+    my $menu = shift;
     my $user = logged_user();
-    my $usergame = player_of_game(params->{game}, $user);
+    my $usergame = player_of_game($game, $user);
     if(! $usergame)
     {
-        send_error("Access denied", 403);
-        return;
+        die "access-denied\n";
     }    
-    my $travel_posted = params->{'travel-posted'};
-    my $err = params->{'err'};
-    my $meta = $metareader->get_meta(params->{game});
-    my ($year, $turn) = split '/', $meta->{'current_year'};
-    my $codes = $metareader->get_nation_codes(params->{game});
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
-    my $present_position = $codes->{$player->position};
-    my $nation_meta = $metareader->get_nation_meta(params->{game}, $present_position);
-    my $report_conf = $report_configuration{'i/travel'};
-    my $standards = get_report_standard_from_context('i');
+
+    my $meta = $metareader->get_meta($game);
+    my ($year, $turn) = split '/', $meta->{'current_year'};
+    my $report_conf = $report_configuration{$context . '/' . $menu};
+    my $standards = get_report_standard_from_context($context);
     for(keys %{$standards})
     {
         if(! exists $report_conf->{$_})
@@ -397,7 +396,56 @@ get '/play/:game/i/travel' => sub {
             $report_conf->{$_} = $standards->{$_}
         }
     }
-    my ($menu, $ordered) = make_menu($report_conf->{menu}, undef);
+    my ($menulabel, $ordered) = make_menu($report_conf->{menu}, undef);
+    my $interactive = $context eq 'i' ? 1 : 0;
+    my $player_meta = $metareader->get_player_meta($game, $user, 'wallet');
+
+    my $codes = $metareader->get_nation_codes($game);
+    my $position = $player->position;
+    my $present_position = $codes->{$position};
+
+    my $nation_meta = $metareader->get_nation_meta($game, $position);
+
+    my $now = DateTime->now;
+    $now->set_time_zone("Europe/Rome");
+    my $print_now = $now->dmy . " " . $now->hms;
+    
+
+    return (
+        'interactive' => $interactive,
+        'player'    => $user,
+        'theplayer' => $player,
+        'game'      => $game,
+        'year'      => $year,
+        'turn'      => $turn, 
+        'menu'      => $menulabel,
+        'menu_urls' => $ordered,
+        'p_stock_value' => $player_meta->{'stock_value'},
+        'money' => $player->money_to_print,
+        'position' => $player->position,
+        'position_code' => $present_position,
+        'active' => $context . '/' . $menu,
+        'nation_codes' => $codes,
+        'nation_meta' => $nation_meta,
+        'now' => $print_now,
+    )
+}
+
+get '/play/:game/i/travel' => sub {
+   
+    my $travel_posted = params->{'travel-posted'};
+    my $err = params->{'err'};
+    my %page_data;
+    eval { %page_data = page_data(params->{game}, 'i', 'travel') };
+    if($@)
+    {
+        if($@ eq 'access-denied')
+        {
+            send_error("Access denied", 403);
+            return;
+        }
+    }
+    my $player = $page_data{theplayer};
 
     my $travel_enabled;
     my $travel_enabled_time;
@@ -414,53 +462,33 @@ get '/play/:game/i/travel' => sub {
         $travel_enabled_time->set_time_zone('Europe/Rome');
         $print_travel_enabled = $travel_enabled_time->dmy . " " . $travel_enabled_time->hms;
     }
-    my $now = DateTime->now;
-    $now->set_time_zone("Europe/Rome");
-    my $print_now = $now->dmy . " " . $now->hms;
-    my $player_meta = $metareader->get_player_meta(params->{game}, $user, 'wallet');
     my $friendship = $player->get_friendship($player->position);
-    my $template_data = {
-        'player' => $user,
-        'interactive' => 1,
-        'menu' => $menu,
-        'menu_urls' => $ordered,
-        'p_stock_value' => $player_meta->{'stock_value'},
-        'money' => $player->money_to_print,
-        'nation_codes' => $metareader->get_nation_codes(params->{game}),
-        'position' => $player->position,
-        'position_code' => $present_position,
+    my %template = (
         'nation_friendship' => $friendship,
         'nation_friendship_good' => $friendship < FRIENDSHIP_LIMIT_TO_SHOP ? 0 : 1,
-        'game' => params->{game},
-        'year' => $year,
-        'turn' => $turn,
         'active_top' => 'travel',
-        'active' => 'i/travel',
         'custom_js' => undef,
         'context' => 'i',
-        'products' => \@products,
-        'travels' => $nation_meta->{'travels'},
         'travel_enabled' => $travel_enabled,
         'travel_enabled_time' => $print_travel_enabled,
         'travel_posted' => $travel_posted,
         'err' => $err,
-        'now' => $print_now
-    };
+    );
+    my %template_data = (%page_data, %template);
     if($player->destination)
     {
         my $arrival = $player->arrival_time;
         my $arrived = $travelagent->finished_travel($player);
         my $print_arrival = $arrival->dmy . " " . $arrival->hms;
-        $template_data->{'destination'} = $player->destination;
-        $template_data->{'arrival_time'} = $print_arrival;
-        $template_data->{'arrived'} = $arrived;
+        $template_data{'destination'} = $player->destination;
+        $template_data{'arrival_time'} = $print_arrival;
+        $template_data{'arrived'} = $arrived;
 
-        template 'ongoing_travel', $template_data;
+        template 'ongoing_travel', \%template_data;
     }
     else
     {
-     
-        template 'travel', $template_data;
+        template 'travel', \%template_data;
     }
 };
 
@@ -631,7 +659,7 @@ get '/play/:game/i/mymissions' => sub {
     my $codes = $metareader->get_nation_codes(params->{game});
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
     my $present_position = $codes->{$player->position};
-    my $nation_meta = $metareader->get_nation_meta(params->{game}, $present_position);
+    my $nation_meta = $metareader->get_nation_meta(params->{game}, $player->position);
     my $report_conf = $report_configuration{'i/mymissions'};
     my $standards = get_report_standard_from_context('i');
     for(keys %{$standards})
@@ -1268,7 +1296,7 @@ post '/interact/:game/shop-command' => sub {
         redirect $redirection, 302;
         return;  
     }
-    my $nation_meta = $metareader->get_nation_meta(params->{game}, $present_position);
+    my $nation_meta = $metareader->get_nation_meta($game, $player->position);
     my %hold = $player->cargo_status(\@products);
     my $money = $player->money;
     my $price = $nation_meta->{prices}->{$type}->{price};

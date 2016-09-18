@@ -20,7 +20,9 @@ sub get_nation_meta
     my $self = shift;
     my $game = shift;
     my $nation = shift;
-    return $self->read_metafile($self->path . '/' . $game . "/n/$nation.data");
+    my $codes = $self->get_nation_codes($game);
+    my $nation_code = $codes->{$nation};
+    return $self->read_metafile($self->path . '/' . $game . "/n/$nation_code.data");
 }
 
 sub get_player_meta
