@@ -16,6 +16,7 @@ use BalanceOfPower::Utils qw (prev_turn);
 use BalanceOfPower::Constants ':all';
 
 use BopWeb::MetaReader;
+use BopWeb::TravelAgent;
 
 our $VERSION = '0.1';
 
@@ -32,7 +33,7 @@ my $root_path = abs_path($module_file_path);
 $root_path =~ s/lib\/BopWeb\.pm//;
 my $metadata_path = config->{'metadata_path'} || $root_path . "metadata";
 my $metareader = BopWeb::MetaReader->new(path => $metadata_path);
-
+my $travelagent = BopWeb::TravelAgent->new(metareader => $metareader);
 
 
 my @reports_menu = ('r/situation', 'r/newspaper', 'r/hotspots', 'r/alliances', 'r/influences', 'r/supports', 'r/rebel-supports', 'r/combo-history', 'r/prices' );
@@ -365,7 +366,7 @@ get '/play/:game/db/orders' => sub {
        'stock_orders' => \@stock_orders,
        'influence_orders' => \@influence_orders,
        'context' => params->{context},
-       'nation_codes' => get_nation_codes($meta->{nations}),
+       'nation_codes' => $metareader->get_nation_codes(params->{game}),
        'deletestock' => params->{'delete-stock'},
        'deleteinfluence' => params->{'delete-influence'},
     }; 
@@ -383,7 +384,7 @@ get '/play/:game/i/travel' => sub {
     my $err = params->{'err'};
     my $meta = $metareader->get_meta(params->{game});
     my ($year, $turn) = split '/', $meta->{'current_year'};
-    my $codes = get_nation_codes($meta->{nations});
+    my $codes = $metareader->get_nation_codes(params->{game});
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
     my $present_position = $codes->{$player->position};
     my $nation_meta = $metareader->get_nation_meta(params->{game}, $present_position);
@@ -401,7 +402,7 @@ get '/play/:game/i/travel' => sub {
     my $travel_enabled;
     my $travel_enabled_time;
     my $print_travel_enabled;
-    if(enable_to_travel($player->disembark_time))
+    if($travelagent->enabled_to_travel($player))
     {
         $travel_enabled = 1;
     }
@@ -425,7 +426,7 @@ get '/play/:game/i/travel' => sub {
         'menu_urls' => $ordered,
         'p_stock_value' => $player_meta->{'stock_value'},
         'money' => $player->money_to_print,
-        'nation_codes' => get_nation_codes($meta->{nations}),
+        'nation_codes' => $metareader->get_nation_codes(params->{game}),
         'position' => $player->position,
         'position_code' => $present_position,
         'nation_friendship' => $friendship,
@@ -448,7 +449,7 @@ get '/play/:game/i/travel' => sub {
     if($player->destination)
     {
         my $arrival = $player->arrival_time;
-        my $arrived = finished_travel($arrival);
+        my $arrived = $travelagent->finished_travel($player);
         my $print_arrival = $arrival->dmy . " " . $arrival->hms;
         $template_data->{'destination'} = $player->destination;
         $template_data->{'arrival_time'} = $print_arrival;
@@ -475,7 +476,7 @@ get '/play/:game/i/shop' => sub {
     }    
     my $meta = $metareader->get_meta(params->{game});
     my ($year, $turn) = split '/', $meta->{'current_year'};
-    my $codes = get_nation_codes($meta->{nations});
+    my $codes = $metareader->get_nation_codes(params->{game});
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
     my $present_position = $codes->{$player->position};
     my $nation_meta = $metareader->get_nation_meta(params->{game}, $present_position);
@@ -516,7 +517,7 @@ get '/play/:game/i/shop' => sub {
         'menu_urls' => $ordered,
         'money' => $player->money_to_print,
         'p_stock_value' => $player_meta->{'stock_value'},
-        'nation_codes' => get_nation_codes($meta->{nations}),
+        'nation_codes' => $metareader->get_nation_codes(params->{game}),
         'prices' => $nation_meta->{'prices'},
         'lower_price' => \%lower_me,
         'used_products' => \%used_products,
@@ -550,7 +551,7 @@ get '/play/:game/i/network' => sub {
     }    
     my $meta = $metareader->get_meta(params->{game});
     my ($year, $turn) = split '/', $meta->{'current_year'};
-    my $codes = get_nation_codes($meta->{nations});
+    my $codes = $metareader->get_nation_codes(params->{game});
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
     my $present_position = $codes->{$player->position};
     my $nation_meta = $metareader->get_nation_meta(params->{game}, $present_position);
@@ -593,7 +594,7 @@ get '/play/:game/i/network' => sub {
         'menu_urls' => $ordered,
         'money' => $player->money_to_print,
         'p_stock_value' => $player_meta->{'stock_value'},
-        'nation_codes' => get_nation_codes($meta->{nations}),
+        'nation_codes' => $metareader->get_nation_codes(params->{game}),
         'prices' => $nation_meta->{'prices'},
         'position' => $player->position,
         'position_code' => $present_position,
@@ -627,7 +628,7 @@ get '/play/:game/i/mymissions' => sub {
     my $meta = $metareader->get_meta(params->{game});
     my ($year, $turn) = split '/', $meta->{'current_year'};
     my $prevturn = prev_turn($meta->{'current_year'});
-    my $codes = get_nation_codes($meta->{nations});
+    my $codes = $metareader->get_nation_codes(params->{game});
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
     my $present_position = $codes->{$player->position};
     my $nation_meta = $metareader->get_nation_meta(params->{game}, $present_position);
@@ -672,7 +673,7 @@ get '/play/:game/i/mymissions' => sub {
         'menu_urls' => $ordered,
         'money' => $player->money_to_print,
         'p_stock_value' => $player_meta->{'stock_value'},
-        'nation_codes' => get_nation_codes($meta->{nations}),
+        'nation_codes' => $metareader->get_nation_codes(params->{game}),
         'prices' => $nation_meta->{'prices'},
         'position' => $player->position,
         'position_code' => $present_position,
@@ -708,7 +709,7 @@ get '/play/:game/i/accomplished' => sub {
     }    
     my $meta = $metareader->get_meta(params->{game});
     my ($year, $turn) = split '/', $meta->{'current_year'};
-    my $codes = get_nation_codes($meta->{nations});
+    my $codes = $metareader->get_nation_codes(params->{game});
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
     my $present_position = $codes->{$player->position};
     my $nation_meta = $metareader->get_nation_meta(params->{game}, $present_position);
@@ -746,7 +747,7 @@ get '/play/:game/i/accomplished' => sub {
         'menu_urls' => $ordered,
         'money' => $player->money_to_print,
         'p_stock_value' => $player_meta->{'stock_value'},
-        'nation_codes' => get_nation_codes($meta->{nations}),
+        'nation_codes' => $metareader->get_nation_codes(params->{game}),
         'prices' => $nation_meta->{'prices'},
         'position' => $player->position,
         'position_code' => $present_position,
@@ -872,17 +873,6 @@ sub make_menu
         push @order, $_;
     }
     return (\%out, \@order);
-}
-
-sub get_nation_codes
-{
-    my $nations = shift;
-    my %out = ();
-    foreach my $n (keys %{$nations})
-    {
-        $out{$n} = $nations->{$n}->{'code'};
-    }
-    return \%out;
 }
 
 sub missions_for_player
@@ -1268,7 +1258,7 @@ post '/interact/:game/shop-command' => sub {
         redirect $redirection, 302;
         return;  
     }
-    my $codes = get_nation_codes($meta->{nations});
+    my $codes = $metareader->get_nation_codes(params->{game});
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
     my $present_position = $codes->{$player->position};
     my $friendship = $player->get_friendship($player->position);
@@ -1368,61 +1358,30 @@ sub ask_lowered_price
 
 post '/interact/:game/go' => sub {
     my $user = logged_user();
-    my $usergame = player_of_game(params->{game}, $user);
+    my $game = params->{game};
+    my $destination = params->{destination};
+    my $usergame = player_of_game($game, $user);
     if(! $usergame)
     {
         send_error("Access denied", 403);
         return;
     }
-    my $game = params->{game};
-    my $meta = $metareader->get_meta(params->{game});
-    my ($year, $turn) = split '/', $meta->{'current_year'};
-    my $destination = params->{destination};
-    if(! $destination)
-    {
-        my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ko&err=no-destination";
-        redirect $redirection, 302;
-        return;  
-    }
-
-    my $codes = get_nation_codes($meta->{nations});
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
-    if(! enable_to_travel($player->disembark_time))
-    {
-        my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ko&err=not-ready-to-travel";
-        redirect $redirection, 302;
-        return;  
-    }
-    if($player->destination)
-    {
-        my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ko&err=ongoing-travel";
-        redirect $redirection, 302;
-        return;  
-    }
+
+    eval { $travelagent->go($game, $player, $destination) };
     
-    my $present_position = $codes->{$player->position};
-    my $nation_meta = $metareader->get_nation_meta(params->{game}, $present_position);
-    my $data;
-    $data = exists $nation_meta->{'travels'}->{'air'}->{$destination} &&  $nation_meta->{'travels'}->{'air'}->{$destination}->{'status'} eq 'OK' ? 
-                $nation_meta->{'travels'}->{'air'}->{$destination} :
-                    exists $nation_meta->{'travels'}->{'ground'}->{$destination} &&  $nation_meta->{'travels'}->{'ground'}->{$destination}->{'status'} eq 'OK' ?
-                        $nation_meta->{'travels'}->{'ground'}->{$destination} :
-                            undef;
-    if(! $data)
+    if($@)
     {
-        my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ko&err=bad-destination";
+        my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ko&err=$@";
         redirect $redirection, 302;
         return;  
     }
-    my $time = DateTime->now();
-    $time->add( hours => $data->{cost});
-    $time->set_time_zone('Europe/Rome');
-    $player->destination($destination);
-    $player->arrival_time($time);
-    $player->update;
-    my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ok&err=posted";
-    redirect $redirection, 302;
-    return;  
+    else
+    {
+        my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ok&err=posted";
+        redirect $redirection, 302;
+        return;  
+    }
 };
 
 get '/interact/:game/arrive' => sub {
@@ -1435,60 +1394,22 @@ get '/interact/:game/arrive' => sub {
     }
     my $game = params->{game};
     my $player = schema->resultset('BopPlayer')->find($usergame->player);
-    if(finished_travel($player->arrival_time))
+
+    eval { $travelagent->arrive($player) };
+    
+    if($@)
     {
-        $player->position($player->destination);
-        $player->destination(undef);
-        $player->arrival_time(undef);
-        my $time = DateTime->now;
-        $time->set_time_zone('Europe/Rome');
-        $player->disembark_time($time);
-        $player->reset_used();
-        $player->update();
+        my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ko&err=$@";
+        redirect $redirection, 302;
+        return;  
+    }
+    else
+    {
         my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ok&err=arrived";
         redirect $redirection, 302;
         return;  
     }
-    else
-    {
-        my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ko&err=not-arrived";
-        redirect $redirection, 302;
-        return;  
-    }
 };
-
-
-
-sub finished_travel
-{
-    my $arrival_time = shift;
-    return 1 if ! $arrival_time;
-    $arrival_time->set_time_zone('Europe/Rome');
-    my $now = DateTime->now;
-    $now->set_time_zone('Europe/Rome');
-    if(DateTime->compare($now, $arrival_time) == 1)
-    {
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-
-sub enable_to_travel
-{
-    my $disembark_time = shift;
-    return 1 if ! $disembark_time;
-    
-    my $enable_to_travel = $disembark_time->clone;
-    $enable_to_travel->set_time_zone('Europe/Rome');
-    $enable_to_travel->add( hours => 2);
-    my $now = DateTime->now;
-    $now->set_time_zone('Europe/Rome');
-    return DateTime->compare($now, $enable_to_travel) == 1
-}
 
 post '/interact/:game/mission-command' => sub {
     my $user = logged_user();
@@ -1553,7 +1474,7 @@ post '/interact/:game/mission-command' => sub {
     } 
     elsif($command eq 'drop')
     {
-        if($mission_obj->assigned ne $player->id)
+        if((! $mission_obj->assigned) || $mission_obj->assigned ne $player->id)
         {
             my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ko&err=not-owned";
             redirect $redirection, 302;
@@ -1569,7 +1490,7 @@ post '/interact/:game/mission-command' => sub {
     }
     elsif($command eq 'action')
     {
-        if( $player->id ne $mission_obj->assigned)
+        if(( ! $mission_obj->assigned) || $player->id ne $mission_obj->assigned)
         {
             my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ko&err=not-owned";
             redirect $redirection, 302;

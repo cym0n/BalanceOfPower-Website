@@ -54,5 +54,18 @@ sub read_metafile
         return undef;
     }
 }
+sub get_nation_codes
+{
+    my $self = shift;
+    my $game = shift;
+    my $meta = $self->get_meta($game);
+    my $nations = $meta->{nations};
+    my %out = ();
+    foreach my $n (keys %{$nations})
+    {
+        $out{$n} = $nations->{$n}->{'code'};
+    }
+    return \%out;
+}
 
 1;
