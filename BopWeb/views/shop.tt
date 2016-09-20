@@ -17,7 +17,7 @@
         <br />
         <div [% IF used %]style="color:#bababa"[% END %]>
             <center><strong>[% prod FILTER ucfirst %]</strong></center><br />
-            <center><strong>[% prices.$prod.price %]</strong></center>
+            <center><strong>[% nation_meta.prices.$prod.price %]</strong></center>
         </div>
     </div>
 </div>

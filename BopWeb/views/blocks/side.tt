@@ -7,9 +7,9 @@
                 <strong>Player</strong>: [% player %]<br />
                 </p>
                 <p>
-                Value of the stocks: [% p_stock_value %]<br />
+                Value of the stocks: [% player_meta.stock_value %]<br />
                 Money: [% money %]<br />
-                Total value: [% p_stock_value + money %]<br />
+                Total value: [% player_meta.stock_value + money %]<br />
                 </p>
                 <a class="btn btn-default btn-xs" href="/users/logout" role="button">Logout</a>
                 [% END %]

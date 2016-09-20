@@ -410,8 +410,9 @@ sub page_data
     $now->set_time_zone("Europe/Rome");
     my $print_now = $now->dmy . " " . $now->hms;
     
-
+    my $friendship = $player->get_friendship($player->position);
     return (
+        'context' => $context,
         'interactive' => $interactive,
         'player'    => $user,
         'theplayer' => $player,
@@ -420,14 +421,18 @@ sub page_data
         'turn'      => $turn, 
         'menu'      => $menulabel,
         'menu_urls' => $ordered,
-        'p_stock_value' => $player_meta->{'stock_value'},
+        'player_meta' => $player_meta,
         'money' => $player->money_to_print,
         'position' => $player->position,
         'position_code' => $present_position,
         'active' => $context . '/' . $menu,
+        'active_top' => $report_conf->{active_top},
         'nation_codes' => $codes,
         'nation_meta' => $nation_meta,
         'now' => $print_now,
+        'nation_friendship' => $friendship,
+        'nation_friendship_good' => $friendship < FRIENDSHIP_LIMIT_TO_SHOP ? 0 : 1,
+        'custom_js' => $report_conf->{custom_js}, 
     )
 }
 
@@ -462,13 +467,7 @@ get '/play/:game/i/travel' => sub {
         $travel_enabled_time->set_time_zone('Europe/Rome');
         $print_travel_enabled = $travel_enabled_time->dmy . " " . $travel_enabled_time->hms;
     }
-    my $friendship = $player->get_friendship($player->position);
     my %template = (
-        'nation_friendship' => $friendship,
-        'nation_friendship_good' => $friendship < FRIENDSHIP_LIMIT_TO_SHOP ? 0 : 1,
-        'active_top' => 'travel',
-        'custom_js' => undef,
-        'context' => 'i',
         'travel_enabled' => $travel_enabled,
         'travel_enabled_time' => $print_travel_enabled,
         'travel_posted' => $travel_posted,
@@ -495,35 +494,20 @@ get '/play/:game/i/travel' => sub {
 get '/play/:game/i/shop' => sub {
     my $shop_posted = params->{'shop-posted'};
     my $err = params->{'err'};
-    my $user = logged_user();
-    my $usergame = player_of_game(params->{game}, $user);
-    if(! $usergame)
+    my %page_data;
+    eval { %page_data = page_data(params->{game}, 'i', 'travel') };
+    if($@)
     {
-        send_error("Access denied", 403);
-        return;
-    }    
-    my $meta = $metareader->get_meta(params->{game});
-    my ($year, $turn) = split '/', $meta->{'current_year'};
-    my $codes = $metareader->get_nation_codes(params->{game});
-    my $player = schema->resultset('BopPlayer')->find($usergame->player);
-    my $present_position = $codes->{$player->position};
-    my $nation_meta = $metareader->get_nation_meta(params->{game}, $present_position);
-    my $report_conf = $report_configuration{'i/travel'};
-    my $standards = get_report_standard_from_context('i');
-    for(keys %{$standards})
-    {
-        if(! exists $report_conf->{$_})
+        if($@ eq 'access-denied')
         {
-            $report_conf->{$_} = $standards->{$_}
+            send_error("Access denied", 403);
+            return;
         }
     }
-    my ($menu, $ordered) = make_menu($report_conf->{menu}, undef);
-    my $now = DateTime->now;
-    $now->set_time_zone("Europe/Rome");
-    my $print_now = $now->dmy . " " . $now->hms;
+    my $player = $page_data{theplayer};
+    my $nation_meta = $page_data{nation_meta};
+
     my %hold = $player->cargo_status(\@products);
-    my $player_meta = $metareader->get_player_meta(params->{game}, $user, 'wallet');
-    my $friendship = $player->get_friendship($player->position);
     my %lower_me = ();
     my %used_products = ();
     for(@products)
@@ -538,35 +522,16 @@ get '/play/:game/i/shop' => sub {
         }
         $used_products{$_} = $player->get_hold($_)->{'used'};
     }
-    my $template_data = {
-        'player' => $user,
-        'interactive' => 1,
-        'menu' => $menu,
-        'menu_urls' => $ordered,
-        'money' => $player->money_to_print,
-        'p_stock_value' => $player_meta->{'stock_value'},
-        'nation_codes' => $metareader->get_nation_codes(params->{game}),
-        'prices' => $nation_meta->{'prices'},
+    my %template = (
         'lower_price' => \%lower_me,
         'used_products' => \%used_products,
-        'position' => $player->position,
-        'position_code' => $present_position,
-        'nation_friendship' => $friendship,
-        'nation_friendship_good' => $friendship < FRIENDSHIP_LIMIT_TO_SHOP ? 0 : 1,
         'products' => \@products,
         'hold' => \%hold,
-        'game' => params->{game},
-        'year' => $year,
-        'turn' => $turn,
-        'active_top' => 'travel',
-        'active' => 'i/shop',
-        'custom_js' => undef,
-        'context' => 'i',
         'shop_posted' => $shop_posted,
         'err' => $err,
-        'now' => $print_now
-    };
-    template 'shop', $template_data;
+    );
+    my %template_data = (%page_data, %template);
+    template 'shop', \%template_data;
 };
 
 get '/play/:game/i/network' => sub {
