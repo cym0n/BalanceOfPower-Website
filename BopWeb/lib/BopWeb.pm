@@ -535,35 +535,17 @@ get '/play/:game/i/shop' => sub {
 };
 
 get '/play/:game/i/network' => sub {
-    my $user = logged_user();
-    my $usergame = player_of_game(params->{game}, $user);
-    if(! $usergame)
+    my %page_data;
+    eval { %page_data = page_data(params->{game}, 'i', 'network') };
+    if($@)
     {
-        send_error("Access denied", 403);
-        return;
-    }    
-    my $meta = $metareader->get_meta(params->{game});
-    my ($year, $turn) = split '/', $meta->{'current_year'};
-    my $codes = $metareader->get_nation_codes(params->{game});
-    my $player = schema->resultset('BopPlayer')->find($usergame->player);
-    my $present_position = $codes->{$player->position};
-    my $nation_meta = $metareader->get_nation_meta(params->{game}, $present_position);
-    my $report_conf = $report_configuration{'i/network'};
-    my $standards = get_report_standard_from_context('i');
-    for(keys %{$standards})
-    {
-        if(! exists $report_conf->{$_})
+        if($@ eq 'access-denied')
         {
-            $report_conf->{$_} = $standards->{$_}
+            send_error("Access denied", 403);
+            return;
         }
     }
-    my ($menu, $ordered) = make_menu($report_conf->{menu}, undef);
-    my $now = DateTime->now;
-    $now->set_time_zone("Europe/Rome");
-    my $print_now = $now->dmy . " " . $now->hms;
-    my $player_meta = $metareader->get_player_meta(params->{game}, $user, 'wallet', $user);
-    my $friendship = $player->get_friendship($player->position);
-
+    my $player = $page_data{theplayer};
     my @missions = missions_for_nation(params->{game}, $player->position, 1);
     my @player_missions = missions_for_player($player->id, 1);
     my $mission_warning = 0;
@@ -580,34 +562,14 @@ get '/play/:game/i/network' => sub {
         push @missions_data, $_->to_hash;
     }
  
-    my $template_data = {
-        'player' => $user,
-        'interactive' => 1,
-        'menu' => $menu,
-        'menu_urls' => $ordered,
-        'money' => $player->money_to_print,
-        'p_stock_value' => $player_meta->{'stock_value'},
-        'nation_codes' => $metareader->get_nation_codes(params->{game}),
-        'prices' => $nation_meta->{'prices'},
-        'position' => $player->position,
-        'position_code' => $present_position,
-        'nation_friendship' => $friendship,
-        'nation_friendship_good' => $friendship < FRIENDSHIP_LIMIT_TO_SHOP ? 0 : 1,
-        'products' => \@products,
-        'game' => params->{game},
-        'year' => $year,
-        'turn' => $turn,
-        'active_top' => 'travel',
-        'active' => 'i/network',
-        'custom_js' => $report_conf->{'custom_js'},
-        'context' => 'i',
-        'now' => $print_now,
+    my %template = (
         'missions' => \@missions_data,
         'mission_warning' => $mission_warning,
         'player_missions' => \@player_missions,
         'max_missions' => MAX_MISSIONS_FOR_USER,
-    };
-    template 'network', $template_data;
+    );
+    my %template_data = (%page_data, %template);
+    template 'network', \%template_data;
 };
 
 get '/play/:game/i/mymissions' => sub {
