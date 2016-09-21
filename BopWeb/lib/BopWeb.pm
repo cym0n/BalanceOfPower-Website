@@ -419,6 +419,7 @@ sub page_data
         'game'      => $game,
         'year'      => $year,
         'turn'      => $turn, 
+        'game_date' => "$year/$turn",
         'menu'      => $menulabel,
         'menu_urls' => $ordered,
         'player_meta' => $player_meta,
@@ -573,38 +574,20 @@ get '/play/:game/i/network' => sub {
 };
 
 get '/play/:game/i/mymissions' => sub {
-    my $user = logged_user();
-    my $usergame = player_of_game(params->{game}, $user);
-    if(! $usergame)
+  my %page_data;
+    eval { %page_data = page_data(params->{game}, 'i', 'mymissions') };
+    if($@)
     {
-        send_error("Access denied", 403);
-        return;
-    }    
-    my $meta = $metareader->get_meta(params->{game});
-    my ($year, $turn) = split '/', $meta->{'current_year'};
-    my $prevturn = prev_turn($meta->{'current_year'});
-    my $codes = $metareader->get_nation_codes(params->{game});
-    my $player = schema->resultset('BopPlayer')->find($usergame->player);
-    my $present_position = $codes->{$player->position};
-    my $nation_meta = $metareader->get_nation_meta(params->{game}, $player->position);
-    my $report_conf = $report_configuration{'i/mymissions'};
-    my $standards = get_report_standard_from_context('i');
-    for(keys %{$standards})
-    {
-        if(! exists $report_conf->{$_})
+        if($@ eq 'access-denied')
         {
-            $report_conf->{$_} = $standards->{$_}
+            send_error("Access denied", 403);
+            return;
         }
     }
-    my ($menu, $ordered) = make_menu($report_conf->{menu}, undef);
-    my $now = DateTime->now;
-    $now->set_time_zone("Europe/Rome");
-    my $print_now = $now->dmy . " " . $now->hms;
-    my $player_meta = $metareader->get_player_meta(params->{game}, $user, 'wallet');
-    my $friendship = $player->get_friendship($player->position);
+    my $player = $page_data{theplayer};
 
     my @missions = missions_for_player($player->id, 1);
-    my @expired = expired_missions_for_player($player->id, $prevturn);
+    my @expired = expired_missions_for_player($player->id, prev_turn($page_data{'game_date'}));
     my @missions_data;
     for(@missions)
     {
@@ -621,28 +604,7 @@ get '/play/:game/i/mymissions' => sub {
         
     }
  
-    my $template_data = {
-        'player' => $user,
-        'interactive' => 1,
-        'menu' => $menu,
-        'menu_urls' => $ordered,
-        'money' => $player->money_to_print,
-        'p_stock_value' => $player_meta->{'stock_value'},
-        'nation_codes' => $metareader->get_nation_codes(params->{game}),
-        'prices' => $nation_meta->{'prices'},
-        'position' => $player->position,
-        'position_code' => $present_position,
-        'nation_friendship' => $friendship,
-        'nation_friendship_good' => $friendship < FRIENDSHIP_LIMIT_TO_SHOP ? 0 : 1,
-        'products' => \@products,
-        'game' => params->{game},
-        'year' => $year,
-        'turn' => $turn,
-        'active_top' => 'travel',
-        'active' => 'i/mymissions',
-        'custom_js' => $report_conf->{'custom_js'},
-        'context' => 'i',
-        'now' => $print_now,
+    my %template = (
         'missions' => \@missions_data,
         'player_missions' => \@missions_data,
         'expired_missions' => \@expired,
@@ -650,8 +612,9 @@ get '/play/:game/i/mymissions' => sub {
         'showme' => params->{showme},
         'mission_posted' => params->{'mission-posted'},
         'err' => params->{'err'},
-    };
-    template 'mymissions', $template_data;
+    );
+    my %template_data = (%page_data, %template);
+    template 'mymissions', \%template_data;
 };
 
 get '/play/:game/i/accomplished' => sub {
