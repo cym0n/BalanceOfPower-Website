@@ -39,7 +39,7 @@ my $travelagent = BopWeb::TravelAgent->new(metareader => $metareader);
 my @reports_menu = ('r/situation', 'r/newspaper', 'r/hotspots', 'r/alliances', 'r/influences', 'r/supports', 'r/rebel-supports', 'r/combo-history', 'r/prices' );
 my @nation_reports_menu = ('n/actual', 'n/borders', 'n/near', 'n/diplomacy', 'n/events', 'n/graphs', 'n/prices' );
 my @player_reports_menu = ('r/market', 'p/stocks', 'p/targets', 'p/events', 'db/orders', 'p/ranking', 'p/graphs' );
-my @travel_menu = ('i/travel', 'i/shop', 'i/network', 'i/mymissions');
+my @travel_menu = ('i/travel', 'i/shop', 'i/network', 'i/mymissions', 'i/lounge');
 
 my @products = ( 'goods', 'luxury', 'arms', 'tech', 'culture' );
 
@@ -177,6 +177,9 @@ my %report_configuration = (
             'i/mymissions' => {
                 menu_name => 'My Missions',
                 custom_js => 'blocks/missions.tt'
+            },
+            'i/lounge' => {
+                menu_name => 'Lounge'
             }
     );
 
@@ -421,7 +424,9 @@ sub page_data
             $mission_warning++;
         }
     }
-    my $menucounter = { 'i/mymissions' => $mission_warning };
+    my @bots = schema->resultset('BopBot')->search({ position => $player->position });
+    my $menucounter = { 'i/mymissions' => $mission_warning,
+                        'i/lounge' => @bots + 0 };
     return (
         'context' => $context,
         'interactive' => $interactive,
@@ -446,6 +451,7 @@ sub page_data
         'nation_friendship_good' => $friendship < FRIENDSHIP_LIMIT_TO_SHOP ? 0 : 1,
         'custom_js' => $report_conf->{custom_js}, 
         'player_missions' => \@player_missions,
+        'bots' => \@bots,
         'menucounter' => $menucounter,
     )
 }
@@ -561,15 +567,6 @@ get '/play/:game/i/network' => sub {
     }
     my $player = $page_data{theplayer};
     my @missions = missions_for_nation(params->{game}, $player->position, 1);
-    my @player_missions = missions_for_player($player->id, 1);
-    my $mission_warning = 0;
-    for(@player_missions)
-    {
-        if($_->action_available($player))
-        {
-            $mission_warning = $_->id;
-        }
-    }
     my @missions_data;
     for(@missions)
     {
@@ -578,8 +575,6 @@ get '/play/:game/i/network' => sub {
  
     my %template = (
         'missions' => \@missions_data,
-        'mission_warning' => $mission_warning,
-        'player_missions' => \@player_missions,
         'max_missions' => MAX_MISSIONS_FOR_USER,
     );
     my %template_data = (%page_data, %template);
@@ -661,6 +656,25 @@ get '/play/:game/i/accomplished' => sub {
     my %template_data = (%page_data, %template);
     template 'accomplished', \%template_data;
 };
+
+get '/play/:game/i/lounge' => sub {
+    my %page_data;
+    eval { %page_data = page_data(params->{game}, 'i', 'lounge') };
+    if($@)
+    {
+        if($@ eq 'access-denied')
+        {
+            send_error("Access denied", 403);
+            return;
+        }
+    }
+ 
+    my %template = (
+    );
+    my %template_data = (%page_data, %template);
+    template 'lounge', \%template_data;
+};
+
 
 
 get '/play/:game' => sub {

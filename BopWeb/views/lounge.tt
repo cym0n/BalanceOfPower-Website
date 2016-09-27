@@ -1,0 +1,44 @@
+[% BLOCK bot_card %]
+<div class="well">
+    <div class="row">
+    
+        <center><span style="font-size:20px">[% bot.name %]</span><img style="height:20px;padding-left:10px" src="/images/flags/[% nation_codes.${bot.position} %].png"></center>
+        <br />
+        <center>
+            <div class="center-block">
+                <img style="height:100px" src="/images/bots/[% bot.photo %]">
+            </div>
+        </center>  
+
+    </div>
+</div>
+[% END %]
+
+[% INCLUDE blocks/head.tt %]
+<div class="col-xs-12 col-sm-9">
+<h3>LOUNGE</h3>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="col-sm-2">
+        [% INCLUDE blocks/position_badge.tt icon='lounge.png' %]
+        </div>
+        <div class="col-sm-10">
+            <div class="row">
+                <div class="alert alert-info">
+                    Time is [% now %] (Europe/Rome)
+                </div>
+            </div>
+            <div class="row">
+                [% FOREACH b IN bots %]
+                <div class="col-sm-3">
+                    [% PROCESS bot_card bot=b %]
+                </div>
+                [% END %]
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+[% INCLUDE blocks/side.tt %]
+[% INCLUDE blocks/foot.tt %]

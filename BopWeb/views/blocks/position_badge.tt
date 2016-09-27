@@ -4,7 +4,7 @@
 <br />
 <strong>You are in [% INCLUDE blocks/linked_nation.tt n = position %]<br /><br /></strong>
 <div class="center-block">
-    <center><img style="height:50px" src="/images/flags/[% position_code %].png"></center>
+    <center><img style="height:50px" src="/images/flags/[% nation_codes.$position %].png"></center>
 </div>
 <br />
 [% IF nation_friendship_good %]
