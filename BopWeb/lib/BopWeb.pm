@@ -411,6 +411,17 @@ sub page_data
     my $print_now = $now->dmy . " " . $now->hms;
     
     my $friendship = $player->get_friendship($player->position);
+    
+    my @player_missions = missions_for_player($player->id, 1);
+    my $mission_warning = 0;
+    for(@player_missions)
+    {
+        if($_->action_available($player))
+        {
+            $mission_warning++;
+        }
+    }
+    my $menucounter = { 'i/mymissions' => $mission_warning };
     return (
         'context' => $context,
         'interactive' => $interactive,
@@ -434,6 +445,8 @@ sub page_data
         'nation_friendship' => $friendship,
         'nation_friendship_good' => $friendship < FRIENDSHIP_LIMIT_TO_SHOP ? 0 : 1,
         'custom_js' => $report_conf->{custom_js}, 
+        'player_missions' => \@player_missions,
+        'menucounter' => $menucounter,
     )
 }
 

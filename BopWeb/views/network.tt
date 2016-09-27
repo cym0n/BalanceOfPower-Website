@@ -13,13 +13,6 @@
                 </div>
             </div>
             [% INCLUDE blocks/mission_error_manager.tt %]
-            [% IF mission_warning %]
-            <div class="row">
-                <div class="alert alert-warning">
-                    <a href="/play/[% game %]/i/mymissions?showme=[% mission_warning %]">A mission needs your attention!</a> 
-                </div>
-            </div>
-            [% END %]
             [% INCLUDE blocks/missions_browser.tt missions_title="Missions in $position" my=0 %]
         </div>
     </div>
