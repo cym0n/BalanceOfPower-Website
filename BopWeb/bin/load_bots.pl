@@ -17,6 +17,8 @@ my $game = $ARGV[0];
 #my $gamefile = "$site_root/games/$game.dmp";
 #my $world = BalanceOfPower::World->load_world($file);
 
+die "No game!" if ! $game;
+
 my $inputfile = $ARGV[1];
 open(my $input, "< $inputfile") || die "Errors opening $inputfile: $@";
 

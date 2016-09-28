@@ -175,7 +175,7 @@ my %report_configuration = (
                 custom_js => 'blocks/missions.tt'
             },
             'i/mymissions' => {
-                menu_name => 'My Missions',
+                menu_name => 'Agenda',
                 custom_js => 'blocks/missions.tt'
             },
             'i/lounge' => {
@@ -424,7 +424,7 @@ sub page_data
             $mission_warning++;
         }
     }
-    my @bots = schema->resultset('BopBot')->search({ position => $player->position });
+    my @bots = schema->resultset('BopBot')->search({ game => $game, position => $player->position });
     my $menucounter = { 'i/mymissions' => $mission_warning,
                         'i/lounge' => @bots + 0 };
     return (

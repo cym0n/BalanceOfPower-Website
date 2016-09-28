@@ -1,8 +1,10 @@
 package BopWeb::TravelAgent;
 
 use Moo;
+use List::Util qw(shuffle);
 
 use BopWeb::MetaReader;
+use Data::Dumper;
 
 has metareader => (
     is => 'ro',
@@ -42,6 +44,40 @@ sub go
     return $destination;
 }
 
+sub go_random
+{
+    my $self = shift;
+    my $game = shift;
+    my $player = shift;
+    my $nation_meta = $self->get_nation_meta($game, $player->position);
+    my @destinations;
+    for( keys %{$nation_meta->{'travels'}->{'air'}})
+    {
+        push @destinations, $_ if $nation_meta->{'travels'}->{'air'}->{$_}->{'status'} eq 'OK';
+    }
+    for( keys %{$nation_meta->{'travels'}->{'ground'}})
+    {
+        push @destinations, $_ if $nation_meta->{'travels'}->{'ground'}->{$_}->{'status'} eq 'OK';
+    }
+    @destinations = shuffle @destinations;
+    if(@destinations)
+    {
+        eval { $self->go($game, $player, $destinations[0]) };
+        if($@)
+        {
+            return 0;
+        }
+        else
+        {
+            return 1;
+        }
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 sub arrive
 {
     my $self = shift;
@@ -54,7 +90,7 @@ sub arrive
         my $time = DateTime->now;
         $time->set_time_zone('Europe/Rome');
         $player->disembark_time($time);
-        $player->reset_used();
+        $player->reset_used() if(ref($player)) eq 'BopWeb::BopWebDB::Result::BopPlayer';
         $player->update();
         return $player->position;
     }
