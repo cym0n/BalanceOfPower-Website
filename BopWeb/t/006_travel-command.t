@@ -24,9 +24,9 @@ my $test = Plack::Test->create($app);
 my $res;
 my $player;
 
-diag("SHOP PAGE");
+diag("TRAVEL PAGE");
 $res =$test->request( GET '/play/thegame/i/travel' );
-is($res->code, 200, "Shop page retrieved");
+is($res->code, 200, "Travel page retrieved");
 
 diag("---- GO ----");
 diag("ERROR: not-ready");
@@ -44,6 +44,13 @@ $player->update;
 diag("ERROR: bad destination");
 $res  = $test->request( POST '/interact/thegame/go', 
                            [destination => 'China'] 
+                      );
+is($res->code, 302, "API redirection");
+is($res->header('location'), 'http://localhost/play/thegame/i/travel?travel-posted=ko&err=bad-destination', 'Redirect is correct, travel-posted=ko err=bad-destination');
+
+diag("ERROR: bad destination caused by borderguard bot");
+$res  = $test->request( POST '/interact/thegame/go', 
+                           [destination => 'Angola'] 
                       );
 is($res->code, 302, "API redirection");
 is($res->header('location'), 'http://localhost/play/thegame/i/travel?travel-posted=ko&err=bad-destination', 'Redirect is correct, travel-posted=ko err=bad-destination');

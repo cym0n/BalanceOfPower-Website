@@ -6,7 +6,6 @@ use Dancer2::Plugin::Ajax;
 
 use Cwd 'abs_path';
 use HTML::FormFu;
-use Data::Dumper;
 use Dancer2::Serializer::JSON;
 use Authen::Passphrase::BlowfishCrypt;
 use DateTime;
@@ -472,7 +471,6 @@ get '/play/:game/i/travel' => sub {
         }
     }
     my $player = $page_data{theplayer};
-    print Dumper($page_data{travelplan});
 
     my $travel_enabled;
     my $travel_enabled_time;
