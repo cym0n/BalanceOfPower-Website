@@ -35,9 +35,10 @@ while(my $row = $csv->getline($input))
                                                   name => $row->[0] });
     if($bot)
     {
-        $bot->photo($row->[1]);
-        $bot->nation($row->[2]);
-        $bot->position($row->[3]);
+        $bot->class($row->[1]);
+        $bot->photo($row->[2]);
+        $bot->nation($row->[3]);
+        $bot->position($row->[4]);
         $bot->update();
     }
     else
@@ -45,9 +46,10 @@ while(my $row = $csv->getline($input))
         $bot = schema->resultset("BopBot")->create({
                     game => $game,
                     name => $row->[0],
-                    photo => $row->[1],
-                    nation => $row->[2],
-                    position => $row->[3] 
+                    class => $row->[1],
+                    photo => $row->[2],
+                    nation => $row->[3],
+                    position => $row->[4] 
                 });
     }
     say $bot->name . " generated";
