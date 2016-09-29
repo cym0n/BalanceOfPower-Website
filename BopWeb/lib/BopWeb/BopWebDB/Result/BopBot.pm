@@ -140,7 +140,7 @@ __PACKAGE__->set_primary_key("id");
 
 __PACKAGE__->has_many(
   "actions",
-  "BopWeb::BopWebDB::Result::BopBotActions",
+  "BopWeb::BopWebDB::Result::BopBotAction",
   { "foreign.bot" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );

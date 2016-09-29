@@ -33,7 +33,7 @@ my $root_path = abs_path($module_file_path);
 $root_path =~ s/lib\/BopWeb\.pm//;
 my $metadata_path = config->{'metadata_path'} || $root_path . "metadata";
 my $metareader = BopWeb::MetaReader->new(path => $metadata_path);
-my $travelagent = BopWeb::TravelAgent->new(metareader => $metareader);
+my $travelagent = BopWeb::TravelAgent->new(metareader => $metareader, schema => schema);
 
 
 my @reports_menu = ('r/situation', 'r/newspaper', 'r/hotspots', 'r/alliances', 'r/influences', 'r/supports', 'r/rebel-supports', 'r/combo-history', 'r/prices' );
@@ -453,6 +453,7 @@ sub page_data
         'player_missions' => \@player_missions,
         'bots' => \@bots,
         'menucounter' => $menucounter,
+        'travelplan' => $travelagent->get_travel_plan($game, $player),
     )
 }
 
@@ -471,6 +472,7 @@ get '/play/:game/i/travel' => sub {
         }
     }
     my $player = $page_data{theplayer};
+    print Dumper($page_data{travelplan});
 
     my $travel_enabled;
     my $travel_enabled_time;

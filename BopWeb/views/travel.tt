@@ -1,11 +1,21 @@
 [% BLOCK travelbutton %]
+[% travel_status = dest.status %]
 [% IF travel_status == 'KO' %]
     [% cost = 'X' %]
 [% END %]
 [% IF travel_enabled == 0 %]
     [% travel_status = 'KO' %]
 [% END %]
-    <form class="form-inline" action="/interact/[% game %]/go" method="post"><input type="hidden" name="destination" value="[% t %]"><button type="submit" class="btn-xs btn-block [% IF travel_status == "KO" %]disabled" disabled="disabled"[% ELSE %]btn-primary"[% END %]>[% t %]<br /><span class="glyphicon glyphicon-[% glyph %]"></span><br />[% cost %] TU</button></form>
+    <div class="row">
+    <div class="col-sm-8">
+        <form class="form-inline" action="/interact/[% game %]/go" method="post"><input type="hidden" name="destination" value="[% t %]"><button type="submit" class="btn-xs btn-block [% IF travel_status == "KO" %]disabled" disabled="disabled"[% ELSE %]btn-primary"[% END %]>[% t %]<br /><span class="glyphicon glyphicon-[% glyph %]"></span><br />[% dest.cost %] TU</button></form>
+    </div>
+    [% IF dest.block %]
+    <div class="col-sm-4">
+        <img style="height:60px" src="/images/bots/[% dest.block.photo %]">
+    </div>
+    [% END %]
+    </div>
 [% END %]
 
 [% INCLUDE blocks/head.tt %]
@@ -46,11 +56,11 @@
                     <div class="col-sm-2"></div>
                 </div>
                 [% glyph = 'road' %]
-                [% FOREACH t IN nation_meta.travels.ground.keys %]
+                [% FOREACH t IN travelplan.ground.keys %]
                 <div class="row" style="margin-top:20px">
                     <div class="col-sm-2"></div>
                     <div class="col-sm-8">
-                        [% PROCESS travelbutton travel_status=nation_meta.travels.ground.$t.status cost=nation_meta.travels.ground.$t.cost %]
+                        [% PROCESS travelbutton dest=travelplan.ground.$t %]
                     </div>
                     <div class="col-sm-2"></div>
                 </div>
@@ -65,11 +75,11 @@
                     <div class="col-sm-2"></div>
                 </div>
                 [% glyph = 'send' %]
-                [% FOREACH t IN nation_meta.travels.air.keys %]
+                [% FOREACH t IN travelplan.air.keys %]
                 <div class="row"  style="margin-top:20px">
                     <div class="col-sm-2"></div>
                     <div class="col-sm-8">
-                        [% PROCESS travelbutton travel_status=nation_meta.travels.air.$t.status cost=nation_meta.travels.air.$t.cost %]
+                        [% PROCESS travelbutton dest=travelplan.air.$t %]
                     </div>
                     <div class="col-sm-2"></div>
                 </div>

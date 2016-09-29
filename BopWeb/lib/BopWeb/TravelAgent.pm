@@ -16,6 +16,39 @@ has metareader => (
                }
 );
 
+has schema => (
+    is => 'ro'
+);
+
+sub get_travel_plan
+{
+    my $self = shift;
+    my $game = shift;
+    my $player = shift;
+    my $nation_meta = $self->get_nation_meta($game, $player->position);
+    my $travelplan = $nation_meta->{'travels'};
+    
+    my @bots = $self->schema->resultset('BopBot')->search({ game => $game, position => $player->position });
+    for my $bot (@bots)
+    {
+        my @blocks = $bot->actions->search({ action => 'block' });;
+        foreach my $b (@blocks)
+        {
+            if(exists $travelplan->{'air'}->{$b->param1} && $travelplan->{'air'}->{$b->param1}->{'status'} eq 'OK')
+            {
+                $travelplan->{'air'}->{$b->param1}->{'status'} = 'KO';
+                $travelplan->{'air'}->{$b->param1}->{'block'} = $b->bot;
+            }
+            if(exists $travelplan->{'ground'}->{$b->param1} && $travelplan->{'ground'}->{$b->param1}->{'status'} eq 'OK')
+            {
+                $travelplan->{'ground'}->{$b->param1}->{'status'} = 'KO';
+                $travelplan->{'ground'}->{$b->param1}->{'block'} = $b->bot;
+            }
+        }
+    }
+    return $travelplan;
+}
+
 sub go
 {
     my $self = shift;
@@ -26,12 +59,12 @@ sub go
     die "not-ready-to-travel\n" if( ! $self->enabled_to_travel($player));
     die "ongoing-travel\n" if($player->destination);
 
-    my $nation_meta = $self->get_nation_meta($game, $player->position);
+    my $travelplan = $self->get_travel_plan($game, $player);
     my $data;
-    $data = exists $nation_meta->{'travels'}->{'air'}->{$destination} &&  $nation_meta->{'travels'}->{'air'}->{$destination}->{'status'} eq 'OK' ? 
-                $nation_meta->{'travels'}->{'air'}->{$destination} :
-                    exists $nation_meta->{'travels'}->{'ground'}->{$destination} &&  $nation_meta->{'travels'}->{'ground'}->{$destination}->{'status'} eq 'OK' ?
-                        $nation_meta->{'travels'}->{'ground'}->{$destination} :
+    $data = exists $travelplan->{'air'}->{$destination} &&  $travelplan->{'air'}->{$destination}->{'status'} eq 'OK' ? 
+                $travelplan->{'air'}->{$destination} :
+                    exists $travelplan->{'ground'}->{$destination} && $travelplan->{'ground'}->{$destination}->{'status'} eq 'OK' ?
+                        $travelplan->{'ground'}->{$destination} :
                             undef;
     die "bad-destination\n" if ! $data;
     
@@ -49,15 +82,15 @@ sub go_random
     my $self = shift;
     my $game = shift;
     my $player = shift;
-    my $nation_meta = $self->get_nation_meta($game, $player->position);
     my @destinations;
-    for( keys %{$nation_meta->{'travels'}->{'air'}})
+    my $travelplan = $self->get_travel_plan($game, $player);
+    for( keys %{$travelplan->{'air'}})
     {
-        push @destinations, $_ if $nation_meta->{'travels'}->{'air'}->{$_}->{'status'} eq 'OK';
+        push @destinations, $_ if $travelplan->{'air'}->{$_}->{'status'} eq 'OK';
     }
-    for( keys %{$nation_meta->{'travels'}->{'ground'}})
+    for( keys %{$travelplan->{'ground'}})
     {
-        push @destinations, $_ if $nation_meta->{'travels'}->{'ground'}->{$_}->{'status'} eq 'OK';
+        push @destinations, $_ if $travelplan->{'ground'}->{$_}->{'status'} eq 'OK';
     }
     @destinations = shuffle @destinations;
     if(@destinations)
