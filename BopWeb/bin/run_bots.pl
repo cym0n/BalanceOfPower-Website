@@ -20,26 +20,16 @@ my $root_path = "$FindBin::Bin/../lib/../";
 my $metadata_path = config->{'metadata_path'} || $root_path . "metadata";
 say "Metadata path: $metadata_path";
 my $metareader = BopWeb::MetaReader->new(path => $metadata_path);
-my $travelagent = BopWeb::TravelAgent->new(metareader => $metareader);
+my $travelagent = BopWeb::TravelAgent->new(metareader => $metareader, schema => schema);
 
 my @bots = schema->resultset("BopBot")->search({ game => $game });
 
 foreach my $bot (@bots)
 {
-    if($bot->destination && $travelagent->finished_travel($bot))
+    say "Working on " . $bot->name;
+    my @log = $bot->action($travelagent);
+    for(@log)
     {
-        $travelagent->arrive($bot);
-        say $bot->name . " arrived in " . $bot->position;
-    }
-    else
-    {
-        if($travelagent->enabled_to_travel($bot) && $travelagent->go_random($game, $bot))
-        {
-            say $bot->name . " started a travel to " . $bot->destination;
-        }
-        else
-        {
-            say $bot->name . " do nothing";
-        }
+        say "  " . $_;
     }
 }

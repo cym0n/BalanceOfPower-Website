@@ -145,21 +145,59 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+use BalanceOfPower::Dice;
 
 sub action
 {
     my $self = shift;
     my $travelagent = shift;
-    if($self->class eq 'borderagent')
+    my @log = ();
+    if($self->class eq 'borderguard')
     {
         my $arrive = $self->travel($travelagent);
         if($arrive == 2)
         {
+            push @log, $self->name . " arrived in " . $self->position;
             $self->actions->delete_all();
-    
+            my $dice = BalanceOfPower::Dice->new();
+            my $travelplan = $travelagent->get_travel_plan($self->game, $self);
+            foreach my $way ( qw(air ground))
+            {
+                foreach my $dest (keys %{$travelplan->{$way}})
+                {
+                    if($travelplan->{$way}->{$dest}->{'status'} eq 'OK')
+                    {
+                        my $coin = $dice->random(1, 2, $self->name . " decides to block $dest");
+                        if($coin == 2)
+                        {
+                            push @log, $self->name . " blocking $dest";
+                            $self->actions->create({ game => $self->game,
+                                                    bot => $self,
+                                                    action => 'block',
+                                                    param1 => $dest });
+                        }
+                        else
+                        {
+                            push @log, $self->name . " not blocking $dest";
+                        }
+                    }
+                }
+            }
         }
-
+        elsif($arrive == 1)
+        {
+            push @log, $self->name . " started a travel to " . $self->destination;
+        }
+        else
+        {
+            push @log, $self->name . " did nothing";
+        }
     }
+    else
+    {
+        push @log, "Unrecognized class " . $self->class . " for " . $self->name;
+    }
+    return @log;
 }
 
 sub travel
@@ -169,19 +207,16 @@ sub travel
     if($self->destination && $travelagent->finished_travel($self))
     {
         $travelagent->arrive($self);
-        say $self->name . " arrived in " . $self->position;
         return 2;
     }
     else
     {
         if($travelagent->enabled_to_travel($self) && $travelagent->go_random($self->game, $self))
         {
-            say $self->name . " started a travel to " . $self->destination;
             return 1;
         }
         else
         {
-            say $self->name . " do nothing";
             return 0;
         }
     }
