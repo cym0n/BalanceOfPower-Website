@@ -12,6 +12,7 @@
         </center>  
         <br />
         <center><span class="badge">[% class_tags.${bot.class} %]</span></center>
+        <br />
 
     </div>
 </div>

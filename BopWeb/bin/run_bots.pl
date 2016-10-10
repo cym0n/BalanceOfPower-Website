@@ -18,7 +18,6 @@ die "No game!" if ! $game;
 
 my $root_path = "$FindBin::Bin/../lib/../";
 my $metadata_path = config->{'metadata_path'} || $root_path . "metadata";
-say "Metadata path: $metadata_path";
 my $metareader = BopWeb::MetaReader->new(path => $metadata_path);
 my $travelagent = BopWeb::TravelAgent->new(metareader => $metareader, schema => schema);
 
@@ -26,7 +25,6 @@ my @bots = schema->resultset("BopBot")->search({ game => $game });
 
 foreach my $bot (@bots)
 {
-    say "Working on " . $bot->name;
     my @log = $bot->action($travelagent);
     for(@log)
     {

@@ -178,7 +178,6 @@ sub action
                         }
                         else
                         {
-                            push @log, $self->name . " not blocking $dest";
                         }
                     }
                 }
@@ -190,7 +189,6 @@ sub action
         }
         else
         {
-            push @log, $self->name . " did nothing";
         }
     }
     else
