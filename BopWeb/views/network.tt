@@ -13,7 +13,22 @@
                 </div>
             </div>
             [% INCLUDE blocks/mission_error_manager.tt %]
-            [% INCLUDE blocks/missions_browser.tt missions_title="Missions in $position" my=0 %]
+            [% mymiss_counter = "i/network" %]
+            <ul class="nav nav-tabs">
+                <li class="active"><a data-toggle="tab" href="#missions">Missions</a></li>
+                <li><a data-toggle="tab" href="#mercenary">Mercenary</a></li>
+                <li><a data-toggle="tab" href="#mymissions">Agenda ([% player_missions.size %]/[% max_missions %]) [% IF menucounter.$mymiss_counter && menucounter.$mymiss_counter > 0 %]<span class="badge">[% menucounter.$mymiss_counter %]</span>[% END %]</a></li>
+            </ul>
+            <div class="tab-content">
+                <div id="missions" class="tab-pane fade in active">
+                [% INCLUDE "tabs/missions.tt" %]
+                </div>
+                <div id="mercenary" class="tab-pane fade">
+                </div>
+                <div id="mymissions" class="tab-pane fade">
+                [% INCLUDE "tabs/mymissions.tt" %]
+                </div>
+            </div>
         </div>
     </div>
 </div>

@@ -1,16 +1,6 @@
 <div class="row">
-    <h4>[% missions_title %]</h4>
-    [% IF my == 0 %]
-    <p><a href="/play/[% game %]/i/mymissions">Your missions: [% player_missions.size %]/[% max_missions %]</a></p>
-    [% ELSE %]
-    <p>Your missions: [% player_missions.size %]/[% max_missions %]
-    [% IF expired_missions.size > 0 %]
-    <br />
-    (missions expired this turn: <strong>[% expired_missions.size %]</strong>) 
-    </p>
-    [% END %]
-    [% END %]
     <div class="col-sm-12">
+    <h4>[% missions_title %]</h4>
         [% IF missions.size > 0 %]
         <div class="col-sm-4">
             [% FOREACH m in missions %]
@@ -28,6 +18,11 @@
                     [% END %]
                 </div>
             </div>
+            [% END %]
+            [% IF my == 1 && expired_missions.size > 0 %]
+            <p>
+                (missions expired this turn: <strong>[% expired_missions.size %]</strong>) 
+            </p>
             [% END %]
         </div>
         <div class="col-sm-8">

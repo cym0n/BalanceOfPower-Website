@@ -425,6 +425,7 @@ sub page_data
     }
     my @bots = schema->resultset('BopBot')->search({ game => $game, position => $player->position });
     my $menucounter = { 'i/mymissions' => $mission_warning,
+                        'i/network' => $mission_warning,
                         'i/lounge' => @bots + 0 };
     return (
         'context' => $context,
@@ -572,10 +573,32 @@ get '/play/:game/i/network' => sub {
     {
         push @missions_data, $_->to_hash;
     }
+    my @player_missions = missions_for_player($player->id, 1);
+    my @expired = expired_missions_for_player($player->id, prev_turn($page_data{'game_date'}));
+    my @player_missions_data;
+    for(@player_missions)
+    {
+        my $mdata = $_->to_hash;
+        if($_->action_available($player))
+        {
+            $mdata->{'action'} = 1;
+        }
+        else
+        {
+            $mdata->{'action'} = 0;
+        }
+        push @player_missions_data, $mdata;
+        
+    }
  
     my %template = (
-        'missions' => \@missions_data,
+        'player_missions_data' => \@player_missions_data,
+        'nation_missions' => \@missions_data,
         'max_missions' => MAX_MISSIONS_FOR_USER,
+        'expired_missions' => \@expired,
+        'showme' => params->{showme},
+        'mission_posted' => params->{'mission-posted'},
+        'err' => params->{'err'},
     );
     my %template_data = (%page_data, %template);
     template 'network', \%template_data;
