@@ -52,7 +52,7 @@ $res  = $test->request( POST '/interact/thegame/mission-command',
                            [command => 'wrong', mission => $good_mission] 
                       );
 is($res->code, 302, "API redirection");
-is($res->header('location'), 'http://localhost/play/thegame/i/mymissions?mission-posted=ko&err=bad-command', 'Redirect is correct, mission-posted=ko err=bad-command');
+is($res->header('location'), 'http://localhost/play/thegame/i/network?mission-posted=ko&err=bad-command', 'Redirect is correct, mission-posted=ko err=bad-command');
 
 
 diag("ERROR: no-mission");
@@ -90,7 +90,7 @@ $res  = $test->request( POST '/interact/thegame/mission-command',
                            [command => 'accept', mission => $good_mission] 
                       );
 is($res->code, 302, "API redirection");
-is($res->header('location'), 'http://localhost/play/thegame/i/mymissions?mission-posted=ok&err=accepted&showme=18', 'Redirect is correct, mission-posted=ok err=accepted');
+is($res->header('location'), 'http://localhost/play/thegame/i/network?mission-posted=ok&err=accepted&showme=18&active-tab=mymissions', 'Redirect is correct, mission-posted=ok err=accepted');
 $mission = schema->resultset('BopMission')->find({ id => $good_mission });
 is($mission->assigned, 1000, "Mission is assigned to user1");
 
@@ -111,23 +111,20 @@ $res  = $test->request( POST '/interact/thegame/mission-command',
                            [command => 'drop', mission => $second_mission] 
                       );
 is($res->code, 302, "API redirection");
-is($res->header('location'), 'http://localhost/play/thegame/i/mymissions?mission-posted=ko&err=not-owned', 'Redirect is correct, mission-posted=ko err=not-owned');
+is($res->header('location'), 'http://localhost/play/thegame/i/network?mission-posted=ko&err=not-owned', 'Redirect is correct, mission-posted=ko err=not-owned');
 
 diag("Drop mission");
 $res  = $test->request( POST '/interact/thegame/mission-command', 
                            [command => 'drop', mission => $good_mission] 
                       );
 is($res->code, 302, "API redirection");
-is($res->header('location'), 'http://localhost/play/thegame/i/mymissions?mission-posted=ok&err=dropped', 'Redirect is correct, mission-posted=ok err=dropped');
+is($res->header('location'), 'http://localhost/play/thegame/i/network?mission-posted=ok&err=dropped', 'Redirect is correct, mission-posted=ok err=dropped');
 $mission = schema->resultset('BopMission')->find({ id => $second_mission });
 is($mission->assigned, undef, "Mission not assigned");
 is($mission->progress, 0, "Progress reset");
 $player = schema->resultset('BopPlayer')->find({ id => 1000});
 is($player->money, 950, "Player payed the penalty");
 
-diag("MY MISSIONS PAGE");
-$res =$test->request( GET '/play/thegame/i/mymissions' );
-is($res->code, 200, "Shop page retrieved");
 
 
 

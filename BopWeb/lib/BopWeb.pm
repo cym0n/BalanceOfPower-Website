@@ -38,7 +38,7 @@ my $travelagent = BopWeb::TravelAgent->new(metareader => $metareader, schema => 
 my @reports_menu = ('r/situation', 'r/newspaper', 'r/hotspots', 'r/alliances', 'r/influences', 'r/supports', 'r/rebel-supports', 'r/combo-history', 'r/prices' );
 my @nation_reports_menu = ('n/actual', 'n/borders', 'n/near', 'n/diplomacy', 'n/events', 'n/graphs', 'n/prices' );
 my @player_reports_menu = ('r/market', 'p/stocks', 'p/targets', 'p/events', 'db/orders', 'p/ranking', 'p/graphs' );
-my @travel_menu = ('i/travel', 'i/shop', 'i/network', 'i/mymissions', 'i/lounge');
+my @travel_menu = ('i/travel', 'i/shop', 'i/network', 'i/lounge');
 
 my @products = ( 'goods', 'luxury', 'arms', 'tech', 'culture' );
 
@@ -171,10 +171,6 @@ my %report_configuration = (
             },
             'i/network' => {
                 menu_name => 'Network',
-                custom_js => 'blocks/missions.tt'
-            },
-            'i/mymissions' => {
-                menu_name => 'Agenda',
                 custom_js => 'blocks/missions.tt'
             },
             'i/lounge' => {
@@ -424,8 +420,7 @@ sub page_data
         }
     }
     my @bots = schema->resultset('BopBot')->search({ game => $game, position => $player->position });
-    my $menucounter = { 'i/mymissions' => $mission_warning,
-                        'i/network' => $mission_warning,
+    my $menucounter = { 'i/network' => $mission_warning,
                         'i/lounge' => @bots + 0 };
     return (
         'context' => $context,
@@ -566,6 +561,7 @@ get '/play/:game/i/network' => sub {
             return;
         }
     }
+    my $active_tab = params->{'active-tab'};
     my $player = $page_data{theplayer};
     my @missions = missions_for_nation(params->{game}, $player->position, 1);
     my @missions_data;
@@ -592,6 +588,7 @@ get '/play/:game/i/network' => sub {
     }
  
     my %template = (
+        'active_tab' => $active_tab,
         'player_missions_data' => \@player_missions_data,
         'nation_missions' => \@missions_data,
         'max_missions' => MAX_MISSIONS_FOR_USER,
@@ -604,53 +601,9 @@ get '/play/:game/i/network' => sub {
     template 'network', \%template_data;
 };
 
-get '/play/:game/i/mymissions' => sub {
-    my %page_data;
-    eval { %page_data = page_data(params->{game}, 'i', 'mymissions') };
-    if($@)
-    {
-        if($@ eq 'access-denied')
-        {
-            send_error("Access denied", 403);
-            return;
-        }
-    }
-    my $player = $page_data{theplayer};
-
-    my @missions = missions_for_player($player->id, 1);
-    my @expired = expired_missions_for_player($player->id, prev_turn($page_data{'game_date'}));
-    my @missions_data;
-    for(@missions)
-    {
-        my $mdata = $_->to_hash;
-        if($_->action_available($player))
-        {
-            $mdata->{'action'} = 1;
-        }
-        else
-        {
-            $mdata->{'action'} = 0;
-        }
-        push @missions_data, $mdata;
-        
-    }
- 
-    my %template = (
-        'missions' => \@missions_data,
-        'player_missions' => \@missions_data,
-        'expired_missions' => \@expired,
-        'max_missions' => MAX_MISSIONS_FOR_USER,
-        'showme' => params->{showme},
-        'mission_posted' => params->{'mission-posted'},
-        'err' => params->{'err'},
-    );
-    my %template_data = (%page_data, %template);
-    template 'mymissions', \%template_data;
-};
-
 get '/play/:game/i/accomplished' => sub {
     my %page_data;
-    eval { %page_data = page_data(params->{game}, 'i', 'mymissions') };
+    eval { %page_data = page_data(params->{game}, 'i', 'network') };
     if($@)
     {
         if($@ eq 'access-denied')
@@ -1400,7 +1353,7 @@ post '/interact/:game/mission-command' => sub {
         }
         $mission_obj->assigned($player->id);
         $mission_obj->update();
-        my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ok&err=accepted&showme=" . $mission_obj->id;
+        my $redirection = "/play/" . params->{game} . "/i/network?mission-posted=ok&err=accepted&showme=" . $mission_obj->id . "&active-tab=mymissions";
         redirect $redirection, 302;
         return;  
     } 
@@ -1408,7 +1361,7 @@ post '/interact/:game/mission-command' => sub {
     {
         if((! $mission_obj->assigned) || $mission_obj->assigned ne $player->id)
         {
-            my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ko&err=not-owned";
+            my $redirection = "/play/" . params->{game} . "/i/network?mission-posted=ko&err=not-owned";
             redirect $redirection, 302;
             return;  
         }
@@ -1416,7 +1369,7 @@ post '/interact/:game/mission-command' => sub {
         $mission_obj->progress(0);
         $mission_obj->update();
         $player->add_money(-1 * $mission_obj->drop_penalty);
-         my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ok&err=dropped";
+         my $redirection = "/play/" . params->{game} . "/i/network?mission-posted=ok&err=dropped";
          redirect $redirection, 302;
          return;  
     }
@@ -1424,13 +1377,13 @@ post '/interact/:game/mission-command' => sub {
     {
         if(( ! $mission_obj->assigned) || $player->id ne $mission_obj->assigned)
         {
-            my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ko&err=not-owned";
+            my $redirection = "/play/" . params->{game} . "/i/network?mission-posted=ko&err=not-owned";
             redirect $redirection, 302;
             return;  
         }
         if(! $mission_obj->action_available($player))
         {
-            my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ko&err=action-not-available";
+            my $redirection = "/play/" . params->{game} . "/i/network?mission-posted=ko&err=action-not-available";
             redirect $redirection, 302;
             return;  
         }
@@ -1450,7 +1403,7 @@ post '/interact/:game/mission-command' => sub {
         }
         else
         {
-            my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ok&err=action-done&showme=" . $mission_obj->id;
+            my $redirection = "/play/" . params->{game} . "/i/network?mission-posted=ok&err=action-done&showme=" . $mission_obj->id . "&active-tab=mymissions";
             redirect $redirection, 302;
             return;  
         }
@@ -1459,7 +1412,7 @@ post '/interact/:game/mission-command' => sub {
     }
     else
     {
-        my $redirection = "/play/" . params->{game} . "/i/mymissions?mission-posted=ko&err=bad-command";
+        my $redirection = "/play/" . params->{game} . "/i/network?mission-posted=ko&err=bad-command";
         redirect $redirection, 302;
         return;  
     }

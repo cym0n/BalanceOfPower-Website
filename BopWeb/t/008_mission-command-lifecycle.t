@@ -38,7 +38,7 @@ $res  = $test->request( POST '/interact/thegame/mission-command',
                            [command => 'accept', mission => $good_mission] 
                       );
 is($res->code, 302, "API redirection");
-is($res->header('location'), 'http://localhost/play/thegame/i/mymissions?mission-posted=ok&err=accepted&showme=18', 'Redirect is correct, mission-posted=ok err=accepted');
+is($res->header('location'), 'http://localhost/play/thegame/i/network?mission-posted=ok&err=accepted&showme=18&active-tab=mymissions', 'Redirect is correct, mission-posted=ok err=accepted');
 $mission = schema->resultset('BopMission')->find({ id => $good_mission });
 is($mission->assigned, 1000, "Mission is assigned to user1");
 
@@ -47,14 +47,14 @@ $res  = $test->request( POST '/interact/thegame/mission-command',
                            [command => 'action', mission => $second_mission] 
                       );
 is($res->code, 302, "API redirection");
-is($res->header('location'), 'http://localhost/play/thegame/i/mymissions?mission-posted=ko&err=not-owned', 'Redirect is correct, mission-posted=ko err=not-owned');
+is($res->header('location'), 'http://localhost/play/thegame/i/network?mission-posted=ko&err=not-owned', 'Redirect is correct, mission-posted=ko err=not-owned');
 
 diag("ERROR: action-not-available");
 $res  = $test->request( POST '/interact/thegame/mission-command', 
                            [command => 'action', mission => $good_mission] 
                       );
 is($res->code, 302, "API redirection");
-is($res->header('location'), 'http://localhost/play/thegame/i/mymissions?mission-posted=ko&err=action-not-available', 'Redirect is correct, mission-posted=ko err=action-not-available');
+is($res->header('location'), 'http://localhost/play/thegame/i/network?mission-posted=ko&err=action-not-available', 'Redirect is correct, mission-posted=ko err=action-not-available');
 
 diag("Progress");
 $player = schema->resultset('BopPlayer')->find({ id => 1000});
@@ -64,7 +64,7 @@ $res  = $test->request( POST '/interact/thegame/mission-command',
                            [command => 'action', mission => $good_mission] 
                       );
 is($res->code, 302, "API redirection");
-is($res->header('location'), 'http://localhost/play/thegame/i/mymissions?mission-posted=ok&err=action-done&showme=18', 'Redirect is correct, mission-posted=ok err=action-done');
+is($res->header('location'), 'http://localhost/play/thegame/i/network?mission-posted=ok&err=action-done&showme=18&active-tab=mymissions', 'Redirect is correct, mission-posted=ok err=action-done');
 $mission = schema->resultset('BopMission')->find({ id => $good_mission });
 is($mission->progress, 1, "Mission progressed");
 
@@ -73,7 +73,7 @@ $res  = $test->request( POST '/interact/thegame/mission-command',
                            [command => 'action', mission => $good_mission] 
                       );
 is($res->code, 302, "API redirection");
-is($res->header('location'), 'http://localhost/play/thegame/i/mymissions?mission-posted=ko&err=action-not-available', 'Redirect is correct, mission-posted=ko err=action-not-available');
+is($res->header('location'), 'http://localhost/play/thegame/i/network?mission-posted=ko&err=action-not-available', 'Redirect is correct, mission-posted=ko err=action-not-available');
 
 diag("Progress and success");
 $player = schema->resultset('BopPlayer')->find({ id => 1000});

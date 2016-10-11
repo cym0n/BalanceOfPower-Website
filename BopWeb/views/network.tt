@@ -15,17 +15,18 @@
             [% INCLUDE blocks/mission_error_manager.tt %]
             [% mymiss_counter = "i/network" %]
             <ul class="nav nav-tabs">
-                <li class="active"><a data-toggle="tab" href="#missions">Missions</a></li>
-                <li><a data-toggle="tab" href="#mercenary">Mercenary</a></li>
-                <li><a data-toggle="tab" href="#mymissions">Agenda ([% player_missions.size %]/[% max_missions %]) [% IF menucounter.$mymiss_counter && menucounter.$mymiss_counter > 0 %]<span class="badge">[% menucounter.$mymiss_counter %]</span>[% END %]</a></li>
+                <li [% IF active_tab == 'missions' %]class="active"[% END %]><a data-toggle="tab" href="#missions">Missions</a></li>
+                <li [% IF active_tab == 'mercenary' %]class="active"[% END %]><a data-toggle="tab" href="#mercenary">Mercenary</a></li>
+                <li [% IF active_tab == 'mymissions' %]class="active"[% END %]><a data-toggle="tab" href="#mymissions">Agenda ([% player_missions.size %]/[% max_missions %]) [% IF menucounter.$mymiss_counter && menucounter.$mymiss_counter > 0 %]<span class="badge">[% menucounter.$mymiss_counter %]</span>[% END %]</a></li>
             </ul>
+            [% IF ! active_tab %][% active_tab = 'missions' %][% END %]
             <div class="tab-content">
-                <div id="missions" class="tab-pane fade in active">
+                <div id="missions" class="tab-pane fade [% IF active_tab == 'missions' %]in active[% END %]">
                 [% INCLUDE "tabs/missions.tt" %]
                 </div>
-                <div id="mercenary" class="tab-pane fade">
+                <div id="mercenary" class="tab-pane fade [% IF active_tab == 'mercenary' %]in active[% END %]">
                 </div>
-                <div id="mymissions" class="tab-pane fade">
+                <div id="mymissions" class="tab-pane fade [% IF active_tab == 'mymissions' %]in active[% END %]">
                 [% INCLUDE "tabs/mymissions.tt" %]
                 </div>
             </div>
