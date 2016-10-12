@@ -25,6 +25,7 @@
                 [% INCLUDE "tabs/missions.tt" %]
                 </div>
                 <div id="mercenary" class="tab-pane fade [% IF active_tab == 'mercenary' %]in active[% END %]">
+                [% INCLUDE "tabs/mercenary.tt" %]
                 </div>
                 <div id="mymissions" class="tab-pane fade [% IF active_tab == 'mymissions' %]in active[% END %]">
                 [% INCLUDE "tabs/mymissions.tt" %]
