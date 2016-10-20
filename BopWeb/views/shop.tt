@@ -42,6 +42,9 @@
                     Time is [% now %] (Europe/Rome)
                 </div>
             </div>
+            [% IF theplayer.joined_army %]
+            [% INCLUDE "tabs/war_courtesy.tt" courtesy_message="You can't travel" %]
+            [% ELSE %]
             [% INCLUDE blocks/shop_error_manager.tt %]
             <div class="row">
                 [% FOREACH p IN products %]
@@ -50,9 +53,12 @@
                 </div>
                 [% END %]
             </div>
+            [% END %]
         </div>
     </div>
 </div>
+[% IF theplayer.joined_army %]
+[% ELSE %]
 <div class="row">
     <div class="col-sm-2">
         <div class="alert alert-warning">
@@ -125,6 +131,7 @@
         </div>
     </div>
 </div>
+[% END %]
 </div>
 
 [% INCLUDE blocks/side.tt %]

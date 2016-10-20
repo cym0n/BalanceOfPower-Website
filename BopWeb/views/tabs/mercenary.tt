@@ -1,25 +1,38 @@
+[% fight_disabled = 0 %]
+[% IF theplayer.health < 3 %]
+    [% fight_disabled = 1 %]
+[% END %]
+
+[% BLOCK join_form %]
+<form action="/interact/[% game %]/join-army-command" method="post">
+    <button name="join" type="submit" 
+        class="btn btn-danger [% IF fight_disabled %]disabled" disabled[% ELSE %]"[% END %]
+        value="[% jarmy %]">Join [% jarmy %] army!</button>
+    <input type="hidden" name="position" value="[% position %]" />
+    <input type="hidden" name="role" value="[% role %]" />
+</form>
+[% END %]
+[% INCLUDE blocks/join_army_error_manager.tt %]
 [% IF nation_meta.invasion == 1 %]
 <div class="row">
     <div class="col-sm-12">
     <h4>[% position %] is invaded!</h4>
+    [% IF fight_disabled %]
+    <p>You're not in condition to join the fight</p>
+    [% END %]
     <div class="col-sm-6">
         <h5><strong>Defend [% position %]</strong></h5>
-        <form>
-            <button type="submit" class="btn btn-danger">Join [% position %] army!</button>
-        </form>
+        [% PROCESS join_form jarmy=position, role="defender" %]    
         [% IF nation_meta.foreigners.supporter %]
         <br />
-        <form>
-            <button type="submit" class="btn btn-danger">Join [% nation_meta.foreigners.supporter %] army (supporter)!</button>
-        </form>
+        <h5><strong>Help [% position %]'s Supporter</strong></h5>
+        [% PROCESS join_form jarmy=nation_meta.foreigners.supporter role="supporter" %]    
         [% END %]
     </div>
     <div class="col-sm-6">
         <h5><strong>Help the invasion</strong></h5>
-        [% FOR inv in nation_meta.foreigners.invaders %]
-        <form>
-            <button type="submit" class="btn btn-danger">Join [% inv %] army!</button>
-        </form>
+        [% FOR inv in nation_meta.foreigners.invaders role="invader" %]
+        [% PROCESS join_form jarmy=inv %]    
         <br />
         [% END %]
     </div>

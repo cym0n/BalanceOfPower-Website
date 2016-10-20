@@ -33,9 +33,15 @@
                 </div>
             </div>
             <div class="row">
+                [% IF bots.size > 0 %]
                 [% FOREACH b IN bots %]
                 <div class="col-sm-3">
                     [% PROCESS bot_card bot=b %]
+                </div>
+                [% END %]
+                [% ELSE %]
+                <div class="alert alert-warning">
+                    Noone here
                 </div>
                 [% END %]
             </div>

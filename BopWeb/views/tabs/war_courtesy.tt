@@ -1,0 +1,10 @@
+[% INCLUDE blocks/join_army_error_manager.tt %]
+<div class="row">
+    <div class="col-sm-12">
+        <div class="alert alert-danger">
+        [% courtesy_message %]<br />
+        <br />
+        You're in [% position %] fighting for [% theplayer.joined_army %]
+        </div>
+    </div>
+</div>

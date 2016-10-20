@@ -22,10 +22,18 @@
             [% IF ! active_tab %][% active_tab = 'missions' %][% END %]
             <div class="tab-content">
                 <div id="missions" class="tab-pane fade [% IF active_tab == 'missions' %]in active[% END %]">
-                [% INCLUDE "tabs/missions.tt" %]
+                [% IF theplayer.joined_army %]
+                    [% INCLUDE "tabs/war_courtesy.tt" courtesy_message="You can't manage missions" %]
+                [% ELSE %]
+                    [% INCLUDE "tabs/missions.tt" %]
+                [% END %]
                 </div>
                 <div id="mercenary" class="tab-pane fade [% IF active_tab == 'mercenary' %]in active[% END %]">
-                [% INCLUDE "tabs/mercenary.tt" %]
+                [% IF theplayer.joined_army %]
+                    [% INCLUDE "tabs/war_courtesy.tt" courtesy_message="You are already fighting war" %]
+                [% ELSE %]
+                    [% INCLUDE "tabs/mercenary.tt" %]
+                [% END %]
                 </div>
                 <div id="mymissions" class="tab-pane fade [% IF active_tab == 'mymissions' %]in active[% END %]">
                 [% INCLUDE "tabs/mymissions.tt" %]

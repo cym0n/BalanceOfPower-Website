@@ -1,5 +1,4 @@
 use utf8;
-use v5.10;
 package BopWeb::BopWebDB::Result::BopBot;
 
 # Created by DBIx::Class::Schema::Loader

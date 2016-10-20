@@ -7,6 +7,15 @@
                 <strong>Player</strong>: [% player %]<br />
                 </p>
                 <p>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-danger" 
+                             role="progressbar" aria-valuenow="[% theplayer.health %]"
+                             aria-valuemin="0" aria-valuemax="[% max_health %]" style="width:[% (theplayer.health / max_health) * 100 %]%" >
+                            Health
+                        </div>
+                    </div>
+                </p>
+                <p>
                 Value of the stocks: [% player_meta.stock_value %]<br />
                 Money: [% money %]<br />
                 Total value: [% player_meta.stock_value + money %]<br />

@@ -17,6 +17,8 @@ use BalanceOfPower::Constants ':all';
 use BopWeb::MetaReader;
 use BopWeb::TravelAgent;
 
+use Data::Dumper;
+
 our $VERSION = '0.1';
 
 get '/keepalive' => sub {
@@ -205,9 +207,10 @@ get '/play/:game/:context/:report' => sub {
             $report_conf->{$_} = $standards->{$_}
         }
     }
+    my $usergame = player_of_game(params->{game}, $user);
     if($report_conf->{logged} == 1)
     {
-        if(! player_of_game(params->{game}, $user))
+        if(! $usergame)
         {
             send_error("Access denied", 403);
             return;
@@ -246,7 +249,6 @@ get '/play/:game/:context/:report' => sub {
     my $nation_meta = undef;
     my $selected_stock_action = undef;
     my $selected_influence_action = undef;
-    my $usergame = player_of_game(params->{game}, $user);
     my $player_meta = $metareader->get_player_meta(params->{game}, $user, 'wallet');
     if(params->{context} eq 'n' && $user)
     {
@@ -269,14 +271,17 @@ get '/play/:game/:context/:report' => sub {
     }
     my $stock_value = undef;
     my $money = undef;
+    my $player = undef;
     if($user)
     {
         $stock_value = $player_meta->{stock_value};
-        my $player = schema->resultset('BopPlayer')->find($usergame->player);
+        $player = schema->resultset('BopPlayer')->find($usergame->player);
         $money = $player->money_to_print;
     }
 
+
     template $report_conf->{template}, {
+       'theplayer' => $player, 
        'nation' => $nation,
        'report' => $report_to_show,
        'menu' => $menu,
@@ -299,6 +304,7 @@ get '/play/:game/:context/:report' => sub {
        'nation_meta' => $nation_meta,
        'selected_stock_action' => $selected_stock_action,
        'selected_influence_action' => $selected_influence_action,
+        'max_health' => 5,
     }; 
 };
 
@@ -449,6 +455,7 @@ sub page_data
         'bots' => \@bots,
         'menucounter' => $menucounter,
         'travelplan' => $travelagent->get_travel_plan($game, $player),
+        'max_health' => 5,
     )
 }
 
@@ -595,6 +602,7 @@ get '/play/:game/i/network' => sub {
         'expired_missions' => \@expired,
         'showme' => params->{showme},
         'mission_posted' => params->{'mission-posted'},
+        'join_army_posted' => params->{'join-army-posted'},
         'err' => params->{'err'},
     );
     my %template_data = (%page_data, %template);
@@ -1418,7 +1426,56 @@ post '/interact/:game/mission-command' => sub {
     }
 };
 
-
+post '/interact/:game/join-army-command' => sub {
+    my $user = logged_user();
+    my $usergame = player_of_game(params->{game}, $user);
+    if(! $usergame)
+    {
+        send_error("Access denied", 403);
+        return;
+    }
+    my $player = schema->resultset('BopPlayer')->find($usergame->player);
+    my $position = params->{'position'};
+    my $join = params->{'join'};
+    my $game = params->{'game'};
+    my $role = params->{'role'};
+    debug "Position $position - Join $join - Role $role - Game $game";
+    if($position ne $player->position)
+    {
+        my $redirection = "/play/" . params->{game} . "/i/network?join-army-posted=ko&err=wrong-position&active-tab=mercenary";
+        redirect $redirection, 302;
+        return;  
+    }
+    if($player->joined_army)
+    {
+        my $redirection = "/play/" . params->{game} . "/i/network?join-army-posted=ko&err=already&active-tab=mercenary";
+        redirect $redirection, 302;
+        return;  
+    }
+    if($player->health < 3)
+    {
+        my $redirection = "/play/" . params->{game} . "/i/network?join-army-posted=ko&err=low-health&active-tab=mercenary";
+        redirect $redirection, 302;
+        return;  
+    }
+    my $nation_meta = $metareader->get_nation_meta($game, $position);
+    if( ($role eq 'defender'  && $join ne $player->position) ||
+        ($role eq 'supporter' && $join ne $nation_meta->{foreigners}->{supporter}) ||
+        ($role eq 'invader'   && ! grep { $_ eq $join} @{$nation_meta->{foreigners}->{invaders}}) )
+    {
+        my $redirection = "/play/" . params->{game} . "/i/network?join-army-posted=ko&err=invalid-nation&active-tab=mercenary";
+        redirect $redirection, 302;
+        return;  
+    }
+    my $time = DateTime->now;
+    $time->set_time_zone('Europe/Rome');
+    $player->joined_army($join);
+    $player->fight_start($time);
+    $player->update;
+    my $redirection = "/play/" . params->{game} . "/i/network?join-army-posted=ok&err=$join&active-tab=mercenary";
+    redirect $redirection, 302;
+    return;  
+};
 
 post '/interact/:game/stock-command' => sub {
     my $user = logged_user();

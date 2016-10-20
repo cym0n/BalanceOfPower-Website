@@ -24,14 +24,17 @@
 <div class="row">
     <div class="col-sm-12">
         <div class="col-sm-2">
-        [% INCLUDE blocks/position_badge.tt icon='airplane.png' %]
+            [% INCLUDE blocks/position_badge.tt icon='airplane.png' %]
         </div>
         <div class="col-sm-10">
             <div class="row">
-            <div class="alert alert-info">
-                Time is [% now %] (Europe/Rome)
+                <div class="alert alert-info">
+                    Time is [% now %] (Europe/Rome)
+                </div>
             </div>
-            </div>
+            [% IF theplayer.joined_army %]
+            [% INCLUDE "tabs/war_courtesy.tt" courtesy_message="You can't travel" %]
+            [% ELSE %]
             <div class="row">
                 [% IF travel_enabled == 0 %]
                 <div class="alert alert-danger">
@@ -47,45 +50,46 @@
             </div>
             [% INCLUDE blocks/travel_error_manager.tt %]
             <div class="row">
-            <div class="col-sm-5">
-                <div class="row">
-                    <div class="col-sm-2"></div>
-                    <div class="col-sm-8">
-                        <h4>Ground</h4>
+                <div class="col-sm-5">
+                    <div class="row">
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-8">
+                            <h4>Ground</h4>
+                        </div>
+                        <div class="col-sm-2"></div>
                     </div>
-                    <div class="col-sm-2"></div>
-                </div>
-                [% glyph = 'road' %]
-                [% FOREACH t IN travelplan.ground.keys %]
-                <div class="row" style="margin-top:20px">
-                    <div class="col-sm-2"></div>
-                    <div class="col-sm-8">
-                        [% PROCESS travelbutton dest=travelplan.ground.$t %]
+                    [% glyph = 'road' %]
+                    [% FOREACH t IN travelplan.ground.keys %]
+                    <div class="row" style="margin-top:20px">
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-8">
+                            [% PROCESS travelbutton dest=travelplan.ground.$t %]
+                        </div>
+                        <div class="col-sm-2"></div>
                     </div>
-                    <div class="col-sm-2"></div>
+                    [% END %]
                 </div>
-                [% END %]
+                <div class="col-sm-5">
+                    <div class="row">
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-8">
+                            <h4>Air</h4>
+                        </div>
+                        <div class="col-sm-2"></div>
+                    </div>
+                    [% glyph = 'send' %]
+                    [% FOREACH t IN travelplan.air.keys %]
+                    <div class="row"  style="margin-top:20px">
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-8">
+                            [% PROCESS travelbutton dest=travelplan.air.$t %]
+                        </div>
+                        <div class="col-sm-2"></div>
+                    </div>
+                    [% END %]
+                </div>
             </div>
-            <div class="col-sm-5">
-                <div class="row">
-                    <div class="col-sm-2"></div>
-                    <div class="col-sm-8">
-                        <h4>Air</h4>
-                    </div>
-                    <div class="col-sm-2"></div>
-                </div>
-                [% glyph = 'send' %]
-                [% FOREACH t IN travelplan.air.keys %]
-                <div class="row"  style="margin-top:20px">
-                    <div class="col-sm-2"></div>
-                    <div class="col-sm-8">
-                        [% PROCESS travelbutton dest=travelplan.air.$t %]
-                    </div>
-                    <div class="col-sm-2"></div>
-                </div>
-                [% END %]
-            </div>
-            </div>
+            [% END %]
         </div>
     </div>
 </div>
