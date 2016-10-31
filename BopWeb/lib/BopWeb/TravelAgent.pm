@@ -123,7 +123,11 @@ sub arrive
         my $time = DateTime->now;
         $time->set_time_zone('Europe/Rome');
         $player->disembark_time($time);
-        $player->reset_used() if(ref($player)) eq 'BopWeb::BopWebDB::Result::BopPlayer';
+        if( (ref($player)) eq 'BopWeb::BopWebDB::Result::BopPlayer' )
+        {
+            $player->reset_used();
+            $self->notify_arrival($player);
+        }
         $player->update();
         return $player->position;
     }
@@ -165,6 +169,22 @@ sub finished_travel
     {
         return 0;
     }
+}
+
+sub notify_arrival
+{
+    my $self = shift;
+    my $player = shift;
+
+    my $time = DateTime->now();
+    $time->set_time_zone('Europe/Rome');
+    $self->schema->resultset('BopNotification')->create({
+                                player => $player,
+                                position => $player->position,
+                                tag => 'arrival',
+                                text => " You arrived in " . $player->position,
+                                timestamp => $time,
+                                read => 0 });
 }
 
 1;
