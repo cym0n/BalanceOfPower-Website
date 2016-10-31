@@ -125,5 +125,12 @@ __PACKAGE__->belongs_to(
   },
 );
 
+sub printed_timestamp
+{
+    my $self = shift;
+    my $ts = $self->timestamp;
+    $ts->set_time_zone("Europe/Rome");
+    return $ts->dmy . " " . $ts->hms;
+}
 
 1;

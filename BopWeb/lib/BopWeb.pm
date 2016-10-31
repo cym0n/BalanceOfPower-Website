@@ -40,7 +40,7 @@ my $travelagent = BopWeb::TravelAgent->new(metareader => $metareader, schema => 
 my @reports_menu = ('r/situation', 'r/newspaper', 'r/hotspots', 'r/alliances', 'r/influences', 'r/supports', 'r/rebel-supports', 'r/combo-history', 'r/prices' );
 my @nation_reports_menu = ('n/actual', 'n/borders', 'n/near', 'n/diplomacy', 'n/events', 'n/graphs', 'n/prices' );
 my @player_reports_menu = ('r/market', 'p/stocks', 'p/targets', 'p/events', 'db/orders', 'p/ranking', 'p/graphs' );
-my @travel_menu = ('i/travel', 'i/shop', 'i/network', 'i/lounge');
+my @travel_menu = ('i/travel', 'i/shop', 'i/network', 'i/lounge', 'i/notifications');
 
 my @products = ( 'goods', 'luxury', 'arms', 'tech', 'culture' );
 
@@ -177,6 +177,9 @@ my %report_configuration = (
             },
             'i/lounge' => {
                 menu_name => 'Lounge'
+            },
+            'i/notifications' => {
+                menu_name => 'Notifications'
             }
     );
 
@@ -426,8 +429,10 @@ sub page_data
         }
     }
     my @bots = schema->resultset('BopBot')->search({ game => $game, position => $player->position });
+    my $not_count = schema->resultset('BopNotification')->search({ player => $player->id, read => 0})->count;
     my $menucounter = { 'i/network' => $mission_warning,
-                        'i/lounge' => @bots + 0 };
+                        'i/lounge' => @bots + 0,
+                        'i/notifications' => $not_count };
     return (
         'context' => $context,
         'interactive' => $interactive,
@@ -518,7 +523,7 @@ get '/play/:game/i/shop' => sub {
     my $shop_posted = params->{'shop-posted'};
     my $err = params->{'err'};
     my %page_data;
-    eval { %page_data = page_data(params->{game}, 'i', 'travel') };
+    eval { %page_data = page_data(params->{game}, 'i', 'shop') };
     if($@)
     {
         if($@ eq 'access-denied')
@@ -657,6 +662,33 @@ get '/play/:game/i/lounge' => sub {
     );
     my %template_data = (%page_data, %template);
     template 'lounge', \%template_data;
+};
+get '/play/:game/i/notifications' => sub {
+    my %page_data;
+    eval { %page_data = page_data(params->{game}, 'i', 'notifications') };
+    if($@)
+    {
+        if($@ eq 'access-denied')
+        {
+            send_error("Access denied", 403);
+            return;
+        }
+    }
+
+    my $player = $page_data{theplayer};
+    my @notifications = schema->resultset('BopNotification')->search({
+                            player => $player->id },
+                            { order_by => { -desc => 'timestamp' } } );
+    if(@notifications > 40)
+    {
+        @notifications = @notifications[0..39];  
+    }
+    my %template = (
+        notifications => \@notifications
+    );
+    make_notifications_read($player);
+    my %template_data = (%page_data, %template);
+    template 'notifications', \%template_data;
 };
 
 
@@ -799,7 +831,11 @@ sub expired_missions_for_player
     return missions_for_player($player, 0)->search({ expire_turn => $year });
 }
     
-
+sub make_notifications_read
+{
+    my $player = shift;
+    schema->resultset('BopNotification')->search({ player => 1 })->update_all({ read => 1});
+}
 
 
 
