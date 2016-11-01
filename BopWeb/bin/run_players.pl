@@ -20,6 +20,7 @@ my $root_path = "$FindBin::Bin/../lib/../";
 my $metadata_path = config->{'metadata_path'} || $root_path . "metadata";
 my $metareader = BopWeb::MetaReader->new(path => $metadata_path);
 my $travelagent = BopWeb::TravelAgent->new(metareader => $metareader, schema => schema);
+my $mercenary = BopWeb::Mercenary->new(metareader => $metareader, schema => schema);
 
 my @players = schema->resultset("BopGame")->find({ name => $game })->get_players;
 
@@ -27,19 +28,24 @@ foreach my $p (@players)
 {
     #Check arrival of a travel
     eval { $travelagent->arrive($p) };
-    if($@)
+    my $err = $@;
+    chomp $err;
+    if($err)
     {
-        if($@ eq 'not-arrived')
+        if($err eq 'not-arrived' || $err eq 'no-destination')
         {
         }
         else
         {
-            die $@;
+            die $err;
         }
     }
     else
     {
         say "Player " . $p->id . " completed a travel";
     }
+
+    #Check war
+    say "In war for " . $mercenary->war_duration($p);
 }
 

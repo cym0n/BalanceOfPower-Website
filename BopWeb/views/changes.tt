@@ -1,0 +1,15 @@
+[% INCLUDE blocks/empty_head.tt %]
+<div class="row">
+    <div class="col-xs-12 col-sm-12">
+    <h1>??? - LATEST RELEASE</h1>
+    <p>
+    <ul>
+        <li>First release with changes page</li>
+        <li>No need to click disembark to enter a nation</li>
+        <li>No time to wait after ending a travel</li>
+        <li>Health introduced</li>
+        <li>Possibility to join a war between nations</li>
+    </ul>
+    </p>
+</div>
+[% INCLUDE blocks/foot.tt %]

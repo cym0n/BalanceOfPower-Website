@@ -16,6 +16,7 @@ use BalanceOfPower::Constants ':all';
 
 use BopWeb::MetaReader;
 use BopWeb::TravelAgent;
+use BopWeb::Mercenary;
 
 use Data::Dumper;
 
@@ -35,6 +36,7 @@ $root_path =~ s/lib\/BopWeb\.pm//;
 my $metadata_path = config->{'metadata_path'} || $root_path . "metadata";
 my $metareader = BopWeb::MetaReader->new(path => $metadata_path);
 my $travelagent = BopWeb::TravelAgent->new(metareader => $metareader, schema => schema);
+my $mercenary = BopWeb::Mercenary->new(metareader => $metareader, schema => schema);
 
 
 my @reports_menu = ('r/situation', 'r/newspaper', 'r/hotspots', 'r/alliances', 'r/influences', 'r/supports', 'r/rebel-supports', 'r/combo-history', 'r/prices' );
@@ -65,6 +67,10 @@ get '/' => sub {
 
 get '/about' => sub {
     template 'about', { custom_css => 'about.css' };
+};
+
+get '/changes' => sub {
+    template 'changes'
 };
 
 
@@ -470,7 +476,9 @@ get '/play/:game/i/travel' => sub {
     my $err = params->{'err'};
     my %page_data;
     eval { %page_data = page_data(params->{game}, 'i', 'travel') };
-    if($@)
+    my $ex = $@;
+    chomp $ex;
+    if($ex)
     {
         if($@ eq 'access-denied')
         {
@@ -524,9 +532,11 @@ get '/play/:game/i/shop' => sub {
     my $err = params->{'err'};
     my %page_data;
     eval { %page_data = page_data(params->{game}, 'i', 'shop') };
-    if($@)
+    my $ex = $@;
+    chomp $ex;
+    if($ex)
     {
-        if($@ eq 'access-denied')
+        if($ex eq 'access-denied')
         {
             send_error("Access denied", 403);
             return;
@@ -565,9 +575,11 @@ get '/play/:game/i/shop' => sub {
 get '/play/:game/i/network' => sub {
     my %page_data;
     eval { %page_data = page_data(params->{game}, 'i', 'network') };
-    if($@)
+    my $ex = $@;
+    chomp $ex;
+    if($ex)
     {
-        if($@ eq 'access-denied')
+        if($ex eq 'access-denied')
         {
             send_error("Access denied", 403);
             return;
@@ -617,9 +629,11 @@ get '/play/:game/i/network' => sub {
 get '/play/:game/i/accomplished' => sub {
     my %page_data;
     eval { %page_data = page_data(params->{game}, 'i', 'network') };
-    if($@)
+    my $ex = $@;
+    chomp $ex;
+    if($ex)
     {
-        if($@ eq 'access-denied')
+        if($ex eq 'access-denied')
         {
             send_error("Access denied", 403);
             return;
@@ -649,9 +663,10 @@ get '/play/:game/i/accomplished' => sub {
 get '/play/:game/i/lounge' => sub {
     my %page_data;
     eval { %page_data = page_data(params->{game}, 'i', 'lounge') };
-    if($@)
+    my $ex = $@;
+    if($ex)
     {
-        if($@ eq 'access-denied')
+        if($ex eq 'access-denied')
         {
             send_error("Access denied", 403);
             return;
@@ -666,9 +681,11 @@ get '/play/:game/i/lounge' => sub {
 get '/play/:game/i/notifications' => sub {
     my %page_data;
     eval { %page_data = page_data(params->{game}, 'i', 'notifications') };
-    if($@)
+    my $ex = $@;
+    chomp $ex;
+    if($ex)
     {
-        if($@ eq 'access-denied')
+        if($ex eq 'access-denied')
         {
             send_error("Access denied", 403);
             return;
@@ -1298,10 +1315,12 @@ post '/interact/:game/go' => sub {
     my $player = $usergame->player;
 
     eval { $travelagent->go($game, $player, $destination) };
+    my $ex = $@;
+    chomp $ex;
     
-    if($@)
+    if($ex)
     {
-        my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ko&err=$@";
+        my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ko&err=$ex";
         redirect $redirection, 302;
         return;  
     }
@@ -1325,10 +1344,12 @@ get '/interact/:game/arrive' => sub {
     my $player = $usergame->player;
 
     eval { $travelagent->arrive($player) };
+    my $ex = $@;
+    chomp $ex;
     
-    if($@)
+    if($ex)
     {
-        my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ko&err=$@";
+        my $redirection = "/play/" . params->{game} . "/i/travel?travel-posted=ko&err=$ex";
         redirect $redirection, 302;
         return;  
     }
@@ -1470,47 +1491,27 @@ post '/interact/:game/join-army-command' => sub {
         send_error("Access denied", 403);
         return;
     }
+
     my $player = $usergame->player;
-    my $position = params->{'position'};
     my $join = params->{'join'};
-    my $game = params->{'game'};
-    my $role = params->{'role'};
-    debug "Position $position - Join $join - Role $role - Game $game";
-    if($position ne $player->position)
+
+    eval { $mercenary->join(params->{'game'}, $player, params->{'position'}, $join,  params->{'role'}) };
+
+    my $ex = $@;
+    chomp $ex;
+    
+    if($ex)
     {
-        my $redirection = "/play/" . params->{game} . "/i/network?join-army-posted=ko&err=wrong-position&active-tab=mercenary";
+        my $redirection = "/play/" . params->{game} . "/i/network?join-army-posted=ko&err=$@&active-tab=mercenary";
         redirect $redirection, 302;
         return;  
     }
-    if($player->joined_army)
+    else
     {
-        my $redirection = "/play/" . params->{game} . "/i/network?join-army-posted=ko&err=already&active-tab=mercenary";
+        my $redirection = "/play/" . params->{game} . "/i/network?join-army-posted=ok&err=$join&active-tab=mercenary";
         redirect $redirection, 302;
         return;  
     }
-    if($player->health < 3)
-    {
-        my $redirection = "/play/" . params->{game} . "/i/network?join-army-posted=ko&err=low-health&active-tab=mercenary";
-        redirect $redirection, 302;
-        return;  
-    }
-    my $nation_meta = $metareader->get_nation_meta($game, $position);
-    if( ($role eq 'defender'  && $join ne $player->position) ||
-        ($role eq 'supporter' && $join ne $nation_meta->{foreigners}->{supporter}) ||
-        ($role eq 'invader'   && ! grep { $_ eq $join} @{$nation_meta->{foreigners}->{invaders}}) )
-    {
-        my $redirection = "/play/" . params->{game} . "/i/network?join-army-posted=ko&err=invalid-nation&active-tab=mercenary";
-        redirect $redirection, 302;
-        return;  
-    }
-    my $time = DateTime->now;
-    $time->set_time_zone('Europe/Rome');
-    $player->joined_army($join);
-    $player->fight_start($time);
-    $player->update;
-    my $redirection = "/play/" . params->{game} . "/i/network?join-army-posted=ok&err=$join&active-tab=mercenary";
-    redirect $redirection, 302;
-    return;  
 };
 
 post '/interact/:game/stock-command' => sub {

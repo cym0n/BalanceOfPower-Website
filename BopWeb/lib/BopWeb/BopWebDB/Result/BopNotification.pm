@@ -60,9 +60,8 @@ __PACKAGE__->table("BOP_NOTIFICATIONS");
 
 =head2 text
 
-  data_type: 'varchar'
+  data_type: 'text'
   is_nullable: 1
-  size: 250
 
 =head2 timestamp
 
@@ -87,7 +86,7 @@ __PACKAGE__->add_columns(
   "tag",
   { data_type => "varchar", is_nullable => 1, size => 50 },
   "text",
-  { data_type => "varchar", is_nullable => 1, size => 250 },
+  { data_type => "text", is_nullable => 1 },
   "timestamp",
   { data_type => "timestamp", is_nullable => 1 },
   "read",
@@ -107,11 +106,13 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-10-31 12:31:02
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:M3O3kcptwcjmjDjQl7jhCA
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2016-11-01 15:12:37
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:H6gTO/1zD97YARr2uM1h0g
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+use Text::Markdown 'markdown';
 
 __PACKAGE__->belongs_to(
   "player",
@@ -131,6 +132,12 @@ sub printed_timestamp
     my $ts = $self->timestamp;
     $ts->set_time_zone("Europe/Rome");
     return $ts->dmy . " " . $ts->hms;
+}
+
+sub printed_notification
+{
+    my $self = shift;
+    return markdown($self->text);
 }
 
 1;

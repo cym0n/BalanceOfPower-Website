@@ -21,6 +21,7 @@
     <a class="btn btn-default" href="/users/register" role="button">Register</a><br /><br />
     [% END %]
     <a class="btn btn-default" href="/about" role="button">About</a><br /><br />
+    <a class="btn btn-default" href="/changes" role="button">Changes</a><br /><br />
     </div>
 
 [% INCLUDE blocks/foot.tt %]

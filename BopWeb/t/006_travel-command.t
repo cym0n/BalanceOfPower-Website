@@ -92,6 +92,9 @@ $player = schema->resultset('BopPlayer')->find({ id => 1000 });
 is($player->position, 'Japan', "Player is now in Japan");
 is($player->arrival_time, undef, "Arrival time is empty");
 ok($player->disembark_time, "Disembark time is populated");
+my $notification = schema->resultset('BopNotification')->find({ id => 1 });
+ok($notification, "Notification for arrive written");
+is($notification->text, "You arrived in Japan", "Notification has correct informations");
 
 
 

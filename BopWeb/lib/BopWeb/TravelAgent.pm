@@ -3,22 +3,9 @@ package BopWeb::TravelAgent;
 use Moo;
 use List::Util qw(shuffle);
 
-use BopWeb::MetaReader;
-use Data::Dumper;
+extends 'BopWeb::GamerHandler';
 
-has metareader => (
-    is => 'ro',
-    default => sub { BopWeb::MetaReader->new() },
-    handles => { get_meta => 'get_meta',
-                 get_nation_meta => 'get_nation_meta',
-                 get_player_meta => 'get_player_meta',
-                 get_nation_codes => 'get_nation_codes',
-               }
-);
-
-has schema => (
-    is => 'ro'
-);
+#TODO: to keep all the variables and constants about travel here we should put the distance in the meta of the nations and make the get_travel_plan calculate the cost
 
 sub get_travel_plan
 {
@@ -115,6 +102,7 @@ sub arrive
 {
     my $self = shift;
     my $player = shift;
+    die "no-destination\n" if ! $player->destination;
     if($self->finished_travel($player))
     {
         $player->position($player->destination);
