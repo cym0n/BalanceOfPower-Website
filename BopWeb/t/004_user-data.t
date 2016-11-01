@@ -32,7 +32,7 @@ $res  = $test->request( POST '/api/thegame/user-data', [player => 'user3', passw
 is($res->code, 200, "User update done");
 
 my $usergame3 = schema->resultset("UserGame")->find({ user => 1002, game => 1000 });
-is($usergame3->player, 1002, "New row on player created");
+is($usergame3->player->id, 1002, "New row on player created");
 my $player3 = schema->resultset("BopPlayer")->find(1002);
 is($player3->money, 750, "User3 money is 750");
 is($player3->position, 'Greece', "User3 position is Greece");

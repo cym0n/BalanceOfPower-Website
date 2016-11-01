@@ -22,7 +22,9 @@
         <div class="alert alert-info">
             You are arrived in [% destination %]!<br />
             <br />
-            <strong>&gt; <a href="/interact/[% game %]/arrive">Disembark</a></strong>
+            <strong>&gt; <a href="/interact/[% game %]/arrive">Disembark</a></strong><br />
+            <br />
+            (You will be automatically disembarked in few minutes)
         </div>
         [% END %]
         </div>
