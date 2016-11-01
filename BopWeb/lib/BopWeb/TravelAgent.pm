@@ -141,15 +141,18 @@ sub enabled_to_travel
 {
     my $self = shift;
     my $player = shift;
-    my $disembark_time = $player->disembark_time;
-    return 1 if ! $disembark_time;
+    return 1;
     
-    my $enable_to_travel = $disembark_time->clone;
-    $enable_to_travel->set_time_zone('Europe/Rome');
-    $enable_to_travel->add( hours => 2);
-    my $now = DateTime->now;
-    $now->set_time_zone('Europe/Rome');
-    return DateTime->compare($now, $enable_to_travel) == 1
+    #No more waiting time after travel
+    #my $disembark_time = $player->disembark_time;
+    #return 1 if ! $disembark_time;
+    
+    #my $enable_to_travel = $disembark_time->clone;
+    #$enable_to_travel->set_time_zone('Europe/Rome');
+    #$enable_to_travel->add( hours => 2);
+    #my $now = DateTime->now;
+    #$now->set_time_zone('Europe/Rome');
+    #return DateTime->compare($now, $enable_to_travel) == 1
 }
 
 sub finished_travel
