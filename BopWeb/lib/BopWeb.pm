@@ -278,7 +278,7 @@ get '/play/:game/:context/:report' => sub {
     if($user)
     {
         $stock_value = $player_meta->{stock_value};
-        $player = schema->resultset('BopPlayer')->find($usergame->player);
+        $player = $usergame->player;
         $money = $player->money_to_print;
     }
 
@@ -390,7 +390,7 @@ sub page_data
     {
         die "access-denied\n";
     }    
-    my $player = schema->resultset('BopPlayer')->find($usergame->player);
+    my $player = $usergame->player;
 
     my $meta = $metareader->get_meta($game);
     my ($year, $turn) = split '/', $meta->{'current_year'};
@@ -1136,7 +1136,7 @@ post '/api/:game/user-data' => sub {
     }
     if($usergame->player)
     {
-        my $player_db = schema->resultset("BopPlayer")->find($usergame->player);
+        my $player_db = $usergame->player;
         $player_db->money($money);
         $player_db->position($position) if $position;
         $player_db->update();
@@ -1188,7 +1188,7 @@ post '/interact/:game/shop-command' => sub {
         return;  
     }
     my $codes = $metareader->get_nation_codes(params->{game});
-    my $player = schema->resultset('BopPlayer')->find($usergame->player);
+    my $player = $usergame->player;
     my $present_position = $codes->{$player->position};
     my $friendship = $player->get_friendship($player->position);
     if($friendship <  FRIENDSHIP_LIMIT_TO_SHOP)
@@ -1295,7 +1295,7 @@ post '/interact/:game/go' => sub {
         send_error("Access denied", 403);
         return;
     }
-    my $player = schema->resultset('BopPlayer')->find($usergame->player);
+    my $player = $usergame->player;
 
     eval { $travelagent->go($game, $player, $destination) };
     
@@ -1322,7 +1322,7 @@ get '/interact/:game/arrive' => sub {
         return;
     }
     my $game = params->{game};
-    my $player = schema->resultset('BopPlayer')->find($usergame->player);
+    my $player = $usergame->player;
 
     eval { $travelagent->arrive($player) };
     
@@ -1348,7 +1348,7 @@ post '/interact/:game/mission-command' => sub {
         send_error("Access denied", 403);
         return;
     }
-    my $player = schema->resultset('BopPlayer')->find($usergame->player);
+    my $player = $usergame->player;
     my $game = params->{game};
     my $meta = $metareader->get_meta(params->{game});
     my ($year, $turn) = split '/', $meta->{'current_year'};
@@ -1470,7 +1470,7 @@ post '/interact/:game/join-army-command' => sub {
         send_error("Access denied", 403);
         return;
     }
-    my $player = schema->resultset('BopPlayer')->find($usergame->player);
+    my $player = $usergame->player;
     my $position = params->{'position'};
     my $join = params->{'join'};
     my $game = params->{'game'};

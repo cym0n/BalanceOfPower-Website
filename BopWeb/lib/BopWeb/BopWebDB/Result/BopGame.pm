@@ -121,4 +121,16 @@ __PACKAGE__->has_many(
   { "foreign.game" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
+
+
+sub get_players
+{
+    my $self = shift;
+    my @players;
+    for($self->usergames)
+    {
+        push @players, $_->player;
+    }
+    return @players;
+}
 1;

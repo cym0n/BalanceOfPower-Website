@@ -92,6 +92,18 @@ __PACKAGE__->belongs_to(
   },
 );
 
+__PACKAGE__->belongs_to(
+  "player",
+  "BopWeb::BopWebDB::Result::BopPlayer",
+  { id => "player" },
+  {
+    is_deferrable => 1,
+    join_type     => "LEFT",
+    on_delete     => "RESTRICT",
+    on_update     => "RESTRICT",
+  },
+);
+
 __PACKAGE__->set_primary_key('user', 'game');
 
 1;
