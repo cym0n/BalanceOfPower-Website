@@ -31,7 +31,7 @@
                         <tr>
                             [% td %][% n.printed_timestamp %]</td>
                             [% td %][% n.position %]</td>
-                            [% td %][% n.text %]</td>
+                            [% td %][% n.printed_notification %]</td>
                         </tr>
                         [% END %]
                     </tbody>

@@ -137,7 +137,9 @@ sub printed_timestamp
 sub printed_notification
 {
     my $self = shift;
-    return markdown($self->text);
+    my $text = $self->text;
+    $text =~ s/\n/<br \/>/g;
+    return $text;
 }
 
 1;

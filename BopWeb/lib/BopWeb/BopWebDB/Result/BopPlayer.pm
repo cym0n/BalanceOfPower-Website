@@ -127,7 +127,11 @@ __PACKAGE__->set_primary_key("id");
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 
 use lib "/home/cymon/works/nations/repo/src/lib";
-use BalanceOfPower::Constants ':all';;
+use BalanceOfPower::Constants ':all';
+
+use constant MAX_LIFE => 5;
+
+
 
 
 __PACKAGE__->has_many(
@@ -280,5 +284,22 @@ sub add_money
     $self->money($new_money);
     $self->update();
 }
+sub add_health
+{
+    my $self = shift;
+    my $health = shift;
+    my $new_health = $self->health + $health;
+    $new_health = 0 if($new_health < 0);
+    $self->health($new_health);
+    $self->update();
+}
+sub reset_war
+{
+    my $self = shift;
+    $self->fight_start(undef);
+    $self->joined_army(undef);
+    $self->update();
+}
+
 
 1;

@@ -46,6 +46,13 @@ foreach my $p (@players)
     }
 
     #Check war
-    say "In war for " . $mercenary->war_duration($p);
+    if($p->joined_army)
+    {
+        if($mercenary->war_time_limit_reached($p))
+        {
+            $mercenary->end_of_war($game, $p);
+            say "Player " . $p->id . " left war";
+        }
+    }
 }
 
