@@ -43,29 +43,29 @@ sub role_in_war
     my $game = shift;
     my $position = shift;
     my $nation = shift;
-    open(my $log, "> rolelog");
+    open(my $log, ">> rolelog");
     print {$log} "Calculate role of $nation in $position\n";
     my $nation_meta = $self->get_nation_meta($game, $position);
-    print {$log} Dumper($nation_meta);
-    close($log);
+    my $role;
     if($position eq $nation)
     {
-        return 'defender';
+        $role = 'defender';
     }
     elsif($nation eq $nation_meta->{foreigners}->{supporter})
     {
-        return 'supporter';
+        $role = 'supporter';
     }
     elsif(grep { $_ eq $nation} @{$nation_meta->{foreigners}->{invaders}})
     {
-        return 'invader';
+        $role = 'invader';
     }
     else
     {
-        return 'none';
+        $role = 'none';
     }
-    
+    return $role;
 }
+    
 
 sub war_duration
 {

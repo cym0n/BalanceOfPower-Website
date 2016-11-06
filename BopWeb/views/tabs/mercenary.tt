@@ -22,17 +22,17 @@
     [% END %]
     <div class="col-sm-6">
         <h5><strong>Defend [% position %]</strong></h5>
-        [% PROCESS join_form jarmy=position, role="defender" %]    
+        [% PROCESS join_form jarmy=position role='defender' %]    
         [% IF nation_meta.foreigners.supporter %]
         <br />
         <h5><strong>Help [% position %]'s Supporter</strong></h5>
-        [% PROCESS join_form jarmy=nation_meta.foreigners.supporter role="supporter" %]    
+        [% PROCESS join_form jarmy=nation_meta.foreigners.supporter role='supporter' %]    
         [% END %]
     </div>
     <div class="col-sm-6">
         <h5><strong>Help the invasion</strong></h5>
-        [% FOR inv in nation_meta.foreigners.invaders role="invader" %]
-        [% PROCESS join_form jarmy=inv %]    
+        [% FOR inv in nation_meta.foreigners.invaders %]
+        [% PROCESS join_form jarmy=inv role='invader' %]    
         <br />
         [% END %]
     </div>
