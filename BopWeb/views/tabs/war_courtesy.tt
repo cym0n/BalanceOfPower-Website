@@ -5,6 +5,10 @@
         [% courtesy_message %]<br />
         <br />
         You're in [% position %] fighting for [% theplayer.joined_army %]
+        <br />
+        [% IF able_to_leave_war %]
+        <a style="color: #a94442" href="/interact/[% game %]/leave-army-command"><strong>Leave war now</strong></a>
+        [% END %]
         </div>
     </div>
 </div>

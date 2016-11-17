@@ -35,6 +35,15 @@ sub able_to_fight
     my $player = shift;
     return $player->health >= 3;
 }
+sub able_to_leave
+{
+    my $self = shift;
+    my $player = shift;
+    my $force = shift;
+    my $units = $self->war_duration($player);
+    $units = 1 if($units < 1 && $force);
+    return $units >= 1;
+}
 
 
 sub role_in_war
@@ -97,9 +106,9 @@ sub end_of_war
     my $player = shift;
     my $force = shift;
     die 'no-war' if(! $player->joined_army);
+    die 'not-enough-time' if ! $self->able_to_leave($player, $force);
     my $units = $self->war_duration($player);
     $units = 1 if($units < 1 && $force);
-    die 'not-enough-time' if ($units < 1);
     $units = 3 if($units > 3);
     my $nation_meta = $self->get_nation_meta($game, $player->position);
     my $friendship_bonus;

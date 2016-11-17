@@ -439,6 +439,8 @@ sub page_data
     my $menucounter = { 'i/network' => $mission_warning,
                         'i/lounge' => @bots + 0,
                         'i/notifications' => $not_count };
+    my $able_to_leave_war = 0;
+    $able_to_leave_war = $mercenary->able_to_leave($player) ? 1 : 0 if($player->joined_army);
     return (
         'context' => $context,
         'interactive' => $interactive,
@@ -467,6 +469,7 @@ sub page_data
         'menucounter' => $menucounter,
         'travelplan' => $travelagent->get_travel_plan($game, $player),
         'max_health' => 5,
+        'able_to_leave_war' => $able_to_leave_war,
     )
 }
 
@@ -620,6 +623,7 @@ get '/play/:game/i/network' => sub {
         'showme' => params->{showme},
         'mission_posted' => params->{'mission-posted'},
         'join_army_posted' => params->{'join-army-posted'},
+        'leave_army_posted' => params->{'leave-army-posted'},
         'err' => params->{'err'},
     );
     my %template_data = (%page_data, %template);
@@ -1509,6 +1513,34 @@ post '/interact/:game/join-army-command' => sub {
     else
     {
         my $redirection = "/play/" . params->{game} . "/i/network?join-army-posted=ok&err=$join&active-tab=mercenary";
+        redirect $redirection, 302;
+        return;  
+    }
+};
+
+get '/interact/:game/leave-army-command' => sub {
+    my $user = logged_user();
+    my $usergame = player_of_game(params->{game}, $user);
+    if(! $usergame)
+    {
+        send_error("Access denied", 403);
+        return;
+    }
+
+    my $player = $usergame->player;
+    eval { $mercenary->end_of_war(params->{'game'}, $player) };
+    my $ex = $@;
+    chomp $ex;
+    
+    if($ex)
+    {
+        my $redirection = "/play/" . params->{game} . "/i/network?leave-army-posted=ko&err=$@&active-tab=mercenary";
+        redirect $redirection, 302;
+        return;  
+    }
+    else
+    {
+        my $redirection = "/play/" . params->{game} . "/i/network?leave-army-posted=ok&active-tab=mercenary";
         redirect $redirection, 302;
         return;  
     }
