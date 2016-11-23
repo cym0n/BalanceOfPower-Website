@@ -105,8 +105,8 @@ sub end_of_war
     my $game = shift;
     my $player = shift;
     my $force = shift;
-    die 'no-war' if(! $player->joined_army);
-    die 'not-enough-time' if ! $self->able_to_leave($player, $force);
+    die "no-war\n" if(! $player->joined_army);
+    die "not-enough-time\n" if ! $self->able_to_leave($player, $force);
     my $units = $self->war_duration($player);
     $units = 1 if($units < 1 && $force);
     $units = 3 if($units > 3);

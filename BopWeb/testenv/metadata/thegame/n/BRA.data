@@ -1,0 +1,79 @@
+$VAR1 = {
+          'travels' => {
+                         'ground' => {
+                                       'Colombia' => {
+                                                       'status' => 'OK',
+                                                       'cost' => 2
+                                                     },
+                                       'Argentina' => {
+                                                        'status' => 'OK',
+                                                        'cost' => 2
+                                                      },
+                                       'Peru' => {
+                                                   'status' => 'OK',
+                                                   'cost' => 2
+                                                 },
+                                       'Chile' => {
+                                                    'status' => 'OK',
+                                                    'cost' => 2
+                                                  },
+                                       'Venezuela' => {
+                                                        'status' => 'OK',
+                                                        'cost' => 2
+                                                      }
+                                     },
+                         'air' => {
+                                    'Ethiopia' => {
+                                                    'status' => 'KO'
+                                                  },
+                                    'Pakistan' => {
+                                                    'status' => 'KO'
+                                                  },
+                                    'Kenya' => {
+                                                 'status' => 'KO'
+                                               }
+                                  }
+                       },
+          'civil_war' => 0,
+          'stocks' => '12',
+          'invasion' => 1,
+          'prestige' => 3,
+          'prices' => {
+                        'goods' => {
+                                     'price' => '21.25',
+                                     'stat' => '21'
+                                   },
+                        'arms' => {
+                                    'price' => '135.71',
+                                    'stat' => 4
+                                  },
+                        'tech' => {
+                                    'price' => '47.39',
+                                    'stat' => '0.3'
+                                  },
+                        'luxury' => {
+                                      'price' => '84.93',
+                                      'stat' => '11.5'
+                                    },
+                        'culture' => {
+                                       'stat' => 3,
+                                       'price' => '65.9'
+                                     }
+                      },
+          'war' => 1,
+          'army' => 4,
+          'commands' => {
+                          'BUILD TROOPS' => {
+                                              'argument' => 0
+                                            }
+                        },
+          'internal_production' => 42,
+          'foreigners' => {
+                            'invaders' => [
+                                            'Vietnam',
+                                            'Thailand'
+                                          ],
+                            'supporter' => 'Poland'
+                          },
+          'export_production' => 42
+        };
