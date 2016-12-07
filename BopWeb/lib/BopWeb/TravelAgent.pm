@@ -14,22 +14,25 @@ sub get_travel_plan
     my $player = shift;
     my $nation_meta = $self->get_nation_meta($game, $player->position);
     my $travelplan = $nation_meta->{'travels'};
-    
-    my @bots = $self->schema->resultset('BopBot')->search({ game => $game, position => $player->position });
-    for my $bot (@bots)
-    {
-        my @blocks = $bot->actions->search({ action => 'block' });;
-        foreach my $b (@blocks)
+   
+    if(ref $player ne 'BopWeb::BopWebDB::Result::BopBot')
+    { 
+        my @bots = $self->schema->resultset('BopBot')->search({ game => $game, position => $player->position });
+        for my $bot (@bots)
         {
-            if(exists $travelplan->{'air'}->{$b->param1} && $travelplan->{'air'}->{$b->param1}->{'status'} eq 'OK')
+            my @blocks = $bot->actions->search({ action => 'block' });;
+            foreach my $b (@blocks)
             {
-                $travelplan->{'air'}->{$b->param1}->{'status'} = 'KO';
-                $travelplan->{'air'}->{$b->param1}->{'block'} = $b->bot;
-            }
-            if(exists $travelplan->{'ground'}->{$b->param1} && $travelplan->{'ground'}->{$b->param1}->{'status'} eq 'OK')
-            {
-                $travelplan->{'ground'}->{$b->param1}->{'status'} = 'KO';
-                $travelplan->{'ground'}->{$b->param1}->{'block'} = $b->bot;
+                if(exists $travelplan->{'air'}->{$b->param1} && $travelplan->{'air'}->{$b->param1}->{'status'} eq 'OK')
+                {
+                    $travelplan->{'air'}->{$b->param1}->{'status'} = 'KO';
+                    $travelplan->{'air'}->{$b->param1}->{'block'} = $b->bot;
+                }
+                if(exists $travelplan->{'ground'}->{$b->param1} && $travelplan->{'ground'}->{$b->param1}->{'status'} eq 'OK')
+                {
+                    $travelplan->{'ground'}->{$b->param1}->{'status'} = 'KO';
+                    $travelplan->{'ground'}->{$b->param1}->{'block'} = $b->bot;
+                }
             }
         }
     }
@@ -129,18 +132,24 @@ sub enabled_to_travel
 {
     my $self = shift;
     my $player = shift;
-    return 1;
     
-    #No more waiting time after travel
-    #my $disembark_time = $player->disembark_time;
-    #return 1 if ! $disembark_time;
-    
-    #my $enable_to_travel = $disembark_time->clone;
-    #$enable_to_travel->set_time_zone('Europe/Rome');
-    #$enable_to_travel->add( hours => 2);
-    #my $now = DateTime->now;
-    #$now->set_time_zone('Europe/Rome');
-    #return DateTime->compare($now, $enable_to_travel) == 1
+    #No more waiting time after travel only for players
+
+    if(ref $player eq 'BopWeb::BopWebDB::Result::BopBot')
+    {
+       my $disembark_time = $player->disembark_time;
+       return 1 if ! $disembark_time;
+        my $enable_to_travel = $disembark_time->clone;
+        $enable_to_travel->set_time_zone('Europe/Rome');
+        $enable_to_travel->add( hours => 1);
+        my $now = DateTime->now;
+        $now->set_time_zone('Europe/Rome');
+        return DateTime->compare($now, $enable_to_travel) == 1
+    }
+    else
+    {
+        return 1;
+    }
 }
 
 sub finished_travel
