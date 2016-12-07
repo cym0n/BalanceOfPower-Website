@@ -134,8 +134,22 @@ __PACKAGE__->set_primary_key("id");
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 
+__PACKAGE__->belongs_to(
+  "player",
+  "BopWeb::BopWebDB::Result::BopPlayer",
+  { id => "assigned" },
+  {
+    is_deferrable => 1,
+    join_type     => "LEFT",
+    on_delete     => "RESTRICT",
+    on_update     => "RESTRICT",
+  },
+);
+
 use JSON;
 use BalanceOfPower::Constants ':all';
+use BalanceOfPower::Utils;
+use BopWeb::BopWebDB::Result::BopNotification;
 
 sub to_hash
 {
@@ -170,7 +184,7 @@ sub drop_penalty
 sub action_available
 {
     my $self = shift;
-    my $player = shift;
+    my $player = $self->player;
     my $data = $self->to_hash;
 
     if($self->type eq 'parcel')
@@ -220,12 +234,59 @@ sub accomplished
     {
         $self->status(2);
         $self->update;
+        $self->notify('success');
         return 1;
     }
     else
     {
         return 0;
     }
+}
+
+sub notify
+{
+    my $self = shift;
+    my $action = shift;
+    my $schema = $self->result_source->schema;
+    return if ! $self->assigned;
+    my $time = DateTime->now();
+    $time->set_time_zone('Europe/Rome');
+    my $text;
+    my $tag = "mission-$action-" . $self->type;
+    if($action eq 'success')
+    {
+       $text = "*Mission accomplished*\n";
+    }
+    elsif($action eq 'drop')
+    {
+        $text = "*Mission dropped*\n";
+    }
+    elsif($action eq 'failure')
+    {
+        $text = "*Mission failed*\n";
+    }
+    my $data = $self->to_hash;
+    if($self->type eq 'parcel')
+    {
+        $text .= "Parcel delivered from " . $data->{'configuration'}->{'from'} . " to " .
+                 $data->{'configuration'}->{'to'};
+    }
+
+    $schema->resultset('BopNotification')->create({
+                              player => $self->player,
+                              position => $self->player->position,
+                              tag => $tag,
+                              text => $text,
+                              timestamp => $time,
+                              read => 0 });
+}
+
+sub expired
+{
+    my $self = shift;
+    my $now = shift;
+    my $compare = BalanceOfPower::Utils::compare_turns($now, $self->expire_turn);
+    return $compare > -1;
 }
 
 

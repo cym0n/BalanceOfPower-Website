@@ -429,7 +429,7 @@ sub page_data
     my $mission_warning = 0;
     for(@player_missions)
     {
-        if($_->action_available($player))
+        if($_->action_available())
         {
             $mission_warning++;
         }
@@ -602,7 +602,7 @@ get '/play/:game/i/network' => sub {
     for(@player_missions)
     {
         my $mdata = $_->to_hash;
-        if($_->action_available($player))
+        if($_->action_available())
         {
             $mdata->{'action'} = 1;
         }
@@ -1434,6 +1434,7 @@ post '/interact/:game/mission-command' => sub {
             redirect $redirection, 302;
             return;  
         }
+        $mission_obj->notify('drop');
         $mission_obj->assigned(undef);
         $mission_obj->progress(0);
         $mission_obj->update();
@@ -1450,7 +1451,7 @@ post '/interact/:game/mission-command' => sub {
             redirect $redirection, 302;
             return;  
         }
-        if(! $mission_obj->action_available($player))
+        if(! $mission_obj->action_available())
         {
             my $redirection = "/play/" . params->{game} . "/i/network?mission-posted=ko&err=action-not-available";
             redirect $redirection, 302;
