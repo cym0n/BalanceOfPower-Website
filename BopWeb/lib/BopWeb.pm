@@ -313,7 +313,7 @@ get '/play/:game/:context/:report' => sub {
        'nation_meta' => $nation_meta,
        'selected_stock_action' => $selected_stock_action,
        'selected_influence_action' => $selected_influence_action,
-        'max_health' => 5,
+        'max_health' => MAX_HEALTH,
     }; 
 };
 
@@ -468,7 +468,7 @@ sub page_data
         'bots' => \@bots,
         'menucounter' => $menucounter,
         'travelplan' => $travelagent->get_travel_plan($game, $player),
-        'max_health' => 5,
+        'max_health' => MAX_HEALTH,
         'able_to_leave_war' => $able_to_leave_war,
     )
 }
@@ -1160,6 +1160,7 @@ post '/api/:game/user-data' => sub {
         my $player_db = $usergame->player;
         $player_db->money($money);
         $player_db->position($position) if $position;
+        $player_db->health($player_db->health + 1) if($player_db->health < MAX_HEALTH);
         $player_db->update();
     }
     else
