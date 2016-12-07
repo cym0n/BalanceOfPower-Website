@@ -266,9 +266,14 @@ sub notify
         $text = "*Mission failed*\n";
     }
     my $data = $self->to_hash;
-    if($self->type eq 'parcel')
+    if($self->type eq 'parcel' and $action eq 'success')
     {
         $text .= "Parcel delivered from " . $data->{'configuration'}->{'from'} . " to " .
+                 $data->{'configuration'}->{'to'};
+    }
+    else
+    {
+        $text .= "Parcel not delivered from " . $data->{'configuration'}->{'from'} . " to " .
                  $data->{'configuration'}->{'to'};
     }
 

@@ -24,7 +24,7 @@
         [% IF err == 'bad-mission' %]
             Mission is in an invalid state
         [% END %]
-        [% IF err == 'mission-limit' %]
+        [% IF err == 'missions-limit' %]
             Missions limit already reached
         [% END %]
         [% IF err == 'assigned' %]
