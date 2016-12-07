@@ -19,11 +19,15 @@ use BopWeb;
 
 my $app = BopWeb->to_app;
 my $test = Plack::Test->create($app);
+my $user1 = schema->resultset("BopPlayer")->find(1000);
+$user1->health(3);
+$user1->update;
 my $res  = $test->request( POST '/api/thegame/user-data', [player => 'user1', password => 'thegame', money => 500, position => 'Romania'] );
 is($res->content, 'OK', "API answered OK");
 
-my $user1 = schema->resultset("BopPlayer")->find(1000);
+$user1 = schema->resultset("BopPlayer")->find(1000);
 is($user1->money, 500, "User1 money changed to 500");
+is($user1->health, 4, "User1 health raised");
 
 $res  = $test->request( POST '/api/thegame/user-data', [player => 'baduser1', password => 'thegame', money => 500, position => 'Romania'] );
 is($res->code, 400, "Bad user provided");
@@ -36,5 +40,6 @@ is($usergame3->player->id, 1002, "New row on player created");
 my $player3 = schema->resultset("BopPlayer")->find(1002);
 is($player3->money, 750, "User3 money is 750");
 is($player3->position, 'Greece', "User3 position is Greece");
+is($player3->health, 5, "User3 health is 5");
 
 done_testing();

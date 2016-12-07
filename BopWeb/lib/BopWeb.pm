@@ -1165,7 +1165,7 @@ post '/api/:game/user-data' => sub {
     }
     else
     {
-        my $player_db = schema->resultset("BopPlayer")->create( { money => $money, position => $position });
+        my $player_db = schema->resultset("BopPlayer")->create( { money => $money, position => $position, health => 5 });
         $usergame->player($player_db->id);
         $usergame->update();
     }
