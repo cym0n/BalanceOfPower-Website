@@ -435,7 +435,7 @@ sub page_data
         }
     }
     my @bots = schema->resultset('BopBot')->search({ game => $game, position => $player->position });
-    my $not_count = schema->resultset('BopNotification')->search({ player => $player->id, read => 0})->count;
+    my $not_count = schema->resultset('BopNotification')->search({ player => $player->id, already => 0})->count;
     my $menucounter = { 'i/network' => $mission_warning,
                         'i/lounge' => @bots + 0,
                         'i/notifications' => $not_count };
@@ -855,7 +855,7 @@ sub expired_missions_for_player
 sub make_notifications_read
 {
     my $player = shift;
-    schema->resultset('BopNotification')->search({ player => 1 })->update_all({ read => 1});
+    schema->resultset('BopNotification')->search({ player => 1 })->update_all({ already => 1});
 }
 
 
