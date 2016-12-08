@@ -283,7 +283,7 @@ sub notify
                               tag => $tag,
                               text => $text,
                               timestamp => $time,
-                              read => 0 });
+                              already => 0 });
 }
 
 sub expired

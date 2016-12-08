@@ -184,7 +184,7 @@ sub notify_arrival
                                 tag => 'arrival',
                                 text => "You arrived in " . $player->position,
                                 timestamp => $time,
-                                read => 0 });
+                                already => 0 });
 }
 
 1;
