@@ -46,11 +46,12 @@ for(my $i = 0; $i < MISSIONS_TO_GENERATE_PER_TURN; $i++)
 }
 
 say "Turning off missions for $game expired in " . $world->current_year;
-my @missions = schema->resultset("BopMission")->search({ status => 1 });
+my @missions = schema->resultset("BopMission")->search({ status => 1, game => $game });
 foreach my $m (@missions)
 {
     if($m->expired($world->current_year))
     {
+        say $m->id . " expired";
         $m->status(0);
         $m->update;
         $m->notify('failure');
