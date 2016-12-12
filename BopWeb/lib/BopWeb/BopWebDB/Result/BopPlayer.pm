@@ -148,6 +148,13 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+__PACKAGE__->has_many(
+  "missions",
+  "BopWeb::BopWebDB::Result::BopMission",
+  { "foreign.assigned" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 sub money_to_print
 {
     my $self = shift;
@@ -299,6 +306,24 @@ sub reset_war
     $self->fight_start(undef);
     $self->joined_army(undef);
     $self->update();
+}
+
+sub trigger_missions
+{
+    my $self = shift;
+    foreach my $m ($self->missions)
+    {
+        $m->trigger();
+    }
+}
+sub check_missions
+{
+    my $self = shift;
+    my $mercenary = shift;
+    foreach my $m ($self->missions)
+    {
+        $m->check($mercenary);
+    }
 }
 
 

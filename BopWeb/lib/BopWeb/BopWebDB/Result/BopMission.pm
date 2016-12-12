@@ -215,6 +215,10 @@ sub progress_limit
     {
         return 2;
     }
+    elsif($self->type eq 'mercenary')
+    {
+        return 1;
+    }
 }
 
 sub action
@@ -266,15 +270,31 @@ sub notify
         $text = "*Mission failed*\n";
     }
     my $data = $self->to_hash;
-    if($self->type eq 'parcel' and $action eq 'success')
+    if($self->type eq 'parcel')
     {
-        $text .= "Parcel delivered from " . $data->{'configuration'}->{'from'} . " to " .
-                 $data->{'configuration'}->{'to'};
+        if($action eq 'success')
+        {
+            $text .= "Parcel delivered from " . $data->{'configuration'}->{'from'} . " to " .
+                     $data->{'configuration'}->{'to'};
+        }
+        else
+        {
+            $text .= "Parcel not delivered from " . $data->{'configuration'}->{'from'} . " to " .
+                     $data->{'configuration'}->{'to'};
+        }
     }
-    else
+    elsif($self->type eq 'mercenary')
     {
-        $text .= "Parcel not delivered from " . $data->{'configuration'}->{'from'} . " to " .
-                 $data->{'configuration'}->{'to'};
+        if($action eq 'success')
+        {
+            $text .= "War in " . $data->{'configuration'}->{'position'} . " joined in the " .
+                     $data->{'configuration'}->{'armi'} . " army";
+        }
+        else
+        {
+            $text .= "No more possibility to join war in " . $data->{'configuration'}->{'position'} . " in the " .
+                     $data->{'configuration'}->{'army'} . " army";
+        }
     }
 
     $schema->resultset('BopNotification')->create({
@@ -292,6 +312,43 @@ sub expired
     my $now = shift;
     my $compare = BalanceOfPower::Utils::compare_turns($now, $self->expire_turn);
     return $compare > -1;
+}
+
+sub trigger
+{
+    my $self = shift;
+    my $player = $self->player;
+    my $data = $self->to_hash;
+    if($self->type eq 'mercenary')
+    {
+        if($player->position eq $data->{configuration}->{position} &&
+           $player->joined_army eq $data->{configuration}->{army})
+        {
+            $self->action();
+        }
+    }
+}
+sub check
+{
+    my $self = shift;
+    my $mercenary = shift;
+    if($self->expired)
+    {
+    }
+    else
+    {
+        my $data = $self->to_hash;
+        if($self->type eq 'mercenary')
+        {
+            if($mercenary->role_in_war($self->game, $data->{configuration}->{position}, $data->{configuration}->{army}) eq 'none')
+            {
+                $self->status(0);
+                $self->update;
+                $self->notify('failure');
+            }
+        }
+    }
+    
 }
 
 

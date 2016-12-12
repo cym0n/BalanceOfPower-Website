@@ -397,7 +397,6 @@ sub page_data
         die "access-denied\n";
     }    
     my $player = $usergame->player;
-
     my $meta = $metareader->get_meta($game);
     my ($year, $turn) = split '/', $meta->{'current_year'};
     my $report_conf = $report_configuration{$context . '/' . $menu};
@@ -543,6 +542,10 @@ get '/play/:game/i/shop' => sub {
         {
             send_error("Access denied", 403);
             return;
+        }
+        else
+        {
+            die $ex;
         }
     }
     my $player = $page_data{theplayer};
@@ -1162,6 +1165,7 @@ post '/api/:game/user-data' => sub {
         $player_db->position($position) if $position;
         $player_db->health($player_db->health + 1) if($player_db->health < MAX_HEALTH);
         $player_db->update();
+        $player_db->check_missions($mercenary);
     }
     else
     {

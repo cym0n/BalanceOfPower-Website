@@ -27,6 +27,7 @@ sub join
     $player->joined_army($join);
     $player->fight_start($time);
     $player->update;
+    $player->trigger_missions();
 }
 
 sub able_to_fight
@@ -52,9 +53,8 @@ sub role_in_war
     my $game = shift;
     my $position = shift;
     my $nation = shift;
-    open(my $log, ">> rolelog");
-    print {$log} "Calculate role of $nation in $position\n";
     my $nation_meta = $self->get_nation_meta($game, $position);
+    return 'none' if($nation_meta->{war} == 0);
     my $role;
     if($position eq $nation)
     {
