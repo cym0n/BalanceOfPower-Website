@@ -1462,16 +1462,9 @@ post '/interact/:game/mission-command' => sub {
             redirect $redirection, 302;
             return;  
         }
-        $mission_obj->action();
-        if($mission_obj->accomplished)
+        my $mission_result = $mission_obj->action();
+        if($mission_result == 1)
         {
-            my $mission_data = $mission_obj->to_hash();
-            $player->add_money($mission_data->{reward}->{money});
-            foreach my $f (keys %{$mission_data->{reward}->{friendship}})
-            {
-                my $place = $mission_data->{configuration}->{$f};
-                $player->add_friendship($place, $mission_data->{reward}->{friendship}->{$f});
-            }
             my $redirection = "/play/" . params->{game} . "/i/accomplished?mission=" . $mission_obj->id;
             redirect $redirection, 302;
             return;  

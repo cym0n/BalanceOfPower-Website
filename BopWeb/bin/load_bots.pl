@@ -13,9 +13,6 @@ use Dancer2::Plugin::DBIC;
 use BopWeb;
 
 my $game = $ARGV[0];
-#my $site_root = $ENV{'BOP_SITE_ROOT'};
-#my $gamefile = "$site_root/games/$game.dmp";
-#my $world = BalanceOfPower::World->load_world($file);
 
 die "No game!" if ! $game;
 

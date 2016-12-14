@@ -21,6 +21,7 @@ sub join
     die "unable-to-fight\n" if ! $self->able_to_fight($player);
 
     my $nation_meta = $self->get_nation_meta($game, $player->position);
+    my $game_meta = $self->get_meta($game);
     die "invalid-nation\n" if($role ne $self->role_in_war($game, $position, $join));
     my $time = DateTime->now;
     $time->set_time_zone('Europe/Rome');
@@ -28,6 +29,7 @@ sub join
     $player->fight_start($time);
     $player->update;
     $player->trigger_missions();
+    $player->check_missions($game_meta->{'current_year'}, $self);
 }
 
 sub able_to_fight

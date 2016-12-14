@@ -319,10 +319,11 @@ sub trigger_missions
 sub check_missions
 {
     my $self = shift;
+    my $year = shift;
     my $mercenary = shift;
     foreach my $m ($self->missions)
     {
-        $m->check($mercenary);
+        $m->check($year, $mercenary);
     }
 }
 

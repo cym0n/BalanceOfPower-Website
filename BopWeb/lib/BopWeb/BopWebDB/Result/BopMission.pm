@@ -224,17 +224,26 @@ sub progress_limit
 sub action
 {
     my $self = shift;
-    if($self->progress < $self->progress_limit)
+    if($self->progress < $self->progress_limit && $self->status == 1)
     {
         $self->progress($self->progress + 1);
         $self->update;
+        if($self->accomplished)
+        {
+            $self->give_reward();
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
     }
 }
 
 sub accomplished
 {
     my $self = shift;
-    if( $self->progress == $self->progress_limit)
+    if( $self->progress == $self->progress_limit && $self->status == 1)
     {
         $self->status(2);
         $self->update;
@@ -288,7 +297,7 @@ sub notify
         if($action eq 'success')
         {
             $text .= "War in " . $data->{'configuration'}->{'position'} . " joined in the " .
-                     $data->{'configuration'}->{'armi'} . " army";
+                     $data->{'configuration'}->{'army'} . " army";
         }
         else
         {
@@ -331,9 +340,13 @@ sub trigger
 sub check
 {
     my $self = shift;
+    my $year = shift;
     my $mercenary = shift;
-    if($self->expired)
+    return 1 if $self->status != 1;
+    if($self->expired($year))
     {
+        $self->disable();
+        return 0;
     }
     else
     {
@@ -342,13 +355,32 @@ sub check
         {
             if($mercenary->role_in_war($self->game, $data->{configuration}->{position}, $data->{configuration}->{army}) eq 'none')
             {
-                $self->status(0);
-                $self->update;
-                $self->notify('failure');
+                $self->disable();
+                return 0;
             }
         }
     }
-    
+    return 1;
+}
+sub disable
+{
+    my $self = shift;
+    $self->status(0);
+    $self->update;
+    $self->notify('failure');
+}
+
+sub give_reward
+{
+    my $self = shift;
+    my $player = $self->player;
+    my $mission_data = $self->to_hash();
+    $player->add_money($mission_data->{reward}->{money});
+    foreach my $f (keys %{$mission_data->{reward}->{friendship}})
+    {
+        my $place = $mission_data->{configuration}->{$f};
+        $player->add_friendship($place, $mission_data->{reward}->{friendship}->{$f});
+    }
 }
 
 

@@ -16,8 +16,17 @@ use BalanceOfPower::World;
 use BalanceOfPower::Constants ":all";
 
 my $game = $ARGV[0];
-my $site_root = $ENV{'BOP_SITE_ROOT'};
-my $file = "$site_root/games/$game.dmp";
+
+die "No game!" if ! $game;
+
+my $root_path = "$FindBin::Bin/../lib/../";
+my $metadata_path = config->{'metadata_path'} || $root_path . "metadata";
+my $metareader = BopWeb::MetaReader->new(path => $metadata_path);
+my $travelagent = BopWeb::TravelAgent->new(metareader => $metareader, schema => schema);
+my $mercenary = BopWeb::Mercenary->new(metareader => $metareader, schema => schema);
+
+
+my $file = "$root_path/games/$game.dmp";
 
 
 my $world = BalanceOfPower::World->load_world($file);
@@ -49,13 +58,9 @@ say "Turning off missions for $game expired in " . $world->current_year;
 my @missions = schema->resultset("BopMission")->search({ status => 1, game => $game });
 foreach my $m (@missions)
 {
-    if($m->expired($world->current_year))
+    if($m->check($world->current_year, $mercenary) == 0)
     {
         say $m->id . " expired";
-        $m->status(0);
-        $m->update;
-        $m->notify('failure');
-
     }
 }
 
