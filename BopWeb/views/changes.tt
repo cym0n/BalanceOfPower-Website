@@ -1,7 +1,16 @@
 [% INCLUDE blocks/empty_head.tt %]
 <div class="row">
     <div class="col-xs-12 col-sm-12">
-    <h1>07/12/2016 - LATEST RELEASE</h1>
+    <h1>??? - LATEST RELEASE</h1>
+    <p>
+    <ul>
+        <li>Mercenary missions</li>
+    </ul>
+    </p>
+</div>
+<div class="row">
+    <div class="col-xs-12 col-sm-12">
+    <h1>07/12/2016</h1>
     <p>
     <ul>
         <li>First release with changes page</li>
