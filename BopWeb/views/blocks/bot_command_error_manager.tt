@@ -1,0 +1,25 @@
+[% IF bot_command_posted %]
+<div class="row">
+    <div class="col-sm-12">
+    [% IF mission_posted == 'ok' %]
+        <div class="alert alert-success">
+        [% IF err == 'cure' %]
+        Player health restored
+        [% END %]
+        </div>
+    [% ELSE %]
+        <div class="alert alert-danger">
+        [% IF err == 'bad-request' %]
+            Command posted wrong
+        [% END %]
+        [% IF err == 'useless-command' %]
+            Useless command
+        [% END %]
+        [% IF err == 'not-enough-money' %]
+            Not enough money
+        [% END %]
+        </div>
+    [% END %]
+    </div>
+</div>
+[% END %]

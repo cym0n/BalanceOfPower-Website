@@ -684,6 +684,8 @@ get '/play/:game/i/lounge' => sub {
     );
     my %template_data = (%page_data, %template);
     $template_data{custom_css} = 'lounge.css';
+    $template_data{'bot_command_posted'} = params->{'bot-command-posted'} if params->{'bot-command-posted'};
+    $template_data{'err'} = params->{err} if params->{err};
     template 'lounge', \%template_data;
 };
 get '/play/:game/i/notifications' => sub {
@@ -1543,6 +1545,60 @@ get '/interact/:game/leave-army-command' => sub {
         my $redirection = "/play/" . params->{game} . "/i/network?leave-army-posted=ok&active-tab=mercenary";
         redirect $redirection, 302;
         return;  
+    }
+};
+
+get '/interact/:game/bot-command' => sub {
+    my $user = logged_user();
+    my $usergame = player_of_game(params->{game}, $user);
+    if(! $usergame)
+    {
+        send_error("Access denied", 403);
+        return;
+    }
+    my $command = params->{command};
+    my $bot_id = params->{bot};
+    my $player = $usergame->player;
+    if(! $command || ! $bot_id)
+    {
+        my $redirection = "/play/" . params->{game} . "/i/lounge?bot-command-posted=ko&err=bad-command";
+        redirect $redirection, 302;
+        return;  
+    }
+    my $bot = schema->resultset('BopBot')->find($bot_id);
+    if(! $bot)
+    {
+        my $redirection = "/play/" . params->{game} . "/i/lounge?bot-command-posted=ko&err=bad-command";
+        redirect $redirection, 302;
+        return;  
+    }
+    if($bot->position ne $player->position)
+    {
+        my $redirection = "/play/" . params->{game} . "/i/lounge?bot-command-posted=ko&err=bad-command";
+        redirect $redirection, 302;
+        return;  
+    }
+    if($command eq 'cure')
+    {
+        my $money_for_healing = 100;
+        if($player->health == MAX_HEALTH)
+        {
+            my $redirection = "/play/" . params->{game} . "/i/lounge?bot-command-posted=ko&err=useless-command";
+            redirect $redirection, 302;
+            return;  
+        }
+        if($player->money < $money_for_healing)
+        {
+            my $redirection = "/play/" . params->{game} . "/i/lounge?bot-command-posted=ko&err=not-enough-money";
+            redirect $redirection, 302;
+            return;  
+        }
+        $player->add_money(-1 * $money_for_healing);
+        $player->health(MAX_HEALTH);
+        my $redirection = "/play/" . params->{game} . "/i/lounge?bot-command-posted=ok&err=cure";
+        redirect $redirection, 302;
+        return;  
+        
     }
 };
 

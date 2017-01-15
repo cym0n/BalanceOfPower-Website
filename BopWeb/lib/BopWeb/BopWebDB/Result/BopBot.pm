@@ -190,6 +190,10 @@ sub action
         {
         }
     }
+    elsif($self->class eq 'medic')
+    {
+        my $arrive = $self->travel($travelagent);
+    }
     else
     {
         push @log, "Unrecognized class " . $self->class . " for " . $self->name;

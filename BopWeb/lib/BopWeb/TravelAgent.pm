@@ -82,9 +82,11 @@ sub go_random
     {
         push @destinations, $_ if $travelplan->{'ground'}->{$_}->{'status'} eq 'OK';
     }
+    push @destinations, '__STAY__';
     @destinations = shuffle @destinations;
     if(@destinations)
     {
+        return 0 if $destinations[0] eq '__STAY__';
         eval { $self->go($game, $player, $destinations[0]) };
         if($@)
         {

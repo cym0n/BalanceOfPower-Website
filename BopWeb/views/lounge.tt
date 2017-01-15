@@ -55,6 +55,7 @@
                     Time is [% now %] (Europe/Rome)
                 </div>
             </div>
+            [% INCLUDE blocks/bot_command_error_manager.tt %]
             <div class="row">
                 [% IF bots.size > 0 %]
                 <div id="accordion" class="panel-group">
