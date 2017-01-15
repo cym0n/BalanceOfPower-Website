@@ -1,5 +1,6 @@
-[% BLOCK bot_card %]
+[% PROCESS blocks/quotes.tt %]
 [% class_tags = { 'borderguard' => 'Border Guard' } %]
+[% BLOCK bot_card %]
 <div class="well">
     <div class="row">
     
@@ -13,10 +14,32 @@
         <br />
         <center><span class="badge">[% class_tags.${bot.class} %]</span></center>
         <br />
+        <center><a class="btn btn-success" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse[% collapse_counter %]">Interact</a></center>    
 
     </div>
 </div>
 [% END %]
+
+[% BLOCK bot_interaction %]
+<div class="panel panel-default">
+    <div id="collapse[% collapse_i %]" class="panel-collapse collapse">
+            <div class="well col-sm-12">
+                    <div class="col-sm-2">
+                        <center><img style="height:100px" src="/images/bots/[% bot_i.photo %]"></center><br />
+                        <center><span class="badge">[% class_tags.${bot_i.class} %]</span></center>
+                    </div>
+                    <div class="col-sm-10">
+                        [% name = bot_i.name %]
+                        Hi, i'm [% name %]<br />
+                        &quot;[% quotes.$name %]&quot;
+                    </div>
+            </div>
+    </div>
+</div>
+[% END %]
+
+
+
 
 [% INCLUDE blocks/head.tt %]
 <div class="col-xs-12 col-sm-9">
@@ -34,10 +57,23 @@
             </div>
             <div class="row">
                 [% IF bots.size > 0 %]
+                <div id="accordion" class="panel-group">
+                [% collapse_counter = 0 %]
+                [% FOREACH b IN bots %]
+                    [% PROCESS bot_interaction collapse_i=collapse_counter bot_i=b %]
+                [% collapse_counter = collapse_counter + 1 %]
+                [% END %]
+                </div>
+                [% END %]
+            </div>
+            <div class="row">
+                [% IF bots.size > 0 %]
+                [% collapse_counter = 0 %]
                 [% FOREACH b IN bots %]
                 <div class="col-sm-3">
-                    [% PROCESS bot_card bot=b %]
+                    [% PROCESS bot_card bot=b collapse=collapse_counter %]
                 </div>
+                [% collapse_counter = collapse_counter + 1 %]
                 [% END %]
                 [% ELSE %]
                 <div class="alert alert-warning">

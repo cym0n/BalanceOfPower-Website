@@ -182,7 +182,7 @@ my %report_configuration = (
                 custom_js => 'blocks/missions.tt'
             },
             'i/lounge' => {
-                menu_name => 'Lounge'
+                menu_name => 'Lounge',
             },
             'i/notifications' => {
                 menu_name => 'Notifications'
@@ -683,6 +683,7 @@ get '/play/:game/i/lounge' => sub {
     my %template = (
     );
     my %template_data = (%page_data, %template);
+    $template_data{custom_css} = 'lounge.css';
     template 'lounge', \%template_data;
 };
 get '/play/:game/i/notifications' => sub {
