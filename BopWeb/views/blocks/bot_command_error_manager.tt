@@ -12,6 +12,12 @@
         [% IF err == 'bad-request' %]
             Command posted wrong
         [% END %]
+        [% IF err == 'bad-bot' %]
+            This bot can't execute the command
+        [% END %]
+        [% IF err == 'bad-bot' %]
+            The bot is not here
+        [% END %]
         [% IF err == 'useless-command' %]
             Useless command
         [% END %]

@@ -1549,6 +1549,10 @@ get '/interact/:game/leave-army-command' => sub {
 };
 
 get '/interact/:game/bot-command' => sub {
+
+    my %cost = ( 'cure' => 100 );
+
+
     my $user = logged_user();
     my $usergame = player_of_game(params->{game}, $user);
     if(! $usergame)
@@ -1574,27 +1578,33 @@ get '/interact/:game/bot-command' => sub {
     }
     if($bot->position ne $player->position)
     {
-        my $redirection = "/play/" . params->{game} . "/i/lounge?bot-command-posted=ko&err=bad-command";
+        my $redirection = "/play/" . params->{game} . "/i/lounge?bot-command-posted=ko&err=bad-position";
+        redirect $redirection, 302;
+        return;  
+    }
+    if($cost{$command} && $player->money < $cost{$command})
+    {
+        my $redirection = "/play/" . params->{game} . "/i/lounge?bot-command-posted=ko&err=not-enough-money";
         redirect $redirection, 302;
         return;  
     }
     if($command eq 'cure')
     {
-        my $money_for_healing = 100;
+        if($bot->class ne 'medic')
+        {
+            my $redirection = "/play/" . params->{game} . "/i/lounge?bot-command-posted=ko&err=bad-bot";
+            redirect $redirection, 302;
+            return;  
+        }
         if($player->health == MAX_HEALTH)
         {
             my $redirection = "/play/" . params->{game} . "/i/lounge?bot-command-posted=ko&err=useless-command";
             redirect $redirection, 302;
             return;  
         }
-        if($player->money < $money_for_healing)
-        {
-            my $redirection = "/play/" . params->{game} . "/i/lounge?bot-command-posted=ko&err=not-enough-money";
-            redirect $redirection, 302;
-            return;  
-        }
-        $player->add_money(-1 * $money_for_healing);
+        $player->add_money(-1 * $cost{$command}) if $cost{$command};
         $player->health(MAX_HEALTH);
+        $player->update();
         my $redirection = "/play/" . params->{game} . "/i/lounge?bot-command-posted=ok&err=cure";
         redirect $redirection, 302;
         return;  
