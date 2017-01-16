@@ -1,5 +1,6 @@
 [% quotes = { 'Yip Man' => 'It is difficult for a student to pick a good teacher, but it is more difficult for a teacher to pick a good student.',
               'Carl von Clausewitz' => 'War is regarded as nothing but the continuation of state policy with other means.'
+              'Louis Pasteur' => 'Do not let yourself be tainted with a barren skepticism.'
 
 
 } %]

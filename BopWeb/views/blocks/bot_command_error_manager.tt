@@ -1,7 +1,7 @@
 [% IF bot_command_posted %]
 <div class="row">
     <div class="col-sm-12">
-    [% IF mission_posted == 'ok' %]
+    [% IF bot_command_posted == 'ok' %]
         <div class="alert alert-success">
         [% IF err == 'cure' %]
         Player health restored

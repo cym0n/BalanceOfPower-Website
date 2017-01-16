@@ -1,5 +1,6 @@
 [% PROCESS blocks/quotes.tt %]
-[% class_tags = { 'borderguard' => 'Border Guard' } %]
+[% class_tags = { 'borderguard' => 'Border Guard',
+                  'medic'       => 'Medic' } %]
 [% BLOCK bot_card %]
 <div class="well">
     <div class="row">
@@ -30,8 +31,11 @@
                     </div>
                     <div class="col-sm-10">
                         [% name = bot_i.name %]
+                        <p>
                         Hi, i'm [% name %]<br />
                         &quot;[% quotes.$name %]&quot;
+                        </p>
+                        [% INCLUDE blocks/class_interaction.tt %]
                     </div>
             </div>
     </div>
