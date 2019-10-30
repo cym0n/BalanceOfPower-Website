@@ -3,3 +3,5 @@ BopWeb/metadata/*
 BopWeb/games/*
 BopWeb/autotest.sqlite
 BopWeb.tgz
+templates/views/
+templates/metadata/
