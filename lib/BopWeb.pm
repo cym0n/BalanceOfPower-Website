@@ -53,9 +53,36 @@ sub startup {
         $c->stash(document => "rebel-supports.tt");
         $c->render(template => 'bop/report');
     });
-
-
-
+    $r->get('/:game/:year/:quarter/n/:nation/act' => sub {
+        my $c = shift;
+        $c->stash(document => "actual.tt");
+        $c->render(template => 'bop/nation_report');
+    });
+    $r->get('/:game/:year/:quarter/n/:nation/brd' => sub {
+        my $c = shift;
+        $c->stash(document => "borders.tt");
+        $c->render(template => 'bop/nation_report');
+    });
+    $r->get('/:game/:year/:quarter/n/:nation/dip' => sub {
+        my $c = shift;
+        $c->stash(document => "diplomacy.tt");
+        $c->render(template => 'bop/nation_report');
+    });
+    $r->get('/:game/:year/:quarter/n/:nation/evt' => sub {
+        my $c = shift;
+        $c->stash(document => "events.tt");
+        $c->render(template => 'bop/nation_report');
+    });
+    $r->get('/:game/:year/:quarter/n/:nation/grp' => sub {
+        my $c = shift;
+        $c->stash(document => "graphs.tt");
+        $c->render(template => 'bop/nation_report');
+    });
+    $r->get('/:game/:year/:quarter/n/:nation/near' => sub {
+        my $c = shift;
+        $c->stash(document => "near.tt");
+        $c->render(template => 'bop/nation_report');
+    });
 }
 
 1;

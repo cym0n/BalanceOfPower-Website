@@ -11,20 +11,9 @@
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li [% IF active_top == 'year' %]class="active"[% END %]>
-                <a href="/play/[% game %]">[% year %]/[% turn %]</a>
+            <li>
+                <a href="/[% game %]/[% year %]/[% quarter %]/news">[% year %]/[% quarter %]</a>
             </li>
-            <li [% IF active_top == 'nations' %]class="active"[% END %]>
-                <a href="/play/[% game %]/n">Nations</a>
-            </li>
-            [% IF interactive %]
-            <li [% IF active_top == 'market' %]class="active"[% END %]>
-                <a href="/play/[% game %]/r/market">Market</a>
-            </li>
-            <li [% IF active_top == 'travel' %]class="active"[% END %]>
-                <a href="/play/[% game %]/i/travel">Travel</a>
-            </li>
-            [% END %]
           </ul>
         </div><!-- /.nav-collapse -->
       </div><!-- /.container -->

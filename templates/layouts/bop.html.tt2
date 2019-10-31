@@ -46,7 +46,7 @@
         $('.nation-link').replaceWith(function() {
         var nname = $(this).text();
         var ncode = $(this).attr('ref');
-        var url = "/play/[% game %]/n?nation="+ncode;
+        var url = "/[% game %]/[% year %]/[% quarter %]/n/"+ncode+"/act";
         return '<a href="' + url + '">' + nname + '</a>';
         });
     </script>
