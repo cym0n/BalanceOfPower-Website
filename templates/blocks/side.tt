@@ -1,90 +1,22 @@
-        [% IF game %]
         <div class="col-xs-6 col-sm-3 sidebar-offcanvas" id="sidebar">
             <div class="well well-sm">
                 <p style="font-size:18px">
                 <strong>Game</strong>: [% game %]<br />
-                [% IF interactive %]
-                <strong>Player</strong>: [% player %]<br />
                 </p>
                 <p>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-danger" 
-                             role="progressbar" aria-valuenow="[% theplayer.health %]"
-                             aria-valuemin="0" aria-valuemax="[% max_health %]" style="width:[% (theplayer.health / max_health) * 100 %]%" >
-                            Health
-                        </div>
-                    </div>
+                    <a href="/[% game %]/[% year %]/[% quarter %]/hs">Hotspots</a>
                 </p>
                 <p>
-                Value of the stocks: [% player_meta.stock_value %]<br />
-                Money: [% money %]<br />
-                Total value: [% player_meta.stock_value + money %]<br />
+                    <a href="/[% game %]/[% year %]/[% quarter %]/al">Alliances</a>
                 </p>
-                <a class="btn btn-default btn-xs" href="/users/logout" role="button">Logout</a>
-                [% END %]
+                <p>
+                    <a href="/[% game %]/[% year %]/[% quarter %]/inf">Influences</a>
+                </p>
+                <p>
+                    <a href="/[% game %]/[% year %]/[% quarter %]/sup">Supports</a>
+                </p>
+                <p>
+                    <a href="/[% game %]/[% year %]/[% quarter %]/rsup">Rebel Supports</a>
                 </p>
             </div>
         </div>
-        [% END %]
-        <div class="col-xs-6 col-sm-3 sidebar-offcanvas" id="sidebar">
-          <div class="list-group">
-            [% FOREACH r IN menu_urls %]
-            [% INCLUDE blocks/menulink.tt %]
-            [% END %]
-          </div>
-          [% IF active == 'n/actual' && interactive %]
-          [% IF nation_meta.civil_war %]
-          <div class="well">
-            <h3>Civil war!</h3>
-            <h3>Stock Actions blocked!</h3>
-          </div>
-          [% ELSE %]
-          <div class="well well-sm">
-            <h3>Stock Actions</h3>
-            [% IF wallet.$nation %]
-            <p>
-                Available stocks: [% nation_meta.stocks %]<br /><br />
-                Stocks: [% wallet.$nation.stocks %]<br />
-                Influence: [% wallet.$nation.influence %]<br />
-                War bonds: [% wallet.$nation.war_bonds %]<br />
-            </p>
-            [% ELSE %]
-            <p>
-                Available stocks: [% nation_meta.stocks %]<br /><br />
-                Stocks: 0<br />
-                Influence: 0<br />
-                War bonds: 0<br />
-            </p>
-            [% END %]
-            <form action="/interact/[% game %]/stock-command" method="post">
-                <div class="form-group">
-                    <label for="command">Buy/Sell</label>
-                    <select name="command" id="command" class="form-control">
-                        <option>Buy</option>
-                        <option>Sell</option>
-                    </select>
-                 </div>
-                 <div class="form-group">
-                    <label for="quantity">Quantity</label>
-                    <select name="quantity" id="quantity" class="form-control">
-                        <option>1</option>
-                        <option>2</option>
-                        <option>3</option>
-                        <option>4</option>
-                    </select>   
-                </div>
-                <input name="nation" id="nation" type="hidden" value="[% nation %]"></input>
-                <button type="submit" class="btn btn-default">Order</button>
-            </form>
-            [% IF selected_stock_action %]
-            <hr />
-            <p>
-                <strong>Scheduled:</strong><br />
-                [% selected_stock_action %]
-            </p>
-            [% END %]
-          </div>
-          [% END %]
-          [% END %]
-        </div><!--/.sidebar-offcanvas-->
-
